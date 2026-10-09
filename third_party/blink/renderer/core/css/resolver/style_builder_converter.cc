@@ -1003,6 +1003,11 @@ Length StyleBuilderConverter::ConvertLength(const StyleResolverState& state,
   return To<CSSPrimitiveValue>(value).ConvertToLength(
       state.CssToLengthConversionData());
 }
+Length StyleBuilderConverter::ConvertLengthY(const StyleResolverState& state,
+                                            const CSSValue& value) {
+  return To<CSSPrimitiveValue>(value).ConvertToLengthY(
+      state.CssToLengthConversionData());
+}
 
 UnzoomedLength StyleBuilderConverter::ConvertUnzoomedLength(
     const StyleResolverState& state,
@@ -1011,13 +1016,34 @@ UnzoomedLength StyleBuilderConverter::ConvertUnzoomedLength(
       state.UnzoomedLengthConversionData()));
 }
 
-float StyleBuilderConverter::ConvertZoom(const StyleResolverState& state,
+float StyleBuilderConverter::ConvertZoomX(const StyleResolverState& state,
                                          const CSSValue& value) {
   SECURITY_DCHECK(value.IsPrimitiveValue() || value.IsIdentifierValue());
 
   if (const auto* identifier_value = DynamicTo<CSSIdentifierValue>(value)) {
     if (identifier_value->GetValueID() == CSSValueID::kNormal)
-      return ComputedStyleInitialValues::InitialZoom();
+      return ComputedStyleInitialValues::InitialZoomX();
+  } else if (const auto* primitive_value =
+                 DynamicTo<CSSPrimitiveValue>(value)) {
+    if (primitive_value->IsPercentage()) {
+      float percent = primitive_value->GetFloatValue();
+      return percent ? (percent / 100.0f) : 1.0f;
+    } else if (primitive_value->IsNumber()) {
+      float number = primitive_value->GetFloatValue();
+      return number ? number : 1.0f;
+    }
+  }
+
+  NOTREACHED();
+  return 1.0f;
+}
+float StyleBuilderConverter::ConvertZoomY(const StyleResolverState& state,
+                                         const CSSValue& value) {
+  SECURITY_DCHECK(value.IsPrimitiveValue() || value.IsIdentifierValue());
+
+  if (const auto* identifier_value = DynamicTo<CSSIdentifierValue>(value)) {
+    if (identifier_value->GetValueID() == CSSValueID::kNormal)
+      return ComputedStyleInitialValues::InitialZoomY();
   } else if (const auto* primitive_value =
                  DynamicTo<CSSPrimitiveValue>(value)) {
     if (primitive_value->IsPercentage()) {
@@ -1040,6 +1066,15 @@ Length StyleBuilderConverter::ConvertLengthOrAuto(
   if (identifier_value && identifier_value->GetValueID() == CSSValueID::kAuto)
     return Length::Auto();
   return To<CSSPrimitiveValue>(value).ConvertToLength(
+      state.CssToLengthConversionData());
+}
+Length StyleBuilderConverter::ConvertLengthOrAutoY(
+    const StyleResolverState& state,
+    const CSSValue& value) {
+  auto* identifier_value = DynamicTo<CSSIdentifierValue>(value);
+  if (identifier_value && identifier_value->GetValueID() == CSSValueID::kAuto)
+    return Length::Auto();
+  return To<CSSPrimitiveValue>(value).ConvertToLengthY(
       state.CssToLengthConversionData());
 }
 
@@ -1068,6 +1103,31 @@ Length StyleBuilderConverter::ConvertLengthSizing(StyleResolverState& state,
       return Length();
   }
 }
+Length StyleBuilderConverter::ConvertLengthSizingY(StyleResolverState& state,
+                                                  const CSSValue& value) {
+  const auto* identifier_value = DynamicTo<CSSIdentifierValue>(value);
+  if (!identifier_value)
+    return ConvertLengthY(state, value);
+
+  switch (identifier_value->GetValueID()) {
+    case CSSValueID::kMinContent:
+    case CSSValueID::kWebkitMinContent:
+      return Length::MinContent();
+    case CSSValueID::kMaxContent:
+    case CSSValueID::kWebkitMaxContent:
+      return Length::MaxContent();
+    case CSSValueID::kWebkitFillAvailable:
+      return Length::FillAvailable();
+    case CSSValueID::kWebkitFitContent:
+    case CSSValueID::kFitContent:
+      return Length::FitContent();
+    case CSSValueID::kAuto:
+      return Length::Auto();
+    default:
+      NOTREACHED();
+      return Length();
+  }
+}
 
 Length StyleBuilderConverter::ConvertLengthMaxSizing(StyleResolverState& state,
                                                      const CSSValue& value) {
@@ -1075,6 +1135,13 @@ Length StyleBuilderConverter::ConvertLengthMaxSizing(StyleResolverState& state,
   if (identifier_value && identifier_value->GetValueID() == CSSValueID::kNone)
     return Length::MaxSizeNone();
   return ConvertLengthSizing(state, value);
+}
+Length StyleBuilderConverter::ConvertLengthMaxSizingY(StyleResolverState& state,
+                                                     const CSSValue& value) {
+  auto* identifier_value = DynamicTo<CSSIdentifierValue>(value);
+  if (identifier_value && identifier_value->GetValueID() == CSSValueID::kNone)
+    return Length::MaxSizeNone();
+  return ConvertLengthSizingY(state, value);
 }
 
 TabSize StyleBuilderConverter::ConvertLengthOrTabSpaces(
@@ -1090,10 +1157,11 @@ TabSize StyleBuilderConverter::ConvertLengthOrTabSpaces(
 
 static CSSToLengthConversionData LineHeightToLengthConversionData(
     StyleResolverState& state) {
-  float multiplier = state.Style()->EffectiveZoom();
-  if (LocalFrame* frame = state.GetDocument().GetFrame())
-    multiplier *= frame->TextZoomFactor();
-  return state.CssToLengthConversionData().CopyWithAdjustedZoom(multiplier);
+  // float multiplier = state.Style()->EffectiveZoomX();
+  float multipliery = state.Style()->EffectiveZoomY();
+  // if (LocalFrame* frame = state.GetDocument().GetFrame())
+  //   multiplier *= frame->TextZoomFactor();
+  return state.CssToLengthConversionData().CopyWithAdjustedZoom(multipliery,multipliery);
 }
 
 Length StyleBuilderConverter::ConvertLineHeight(StyleResolverState& state,
@@ -1115,7 +1183,7 @@ Length StyleBuilderConverter::ConvertLineHeight(StyleResolverState& state,
     if (primitive_value->IsCalculated()) {
       Length zoomed_length =
           Length(To<CSSMathFunctionValue>(primitive_value)
-                     ->ToCalcValue(LineHeightToLengthConversionData(state)));
+                     ->ToCalcValueY(LineHeightToLengthConversionData(state)));
       return Length::Fixed(ValueForLength(
           zoomed_length, LayoutUnit(state.Style()->ComputedFontSize())));
     }
@@ -1123,6 +1191,7 @@ Length StyleBuilderConverter::ConvertLineHeight(StyleResolverState& state,
 
   DCHECK_EQ(To<CSSIdentifierValue>(value).GetValueID(), CSSValueID::kNormal);
   return ComputedStyleInitialValues::InitialLineHeight();
+  // return Length::Fixed((state.Style()->ComputedFontSize() * 100) / 100.0);
 }
 
 float StyleBuilderConverter::ConvertNumberOrPercentage(
@@ -1232,6 +1301,15 @@ EPaintOrder StyleBuilderConverter::ConvertPaintOrder(
 Length StyleBuilderConverter::ConvertQuirkyLength(StyleResolverState& state,
                                                   const CSSValue& value) {
   Length length = ConvertLengthOrAuto(state, value);
+  // This is only for margins which use __qem
+  auto* numeric_literal = DynamicTo<CSSNumericLiteralValue>(value);
+  length.SetQuirk(numeric_literal && numeric_literal->IsQuirkyEms());
+  return length;
+}
+
+Length StyleBuilderConverter::ConvertQuirkyLengthY(StyleResolverState& state,
+                                                  const CSSValue& value) {
+  Length length = ConvertLengthOrAutoY(state, value);
   // This is only for margins which use __qem
   auto* numeric_literal = DynamicTo<CSSNumericLiteralValue>(value);
   length.SetQuirk(numeric_literal && numeric_literal->IsQuirkyEms());
@@ -1729,7 +1807,7 @@ static const CSSValue& ComputeRegisteredPropertyValue(
         primitive_value->IsCalculatedPercentageWithLength()) {
       // Instead of the actual zoom, use 1 to avoid potential rounding errors
       Length length = primitive_value->ConvertToLength(
-          css_to_length_conversion_data.CopyWithAdjustedZoom(1));
+          css_to_length_conversion_data.CopyWithAdjustedZoom(1,1));
       return *CSSPrimitiveValue::CreateFromLength(length, 1);
     }
 

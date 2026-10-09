@@ -274,7 +274,7 @@ CSSBorderImageLengthBoxInterpolationType::MaybeConvertInherit(
   conversion_checkers.push_back(std::make_unique<InheritedSideTypesChecker>(
       CssProperty(), SideTypes(inherited)));
   return ConvertBorderImageLengthBox(inherited,
-                                     state.ParentStyle()->EffectiveZoom());
+                                     state.ParentStyle()->EffectiveZoomX());
 }
 
 InterpolationValue CSSBorderImageLengthBoxInterpolationType::MaybeConvertValue(
@@ -329,7 +329,7 @@ InterpolationValue CSSBorderImageLengthBoxInterpolationType::
     MaybeConvertStandardPropertyUnderlyingValue(
         const ComputedStyle& style) const {
   return ConvertBorderImageLengthBox(
-      GetBorderImageLengthBox(CssProperty(), style), style.EffectiveZoom());
+      GetBorderImageLengthBox(CssProperty(), style), style.EffectiveZoomX());
 }
 
 PairwiseInterpolationValue

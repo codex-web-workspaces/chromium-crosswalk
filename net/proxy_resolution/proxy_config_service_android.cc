@@ -42,6 +42,7 @@ typedef ProxyConfigServiceAndroid::GetPropertyCallback GetPropertyCallback;
 
 // Returns whether the provided string was successfully converted to a port.
 bool ConvertStringToPort(const std::string& port, int* output) {
+      LOG(INFO)<<"getProxy----ConvertStringToPort--1";
   url::Component component(0, port.size());
   int result = url::ParsePort(port.c_str(), component);
   if (result == url::PORT_INVALID || result == url::PORT_UNSPECIFIED)
@@ -53,6 +54,7 @@ bool ConvertStringToPort(const std::string& port, int* output) {
 ProxyServer ConstructProxyServer(ProxyServer::Scheme scheme,
                                  const std::string& proxy_host,
                                  const std::string& proxy_port) {
+      LOG(INFO)<<"getProxy----ConstructProxyServer--1";
   DCHECK(!proxy_host.empty());
   int port_as_int = 0;
   if (proxy_port.empty())
@@ -67,6 +69,7 @@ ProxyServer ConstructProxyServer(ProxyServer::Scheme scheme,
 ProxyServer LookupProxy(const std::string& prefix,
                         const GetPropertyCallback& get_property,
                         ProxyServer::Scheme scheme) {
+      LOG(INFO)<<"getProxy----LookupProxy--1";
   DCHECK(!prefix.empty());
   std::string proxy_host = get_property.Run(prefix + ".proxyHost");
   if (!proxy_host.empty()) {
@@ -83,6 +86,7 @@ ProxyServer LookupProxy(const std::string& prefix,
 }
 
 ProxyServer LookupSocksProxy(const GetPropertyCallback& get_property) {
+      LOG(INFO)<<"getProxy----LookupSocksProxy--1";
   std::string proxy_host = get_property.Run("socksProxyHost");
   if (!proxy_host.empty()) {
     std::string proxy_port = get_property.Run("socksProxyPort");
@@ -95,6 +99,7 @@ ProxyServer LookupSocksProxy(const GetPropertyCallback& get_property) {
 void AddBypassRules(const std::string& scheme,
                     const GetPropertyCallback& get_property,
                     ProxyBypassRules* bypass_rules) {
+      LOG(INFO)<<"getProxy----AddBypassRules--1";
   // The format of a hostname pattern is a list of hostnames that are separated
   // by | and that use * as a wildcard. For example, setting the
   // http.nonProxyHosts property to *.android.com|*.kernel.org will cause
@@ -120,6 +125,7 @@ void AddBypassRules(const std::string& scheme,
 // Returns true if a valid proxy was found.
 bool GetProxyRules(const GetPropertyCallback& get_property,
                    ProxyConfig::ProxyRules* rules) {
+      LOG(INFO)<<"getProxy----GetProxyRules--1";
   // See libcore/luni/src/main/java/java/net/ProxySelectorImpl.java for the
   // mostly equivalent Android implementation.  There is one intentional
   // difference: by default Chromium uses the HTTP port (80) for HTTPS
@@ -147,6 +153,7 @@ bool GetProxyRules(const GetPropertyCallback& get_property,
 
 void GetLatestProxyConfigInternal(const GetPropertyCallback& get_property,
                                   ProxyConfigWithAnnotation* config) {
+      LOG(INFO)<<"getProxy----GetLatestProxyConfigInternal--1";
   ProxyConfig proxy_config;
   if (GetProxyRules(get_property, &proxy_config.proxy_rules())) {
     *config =
@@ -157,6 +164,7 @@ void GetLatestProxyConfigInternal(const GetPropertyCallback& get_property,
 }
 
 std::string GetJavaProperty(const std::string& property) {
+      LOG(INFO)<<"getProxy----GetJavaProperty--1";
   // Use Java System.getProperty to get configuration information.
   // TODO(pliard): Conversion to/from UTF8 ok here?
   JNIEnv* env = AttachCurrentThread();
@@ -172,6 +180,7 @@ void CreateStaticProxyConfig(const std::string& host,
                              const std::string& pac_url,
                              const std::vector<std::string>& exclusion_list,
                              ProxyConfigWithAnnotation* config) {
+      LOG(INFO)<<"getProxy----CreateStaticProxyConfig--1";
   ProxyConfig proxy_config;
   if (!pac_url.empty()) {
     proxy_config.set_pac_url(GURL(pac_url));
@@ -203,6 +212,7 @@ std::string ParseOverrideRules(
     const std::vector<ProxyConfigServiceAndroid::ProxyOverrideRule>&
         override_rules,
     ProxyConfig::ProxyRules* proxy_rules) {
+      LOG(INFO)<<"getProxy----ParseOverrideRules--1";
   // If no rules were specified, use DIRECT for everything.
   if (override_rules.empty()) {
     DCHECK(proxy_rules->empty());
@@ -250,6 +260,7 @@ std::string CreateOverrideProxyConfig(
         proxy_rules,
     const std::vector<std::string>& bypass_rules,
     ProxyConfigWithAnnotation* config) {
+      LOG(INFO)<<"getProxy----CreateOverrideProxyConfig--1";
   ProxyConfig proxy_config;
   auto result = ParseOverrideRules(proxy_rules, &proxy_config.proxy_rules());
   if (!result.empty()) {
@@ -282,6 +293,7 @@ class ProxyConfigServiceAndroid::Delegate
         has_proxy_override_(false) {}
 
   void SetupJNI() {
+      LOG(INFO)<<"getProxy----SetupJNI--1";
     DCHECK(InJNISequence());
     JNIEnv* env = AttachCurrentThread();
     if (java_proxy_change_listener_.is_null()) {
@@ -293,6 +305,7 @@ class ProxyConfigServiceAndroid::Delegate
   }
 
   void FetchInitialConfig() {
+      LOG(INFO)<<"getProxy----FetchInitialConfig--1";
     DCHECK(InJNISequence());
     ProxyConfigWithAnnotation proxy_config;
     GetLatestProxyConfigInternal(get_property_callback_, &proxy_config);
@@ -302,6 +315,7 @@ class ProxyConfigServiceAndroid::Delegate
   }
 
   void Shutdown() {
+      LOG(INFO)<<"getProxy----Shutdown--1";
     if (InJNISequence()) {
       ShutdownInJNISequence();
     } else {
@@ -312,16 +326,19 @@ class ProxyConfigServiceAndroid::Delegate
 
   // Called only in the network sequence.
   void AddObserver(Observer* observer) {
+      LOG(INFO)<<"getProxy----AddObserver--1";
     DCHECK(InMainSequence());
     observers_.AddObserver(observer);
   }
 
   void RemoveObserver(Observer* observer) {
+      LOG(INFO)<<"getProxy----RemoveObserver--1";
     DCHECK(InMainSequence());
     observers_.RemoveObserver(observer);
   }
 
   ConfigAvailability GetLatestProxyConfig(ProxyConfigWithAnnotation* config) {
+      LOG(INFO)<<"getProxy----GetLatestProxyConfig--212";
     DCHECK(InMainSequence());
     if (!config)
       return ProxyConfigService::CONFIG_UNSET;
@@ -331,6 +348,7 @@ class ProxyConfigServiceAndroid::Delegate
 
   // Called in the JNI sequence.
   void ProxySettingsChanged() {
+      LOG(INFO)<<"getProxy----ProxySettingsChanged--1";
     DCHECK(InJNISequence());
     if (has_proxy_override_)
       return;
@@ -347,6 +365,7 @@ class ProxyConfigServiceAndroid::Delegate
                               int port,
                               const std::string& pac_url,
                               const std::vector<std::string>& exclusion_list) {
+      LOG(INFO)<<"getProxy----ProxySettingsChangedTo--1";
     DCHECK(InJNISequence());
     if (has_proxy_override_)
       return;
@@ -364,6 +383,7 @@ class ProxyConfigServiceAndroid::Delegate
   }
 
   void set_exclude_pac_url(bool enabled) {
+      LOG(INFO)<<"getProxy----set_exclude_pac_url--1";
     exclude_pac_url_ = enabled;
   }
 
@@ -372,6 +392,7 @@ class ProxyConfigServiceAndroid::Delegate
       const std::vector<ProxyOverrideRule>& proxy_rules,
       const std::vector<std::string>& bypass_rules,
       base::OnceClosure callback) {
+      LOG(INFO)<<"getProxy----SetProxyOverride--2";
     DCHECK(InJNISequence());
     has_proxy_override_ = true;
 
@@ -394,6 +415,7 @@ class ProxyConfigServiceAndroid::Delegate
 
   // Called in the JNI sequence.
   void ClearProxyOverride(base::OnceClosure callback) {
+      LOG(INFO)<<"getProxy----ClearProxyOverride--2";
     DCHECK(InJNISequence());
     if (!has_proxy_override_) {
       std::move(callback).Run();
@@ -425,6 +447,7 @@ class ProxyConfigServiceAndroid::Delegate
         jint jport,
         const JavaParamRef<jstring>& jpac_url,
         const JavaParamRef<jobjectArray>& jexclusion_list) override {
+      LOG(INFO)<<"getProxy----ProxySettingsChangedTo--2";
       std::string host = ConvertJavaStringToUTF8(env, jhost);
       std::string pac_url;
       if (jpac_url)
@@ -437,6 +460,7 @@ class ProxyConfigServiceAndroid::Delegate
 
     void ProxySettingsChanged(JNIEnv* env,
                               const JavaParamRef<jobject>& self) override {
+      LOG(INFO)<<"getProxy----ProxySettingsChanged--2";
       delegate_->ProxySettingsChanged();
     }
 
@@ -447,6 +471,7 @@ class ProxyConfigServiceAndroid::Delegate
   virtual ~Delegate() {}
 
   void ShutdownInJNISequence() {
+      LOG(INFO)<<"getProxy----ShutdownInJNISequence--2";
     if (java_proxy_change_listener_.is_null())
       return;
     JNIEnv* env = AttachCurrentThread();
@@ -456,6 +481,7 @@ class ProxyConfigServiceAndroid::Delegate
   // Called on the network sequence.
   void SetNewConfigInMainSequence(
       const ProxyConfigWithAnnotation& proxy_config) {
+      LOG(INFO)<<"getProxy----SetNewConfigInMainSequence--2";
     DCHECK(InMainSequence());
     proxy_config_ = proxy_config;
     for (auto& observer : observers_) {
@@ -465,10 +491,12 @@ class ProxyConfigServiceAndroid::Delegate
   }
 
   bool InJNISequence() const {
+      LOG(INFO)<<"getProxy----InJNISequence--2";
     return jni_task_runner_->RunsTasksInCurrentSequence();
   }
 
   bool InMainSequence() const {
+      LOG(INFO)<<"getProxy----InMainSequence--2";
     return main_task_runner_->RunsTasksInCurrentSequence();
   }
 
@@ -493,6 +521,7 @@ ProxyConfigServiceAndroid::ProxyConfigServiceAndroid(
     : delegate_(new Delegate(main_task_runner,
                              jni_task_runner,
                              base::BindRepeating(&GetJavaProperty))) {
+      LOG(INFO)<<"getProxy----ProxyConfigServiceAndroid";
   delegate_->SetupJNI();
   delegate_->FetchInitialConfig();
 }
@@ -516,6 +545,7 @@ void ProxyConfigServiceAndroid::RemoveObserver(Observer* observer) {
 ProxyConfigService::ConfigAvailability
 ProxyConfigServiceAndroid::GetLatestProxyConfig(
     ProxyConfigWithAnnotation* config) {
+      LOG(INFO)<<"getProxy----GetLatestProxyConfig--2";
   return delegate_->GetLatestProxyConfig(config);
 }
 
@@ -526,6 +556,7 @@ ProxyConfigServiceAndroid::ProxyConfigServiceAndroid(
     : delegate_(new Delegate(main_task_runner,
                              jni_task_runner,
                              get_property_callback)) {
+      LOG(INFO)<<"getProxy----ProxyConfigServiceAndroid--1";
   delegate_->SetupJNI();
   delegate_->FetchInitialConfig();
 }
@@ -535,10 +566,12 @@ void ProxyConfigServiceAndroid::ProxySettingsChangedTo(
     int port,
     const std::string& pac_url,
     const std::vector<std::string>& exclusion_list) {
+      LOG(INFO)<<"getProxy----ProxySettingsChangedTo--1";
   delegate_->ProxySettingsChangedTo(host, port, pac_url, exclusion_list);
 }
 
 void ProxyConfigServiceAndroid::ProxySettingsChanged() {
+      LOG(INFO)<<"getProxy----ProxySettingsChanged--1";
   delegate_->ProxySettingsChanged();
 }
 
@@ -546,11 +579,13 @@ std::string ProxyConfigServiceAndroid::SetProxyOverride(
     const std::vector<ProxyOverrideRule>& proxy_rules,
     const std::vector<std::string>& bypass_rules,
     base::OnceClosure callback) {
+      LOG(INFO)<<"getProxy----SetProxyOverride--1";
   return delegate_->SetProxyOverride(proxy_rules, bypass_rules,
                                      std::move(callback));
 }
 
 void ProxyConfigServiceAndroid::ClearProxyOverride(base::OnceClosure callback) {
+      LOG(INFO)<<"getProxy----ClearProxyOverride--1";
   delegate_->ClearProxyOverride(std::move(callback));
 }
 

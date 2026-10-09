@@ -41,6 +41,14 @@
 #include "third_party/blink/renderer/platform/instrumentation/use_counter.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 
+#include "third_party/blink/renderer/core/frame/local_dom_window.h"
+#include "third_party/blink/renderer/core/frame/local_frame.h"
+#include "third_party/blink/renderer/bindings/core/v8/script_controller.h"
+#include "third_party/blink/renderer/core/execution_context/execution_context.h"
+#include "third_party/blink/renderer/core/html_names.h"
+#include "third_party/blink/renderer/platform/bindings/script_state.h"
+#include "third_party/blink/renderer/platform/wtf/functional.h"
+
 namespace blink {
 
 using namespace html_names;
@@ -118,12 +126,14 @@ void HTMLIFrameElement::CollectStyleForPresentationAttribute(
     // LocalFrame border doesn't really match the HTML4 spec definition for
     // iframes. It simply adds a presentational hint that the border should be
     // off if set to zero.
-    if (!value.ToInt()) {
+    // if (!value.ToInt()) {
       // Add a rule that nulls out our border width.
-      AddPropertyToPresentationAttributeStyle(
-          style, CSSPropertyID::kBorderWidth, 0,
-          CSSPrimitiveValue::UnitType::kPixels);
-    }
+      // AddPropertyToPresentationAttributeStyle(
+      //     style, CSSPropertyID::kBorderWidth, value,
+      //     CSSPrimitiveValue::UnitType::kPixels);
+    // }
+      
+    AddHTMLLengthToStyle(style, CSSPropertyID::kBorderWidth, value);
   } else {
     HTMLFrameElementBase::CollectStyleForPresentationAttribute(name, value,
                                                                style);
@@ -250,6 +260,14 @@ void HTMLIFrameElement::ParseAttribute(
                           WebFeature::kFeaturePolicyAllowAttribute);
       }
     }
+  // } else if (name == kOnloadAttr) {
+  //   // 保存原始的 onload 事件处理器
+  //   String onloadHandler = value;
+  //   String new_onload_script = 
+  //       "document.addEventListener('DOMContentLoaded', function() { "
+  //       "  " + onloadHandler + ";"
+  //       "}, { once: true });";
+  //   GetDocument().GetFrame()->GetScriptController().ExecuteScriptInMainWorld(new_onload_script);
   } else {
     // Websites picked up a Chromium article that used this non-specified
     // attribute which ended up changing shape after the specification process.
@@ -270,8 +288,9 @@ void HTMLIFrameElement::ParseAttribute(
                                  "https://goo.gl/ximf56"));
     }
 
-    if (name == kSrcAttr)
+    if (name == kSrcAttr){
       LogUpdateAttributeIfIsolatedWorldAndInDocument("iframe", params);
+    }
     HTMLFrameElementBase::ParseAttribute(params);
   }
 }
@@ -390,5 +409,6 @@ bool HTMLIFrameElement::IsInteractiveContent() const {
 network::mojom::ReferrerPolicy HTMLIFrameElement::ReferrerPolicyAttribute() {
   return referrer_policy_;
 }
+
 
 }  // namespace blink

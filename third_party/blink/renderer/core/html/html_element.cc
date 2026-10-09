@@ -658,8 +658,10 @@ void HTMLElement::ParseAttribute(const AttributeModificationParams& params) {
       UseCounter::Count(GetDocument(), triggers->web_feature);
     }
   }
-  if (triggers->function)
+  if (triggers->function){
+    LOG(INFO)<<"ParseAttribute---"<<params.name;
     ((*this).*(triggers->function))(params);
+  }
 }
 
 DocumentFragment* HTMLElement::TextToFragment(const String& text,
@@ -1363,7 +1365,7 @@ int HTMLElement::offsetTopForBinding() {
   GetDocument().EnsurePaintLocationDataValidForNode(this);
   Element* offset_parent = unclosedOffsetParent();
   if (LayoutBoxModelObject* layout_object = GetLayoutBoxModelObject())
-    return AdjustForAbsoluteZoom::AdjustLayoutUnit(
+    return AdjustForAbsoluteZoom::AdjustLayoutUnitY(
                LayoutUnit(layout_object->PixelSnappedOffsetTop(offset_parent)),
                layout_object->StyleRef())
         .Round();
@@ -1387,7 +1389,7 @@ int HTMLElement::offsetHeightForBinding() {
   GetDocument().EnsurePaintLocationDataValidForNode(this);
   Element* offset_parent = unclosedOffsetParent();
   if (LayoutBoxModelObject* layout_object = GetLayoutBoxModelObject())
-    return AdjustForAbsoluteZoom::AdjustLayoutUnit(
+    return AdjustForAbsoluteZoom::AdjustLayoutUnitY(
                LayoutUnit(
                    layout_object->PixelSnappedOffsetHeight(offset_parent)),
                layout_object->StyleRef())

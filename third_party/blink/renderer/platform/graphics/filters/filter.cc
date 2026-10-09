@@ -37,7 +37,19 @@
 namespace blink {
 
 Filter::Filter(float scale)
-    : Filter(FloatRect(), FloatRect(), scale, kUserSpace) {}
+    : Filter(FloatRect(), FloatRect(), scale,1, kUserSpace) {}
+
+Filter::Filter(const FloatRect& reference_box,
+               const FloatRect& filter_region,
+               float scale,
+               float scaley,
+               UnitScaling unit_scaling)
+    : reference_box_(reference_box),
+      filter_region_(filter_region),
+      scale_(scale),
+      scaley_(scaley),
+      unit_scaling_(unit_scaling),
+      source_graphic_(MakeGarbageCollected<SourceGraphic>(this)) {}
 
 Filter::Filter(const FloatRect& reference_box,
                const FloatRect& filter_region,
@@ -46,6 +58,7 @@ Filter::Filter(const FloatRect& reference_box,
     : reference_box_(reference_box),
       filter_region_(filter_region),
       scale_(scale),
+      scaley_(1.0f),
       unit_scaling_(unit_scaling),
       source_graphic_(MakeGarbageCollected<SourceGraphic>(this)) {}
 
@@ -56,13 +69,13 @@ void Filter::Trace(blink::Visitor* visitor) {
 
 FloatRect Filter::MapLocalRectToAbsoluteRect(const FloatRect& rect) const {
   FloatRect result(rect);
-  result.Scale(scale_);
+  result.Scale(scale_,scaley_);
   return result;
 }
 
 FloatRect Filter::MapAbsoluteRectToLocalRect(const FloatRect& rect) const {
   FloatRect result(rect);
-  result.Scale(1.0f / scale_);
+  result.Scale(1.0f / scale_,1.0f / scaley_);
   return result;
 }
 
@@ -75,7 +88,7 @@ float Filter::ApplyHorizontalScale(float value) const {
 float Filter::ApplyVerticalScale(float value) const {
   if (unit_scaling_ == kBoundingBox)
     value *= ReferenceBox().Height();
-  return scale_ * value;
+  return scaley_ * value;
 }
 
 FloatPoint3D Filter::Resolve3dPoint(const FloatPoint3D& point) const {

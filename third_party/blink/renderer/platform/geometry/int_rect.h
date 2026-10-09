@@ -168,6 +168,7 @@ class PLATFORM_EXPORT IntRect {
     InflateY(d);
   }
   void Scale(float s);
+  void Scale(float s,float sy);
 
   IntSize DifferenceToPoint(const IntPoint&) const;
   int DistanceSquaredToPoint(const IntPoint& p) const {

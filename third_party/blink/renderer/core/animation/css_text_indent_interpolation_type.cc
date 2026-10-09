@@ -146,7 +146,7 @@ InterpolationValue CSSTextIndentInterpolationType::MaybeConvertInherit(
   conversion_checkers.push_back(std::make_unique<InheritedIndentChecker>(
       parent_style.TextIndent(), mode));
   return CreateValue(parent_style.TextIndent(), mode,
-                     parent_style.EffectiveZoom());
+                     parent_style.EffectiveZoomX());
 }
 
 InterpolationValue CSSTextIndentInterpolationType::MaybeConvertValue(
@@ -180,7 +180,7 @@ InterpolationValue
 CSSTextIndentInterpolationType::MaybeConvertStandardPropertyUnderlyingValue(
     const ComputedStyle& style) const {
   return CreateValue(style.TextIndent(), IndentMode(style),
-                     style.EffectiveZoom());
+                     style.EffectiveZoomX());
 }
 
 PairwiseInterpolationValue CSSTextIndentInterpolationType::MaybeMergeSingles(

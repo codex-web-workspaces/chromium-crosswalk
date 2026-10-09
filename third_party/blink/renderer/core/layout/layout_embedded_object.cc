@@ -116,7 +116,7 @@ void LayoutEmbeddedObject::ComputeIntrinsicSizingInfo(
   if (frame_view && frame_view->GetIntrinsicSizingInfo(intrinsic_sizing_info)) {
     // Handle zoom & vertical writing modes here, as the embedded document
     // doesn't know about them.
-    intrinsic_sizing_info.size.Scale(StyleRef().EffectiveZoom());
+    intrinsic_sizing_info.size.Scale(StyleRef().EffectiveZoomX(),StyleRef().EffectiveZoomY());
 
     if (!IsHorizontalWritingMode())
       intrinsic_sizing_info.Transpose();

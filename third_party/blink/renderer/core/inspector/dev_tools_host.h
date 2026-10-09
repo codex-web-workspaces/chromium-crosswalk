@@ -52,7 +52,8 @@ class CORE_EXPORT DevToolsHost final : public ScriptWrappable {
   void Trace(blink::Visitor*) override;
   void DisconnectClient();
 
-  float zoomFactor();
+  float zoomFactorX();
+  float zoomFactorY();
 
   float ConvertLengthForEmbedder(float length);
 

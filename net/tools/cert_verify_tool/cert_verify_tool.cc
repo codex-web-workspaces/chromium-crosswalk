@@ -49,6 +49,7 @@ void SetUpOnNetworkThread(
     base::WaitableEvent* initialization_complete_event) {
   net::URLRequestContextBuilder url_request_context_builder;
   url_request_context_builder.set_user_agent(GetUserAgent());
+  LOG(INFO)<<"getProxy----cert_verify_tool";
 #if defined(OS_LINUX)
   // On Linux, use a fixed ProxyConfigService, since the default one
   // depends on glib.

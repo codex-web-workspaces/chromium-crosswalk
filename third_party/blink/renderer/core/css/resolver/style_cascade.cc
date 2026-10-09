@@ -171,7 +171,8 @@ void StyleCascade::ApplyHighPriority(Resolver& resolver) {
       state_.StyleRef());
   state_.SetConversionFontSizes(CSSToLengthConversionData::FontSizes(
       state_.Style(), state_.RootElementStyle()));
-  state_.SetConversionZoom(state_.Style()->EffectiveZoom());
+  state_.SetConversionZoomX(state_.Style()->EffectiveZoomX());
+  state_.SetConversionZoomY(state_.Style()->EffectiveZoomY());
 }
 
 void StyleCascade::Apply(const CSSPropertyName& name) {
@@ -588,9 +589,12 @@ StyleCascade::Priority& StyleCascade::Filter::GetSlot(
     case CSSPropertyID::kWritingMode:
     case CSSPropertyID::kWebkitWritingMode:
       return writing_mode_;
-    case CSSPropertyID::kZoom:
-    case CSSPropertyID::kInternalEffectiveZoom:
-      return zoom_;
+    case CSSPropertyID::kZoomX:
+    case CSSPropertyID::kInternalEffectiveZoomX:
+      return zoomx_;
+    case CSSPropertyID::kZoomY:
+    case CSSPropertyID::kInternalEffectiveZoomY:
+      return zoomy_;
     default:
       none_ = Priority();
       return none_;

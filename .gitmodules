@@ -1,0 +1,12 @@
+[submodule "v8"]
+	path = v8
+	url = git@github.com:codex-web-workspaces/v8-crosswalk.git
+	branch = iptv-archive
+[submodule "xwalk"]
+	path = xwalk
+	url = git@github.com:codex-web-workspaces/crosswalk.git
+	branch = iptv-archive
+[submodule "third_party/icu"]
+	path = third_party/icu
+	url = git@github.com:codex-web-workspaces/chromium-icu.git
+	branch = iptv-archive

@@ -206,7 +206,7 @@ void ViewportStyleResolver::Resolve() {
                         : ViewportDescription::kUserAgentStyleSheet);
 
   description.user_zoom = ViewportArgumentValue(CSSPropertyID::kUserZoom);
-  description.zoom = ViewportArgumentValue(CSSPropertyID::kZoom);
+  description.zoom = ViewportArgumentValue(CSSPropertyID::kZoomX);
   description.min_zoom = ViewportArgumentValue(CSSPropertyID::kMinZoom);
   description.max_zoom = ViewportArgumentValue(CSSPropertyID::kMaxZoom);
   description.min_width = ViewportLengthValue(CSSPropertyID::kMinWidth);
@@ -272,7 +272,8 @@ float ViewportStyleResolver::ViewportArgumentValue(CSSPropertyID id) const {
     switch (id) {
       case CSSPropertyID::kMaxZoom:
       case CSSPropertyID::kMinZoom:
-      case CSSPropertyID::kZoom:
+      case CSSPropertyID::kZoomX:
+      case CSSPropertyID::kZoomY:
         return percent_value;
       default:
         NOTREACHED();
@@ -311,7 +312,7 @@ Length ViewportStyleResolver::ViewportLengthValue(CSSPropertyID id) {
       view->InitialViewportWidth(), view->InitialViewportHeight());
 
   Length result = primitive_value->ConvertToLength(CSSToLengthConversionData(
-      initial_style_.get(), font_sizes, viewport_size, 1.0f));
+      initial_style_.get(), font_sizes, viewport_size,1.0f, 1.0f));
 
   if (result.IsFixed() && document_->GetPage()) {
     float scaled_value =

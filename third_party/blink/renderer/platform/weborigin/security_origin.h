@@ -254,6 +254,7 @@ class PLATFORM_EXPORT SecurityOrigin : public RefCounted<SecurityOrigin> {
   // "null". This typically happens when this SecurityOrigin is opaque (e.g. the
   // origin of a sandboxed iframe).
   String ToString() const;
+  String ToShareString() const;
   AtomicString ToAtomicString() const;
 
   // Similar to ToString(), but does not take into account any factors that

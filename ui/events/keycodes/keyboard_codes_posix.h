@@ -233,6 +233,32 @@ enum KeyboardCode {
   // Windows does not have a specific key code for Compose. We use the unused
   // 0xE6 (VK_ICO_CLEAR) code to represent Compose.
   VKEY_COMPOSE = 0xE6,
+
+  ITV_XUNI = 0x0100,
+  ITV_REFRESH = 0x0101,
+  ITV_PAGE_UP = 0x0102,
+  ITV_PAGE_DOWN = 0x0103,
+  ITV_SRF = 0x0104,
+  ITV_VOLUMEUP = 0x0105,
+  ITV_VOLUMEDOWN = 0x0106,
+  ITV_MUTE = 0x0107,
+  ITV_CHANNEL_UP = 0x0108,
+  ITV_CHANNEL_DOWN = 0x0109,
+  ITV_PAUSE = 0x0110,
+  ITV_FASTFORWARD = 0x0111,
+  ITV_FASTREWIND = 0x0112,
+  ITV_HOME = 0x0113,
+  ITV_RELOAD = 0x0114,
+  ITV_STAR = 0x0115,
+  ITV_POUND = 0x0116,
+  ITV_MENU = 0x0117,
+  ITV_LIVE = 0x0118,
+  ITV_TV_BACK = 0x0119,
+  ITV_INFO = 0x0120,
+  ITV_SEARCH = 0x0121,
+  ITV_APP = 0x0122,
+  ITV_YN_HOME = 0x0123,
+  ITV_BACK = 0x0224,
 };
 
 }  // namespace ui

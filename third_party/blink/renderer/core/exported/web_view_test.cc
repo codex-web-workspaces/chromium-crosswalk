@@ -5166,11 +5166,11 @@ TEST_F(WebViewTest, SetZoomLevelWhilePluginFocused) {
   EXPECT_TRUE(plugin_element->OwnedPlugin());
   // Focus the plugin element, and then change the zoom level on the WebView.
   plugin_element->focus();
-  EXPECT_FLOAT_EQ(1.0f, main_frame->PageZoomFactor());
+  EXPECT_FLOAT_EQ(1.0f, main_frame->PageZoomFactorX());
   web_view->SetZoomLevel(-1.0);
   // Even though the plugin is focused, the entire frame's zoom factor should
   // still be updated.
-  EXPECT_FLOAT_EQ(5.0f / 6.0f, main_frame->PageZoomFactor());
+  EXPECT_FLOAT_EQ(5.0f / 6.0f, main_frame->PageZoomFactorX());
   web_view_helper_.Reset();  // Remove dependency on locally scoped client.
 }
 

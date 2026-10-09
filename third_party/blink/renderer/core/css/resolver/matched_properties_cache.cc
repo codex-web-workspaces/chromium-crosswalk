@@ -127,7 +127,7 @@ bool MatchedPropertiesCache::IsStyleCacheable(const ComputedStyle& style) {
   // because the value of content is retrieved from the attribute at apply time.
   if (style.HasAttrContent())
     return false;
-  if (style.Zoom() != ComputedStyleInitialValues::InitialZoom())
+  if (style.ZoomX() != ComputedStyleInitialValues::InitialZoomX())
     return false;
   if (style.TextAutosizingMultiplier() != 1)
     return false;

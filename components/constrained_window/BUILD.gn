@@ -18,8 +18,6 @@ static_library("constrained_window") {
   ]
 
   deps = [
-    "//components/guest_view/browser",
-    "//components/web_modal",
     "//content/public/browser",
     "//ui/display",
     "//ui/views",
@@ -46,7 +44,6 @@ source_set("unit_tests") {
 
   deps = [
     ":constrained_window",
-    "//components/web_modal:test_support",
     "//ui/views",
     "//ui/views:test_support",
   ]

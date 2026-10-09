@@ -65,7 +65,7 @@ class PLATFORM_EXPORT PlaceholderImage final : public Image {
   const String& GetTextForTesting() const { return text_; }
   const Font* GetFontForTesting() const;
 
-  void SetIconAndTextScaleFactor(float icon_and_text_scale_factor);
+  void SetIconAndTextScaleFactor(float icon_and_text_scale_factor,float icon_and_text_scale_factory);
 
  private:
   PlaceholderImage(ImageObserver*,
@@ -94,7 +94,8 @@ class PLATFORM_EXPORT PlaceholderImage final : public Image {
   // This placeholder image is used for lazyloading of images.
   bool is_lazy_image_;
 
-  float icon_and_text_scale_factor_ = 1.0f;
+  float icon_and_text_scale_factorx_ = 1.0f;
+  float icon_and_text_scale_factory_ = 1.0f;
 
   class SharedFont;
   // Lazily initialized. All instances of PlaceholderImage will share the same

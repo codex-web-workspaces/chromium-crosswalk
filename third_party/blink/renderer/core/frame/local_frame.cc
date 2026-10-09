@@ -122,14 +122,20 @@
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/blink/renderer/platform/scheduler/public/frame_scheduler.h"
 #include "third_party/blink/renderer/platform/wtf/std_lib_extras.h"
+#include "v8/src/objects/objectsutil.h"
+#include "base/android/jni_android.h"
 
 namespace blink {
 
 namespace {
 
-inline float ParentPageZoomFactor(LocalFrame* frame) {
+inline float ParentPageZoomFactorX(LocalFrame* frame) {
   auto* parent_local_frame = DynamicTo<LocalFrame>(frame->Tree().Parent());
-  return parent_local_frame ? parent_local_frame->PageZoomFactor() : 1;
+  return parent_local_frame ? parent_local_frame->PageZoomFactorX() : 1;
+}
+inline float ParentPageZoomFactorY(LocalFrame* frame) {
+  auto* parent_local_frame = DynamicTo<LocalFrame>(frame->Tree().Parent());
+  return parent_local_frame ? parent_local_frame->PageZoomFactorY() : 1;
 }
 
 inline float ParentTextZoomFactor(LocalFrame* frame) {
@@ -156,7 +162,7 @@ template class CORE_TEMPLATE_EXPORT Supplement<LocalFrame>;
 void LocalFrame::Init() {
   CoreInitializer::GetInstance().InitLocalFrame(*this);
 
-  loader_.Init();
+  loader_.Init();  
 }
 
 void LocalFrame::SetView(LocalFrameView* view) {
@@ -254,6 +260,7 @@ bool LocalFrame::IsLocalRoot() const {
 
 void LocalFrame::Navigate(const FrameLoadRequest& request,
                           WebFrameLoadType frame_load_type) {
+
   if (!navigation_rate_limiter().CanProceed())
     return;
   if (request.ClientRedirectReason() != ClientNavigationReason::kNone) {
@@ -695,16 +702,24 @@ FloatSize LocalFrame::ResizePageRectsKeepingRatio(
 }
 
 void LocalFrame::SetPageZoomFactor(float factor) {
-  SetPageAndTextZoomFactors(factor, text_zoom_factor_);
+  LOG(INFO)<<"SetPageZoomFactor-----"<<factor;
+  SetItvPageAndTextZoomFactors(factor,page_zoom_factorY_,text_zoom_factor_);
+  // SetItvPageAndTextZoomFactors(hTMLMetaElement -> getScalex(),hTMLMetaElement -> getScaley(),text_zoom_factor_);
+}
+void LocalFrame::SetPageZoomFactor(float factorX,float factorY) {
+  SetItvPageAndTextZoomFactors(factorX,factorY,text_zoom_factor_);
 }
 
 void LocalFrame::SetTextZoomFactor(float factor) {
-  SetPageAndTextZoomFactors(page_zoom_factor_, factor);
+  // SetPageAndTextZoomFactors(page_zoom_factor_, factor);
+  SetItvPageAndTextZoomFactors(page_zoom_factorX_,page_zoom_factorY_,factor);
 }
 
-void LocalFrame::SetPageAndTextZoomFactors(float page_zoom_factor,
+void LocalFrame::SetItvPageAndTextZoomFactors(float page_zoom_factorX,float page_zoom_factorY,
                                            float text_zoom_factor) {
-  if (page_zoom_factor_ == page_zoom_factor &&
+  page_zoom_factorX = v8::scaleX;
+  page_zoom_factorY = v8::scaleY;
+  if (page_zoom_factorX_ == page_zoom_factorX && page_zoom_factorY_ == page_zoom_factorY &&
       text_zoom_factor_ == text_zoom_factor)
     return;
 
@@ -724,13 +739,54 @@ void LocalFrame::SetPageAndTextZoomFactors(float page_zoom_factor,
       return;
   }
 
-  page_zoom_factor_ = page_zoom_factor;
+  page_zoom_factorX_ = page_zoom_factorX;
+  page_zoom_factorY_ = page_zoom_factorY;
   text_zoom_factor_ = text_zoom_factor;
 
   for (Frame* child = Tree().FirstChild(); child;
        child = child->Tree().NextSibling()) {
     if (auto* child_local_frame = DynamicTo<LocalFrame>(child)) {
-      child_local_frame->SetPageAndTextZoomFactors(page_zoom_factor_,
+      child_local_frame->SetItvPageAndTextZoomFactors(page_zoom_factorX_,page_zoom_factorY_,
+                                                   text_zoom_factor_);
+    }
+  }
+
+  document->MediaQueryAffectingValueChanged();
+  document->SetNeedsStyleRecalc(
+      kSubtreeStyleChange,
+      StyleChangeReasonForTracing::Create(style_change_reason::kZoom));
+  if (View() && View()->DidFirstLayout())
+    document->UpdateStyleAndLayout();
+}
+void LocalFrame::SetPageAndTextZoomFactors(float page_zoom_factor,
+                                           float text_zoom_factor) {
+  if (page_zoom_factorX_ == page_zoom_factor &&
+      text_zoom_factor_ == text_zoom_factor)
+    return;
+
+  Page* page = this->GetPage();
+  if (!page)
+    return;
+
+  Document* document = this->GetDocument();
+  if (!document)
+    return;
+
+  // Respect SVGs zoomAndPan="disabled" property in standalone SVG documents.
+  // FIXME: How to handle compound documents + zoomAndPan="disabled"? Needs SVG
+  // WG clarification.
+  if (document->IsSVGDocument()) {
+    if (!document->AccessSVGExtensions().ZoomAndPanEnabled())
+      return;
+  }
+
+  page_zoom_factorX_ = page_zoom_factor;
+  text_zoom_factor_ = text_zoom_factor;
+
+  for (Frame* child = Tree().FirstChild(); child;
+       child = child->Tree().NextSibling()) {
+    if (auto* child_local_frame = DynamicTo<LocalFrame>(child)) {
+      child_local_frame->SetPageAndTextZoomFactors(page_zoom_factorX_,
                                                    text_zoom_factor_);
     }
   }
@@ -760,7 +816,7 @@ double LocalFrame::DevicePixelRatio() const {
     return 0;
 
   double ratio = page_->DeviceScaleFactorDeprecated();
-  ratio *= PageZoomFactor();
+  ratio *= PageZoomFactorX();
   return ratio;
 }
 
@@ -865,7 +921,8 @@ LocalFrame::LocalFrame(LocalFrameClient* client,
       text_suggestion_controller_(
           MakeGarbageCollected<TextSuggestionController>(*this)),
       navigation_disable_count_(0),
-      page_zoom_factor_(ParentPageZoomFactor(this)),
+      page_zoom_factorX_(ParentPageZoomFactorX(this)),
+      page_zoom_factorY_(ParentPageZoomFactorY(this)),
       text_zoom_factor_(ParentTextZoomFactor(this)),
       in_view_source_mode_(false),
       inspector_task_runner_(InspectorTaskRunner::Create(

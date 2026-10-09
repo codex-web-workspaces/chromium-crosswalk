@@ -48,6 +48,7 @@ struct WebCursorInfo {
   ui::CursorType type;
   WebPoint hot_spot;
   float image_scale_factor;
+  float image_scale_factory;
   SkBitmap custom_image;
 
 #ifdef WIN32
@@ -59,7 +60,7 @@ struct WebCursorInfo {
 #endif
 
   explicit WebCursorInfo(ui::CursorType type = ui::CursorType::kPointer)
-      : type(type), image_scale_factor(1) {
+      : type(type), image_scale_factor(1), image_scale_factory(1) {
 #ifdef WIN32
     external_handle = 0;
 #endif

@@ -111,7 +111,7 @@ InterpolationValue CSSTranslateInterpolationType::MaybeConvertInherit(
   conversion_checkers.push_back(
       std::make_unique<InheritedTranslateChecker>(inherited_translate));
   return ConvertTranslateOperation(inherited_translate,
-                                   state.ParentStyle()->EffectiveZoom());
+                                   state.ParentStyle()->EffectiveZoomX());
 }
 
 InterpolationValue CSSTranslateInterpolationType::MaybeConvertValue(
@@ -162,7 +162,7 @@ PairwiseInterpolationValue CSSTranslateInterpolationType::MaybeMergeSingles(
 InterpolationValue
 CSSTranslateInterpolationType::MaybeConvertStandardPropertyUnderlyingValue(
     const ComputedStyle& style) const {
-  return ConvertTranslateOperation(style.Translate(), style.EffectiveZoom());
+  return ConvertTranslateOperation(style.Translate(), style.EffectiveZoomX());
 }
 
 void CSSTranslateInterpolationType::Composite(

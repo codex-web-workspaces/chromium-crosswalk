@@ -320,7 +320,7 @@ AffineTransform LayoutSVGShape::ComputeNonScalingStrokeTransform() const {
   while (root && !root->IsSVGRoot())
     root = root->Parent();
   AffineTransform host_transform;
-  host_transform.Scale(1 / StyleRef().EffectiveZoom())
+  host_transform.Scale(1 / StyleRef().EffectiveZoomX(),1 / StyleRef().EffectiveZoomY())
       .Multiply(
           LocalToAncestorTransform(ToLayoutSVGRoot(root)).ToAffineTransform());
   // Width of non-scaling stroke is independent of translation, so zero it out

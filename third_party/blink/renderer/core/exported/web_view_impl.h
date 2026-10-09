@@ -476,7 +476,7 @@ class CORE_EXPORT WebViewImpl final : public WebView,
   void SetPageScaleFactorAndLocation(float scale,
                                      bool is_pinch_gesture_active,
                                      const FloatPoint&);
-  void PropagateZoomFactorToLocalFrameRoots(Frame*, float);
+  void PropagateZoomFactorToLocalFrameRoots(Frame*, float,float);
 
   float MaximumLegiblePageScale() const;
   void RefreshPageScaleFactor();
@@ -529,6 +529,10 @@ class CORE_EXPORT WebViewImpl final : public WebView,
   WebInputEventResult HandleGestureEvent(const WebGestureEvent&) override;
   WebInputEventResult HandleKeyEvent(const WebKeyboardEvent&) override;
   WebInputEventResult HandleCharEvent(const WebKeyboardEvent&) override;
+
+  WebInputEventResult HandleKeyEventForAllFrame(const WebKeyboardEvent&,const Frame&);
+  WebInputEventResult HandleKeyEventForOtherFrame(const WebKeyboardEvent&,const Frame&);
+  WebInputEventResult HandleKeyEventForChildListenerFrame(const WebKeyboardEvent&,const Frame&);
 
   WebInputEventResult HandleCapturedMouseEvent(const WebCoalescedInputEvent&);
 
@@ -679,10 +683,10 @@ class CORE_EXPORT WebViewImpl final : public WebView,
 
   std::unique_ptr<FullscreenController> fullscreen_controller_;
 
-  SkColor base_background_color_ = Color::kWhite;
-  bool base_background_color_override_enabled_ = false;
+  SkColor base_background_color_ = Color::kTransparent;
+  bool base_background_color_override_enabled_ = true;
   SkColor base_background_color_override_ = Color::kTransparent;
-  bool background_color_override_enabled_ = false;
+  bool background_color_override_enabled_ = true;
   SkColor background_color_override_ = Color::kTransparent;
   float zoom_factor_override_ = 0.f;
 

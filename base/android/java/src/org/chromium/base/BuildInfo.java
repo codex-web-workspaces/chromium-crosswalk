@@ -133,16 +133,16 @@ public class BuildInfo {
             hostPackageLabel = nullToEmpty(pm.getApplicationLabel(pi.applicationInfo));
             installerPackageName = nullToEmpty(pm.getInstallerPackageName(packageName));
 
-            PackageInfo gmsPackageInfo = null;
-            try {
-                gmsPackageInfo = pm.getPackageInfo("com.google.android.gms", 0);
-            } catch (NameNotFoundException e) {
-                Log.d(TAG, "GMS package is not found.", e);
-            }
-            gmsVersionCode = gmsPackageInfo != null
-                    ? String.valueOf(packageVersionCode(gmsPackageInfo))
-                    : "gms versionCode not available.";
-
+            // PackageInfo gmsPackageInfo = null;
+            // try {
+            //     gmsPackageInfo = pm.getPackageInfo("com.google.android.gms", 0);
+            // } catch (NameNotFoundException e) {
+            //     Log.d(TAG, "GMS package is not found.", e);
+            // }
+            // gmsVersionCode = gmsPackageInfo != null
+            //         ? String.valueOf(packageVersionCode(gmsPackageInfo))
+            //         : "gms versionCode not available.";
+            gmsVersionCode = "gms versionCode not available.";
             String hasCustomThemes = "true";
             try {
                 // Substratum is a theme engine that enables users to use custom themes provided

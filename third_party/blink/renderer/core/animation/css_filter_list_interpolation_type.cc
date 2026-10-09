@@ -146,7 +146,7 @@ InterpolationValue CSSFilterListInterpolationType::MaybeConvertInherit(
   conversion_checkers.push_back(std::make_unique<InheritedFilterListChecker>(
       CssProperty(), inherited_filter_operations));
   return ConvertFilterList(inherited_filter_operations,
-                           state.Style()->EffectiveZoom());
+                           state.Style()->EffectiveZoomX());
 }
 
 InterpolationValue CSSFilterListInterpolationType::MaybeConvertValue(
@@ -182,7 +182,7 @@ InterpolationValue
 CSSFilterListInterpolationType::MaybeConvertStandardPropertyUnderlyingValue(
     const ComputedStyle& style) const {
   return ConvertFilterList(GetFilterList(CssProperty(), style),
-                           style.EffectiveZoom());
+                           style.EffectiveZoomX());
 }
 
 PairwiseInterpolationValue CSSFilterListInterpolationType::MaybeMergeSingles(

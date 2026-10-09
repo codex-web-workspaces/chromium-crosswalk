@@ -106,6 +106,7 @@ ServiceURLRequestContextGetter::ServiceURLRequestContextGetter()
 
 net::URLRequestContext*
 ServiceURLRequestContextGetter::GetURLRequestContext() {
+  LOG(INFO)<<"getProxy----GetURLRequestContext";
   if (!url_request_context_.get()) {
     net::URLRequestContextBuilder builder;
     builder.set_user_agent(user_agent_);

@@ -33,6 +33,7 @@
 #include "third_party/blink/renderer/platform/instrumentation/use_counter.h"
 #include "third_party/blink/renderer/platform/wtf/assertions.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
+#include "base/android/jni_android.h"
 
 using std::swap;
 
@@ -200,7 +201,6 @@ FrameTree::FindResult FrameTree::FindOrCreateFrameForNavigation(
   // (e.g., a ctrl-click). Let the user's action override any target attribute.
   if (request.GetNavigationPolicy() != kNavigationPolicyCurrentTab)
     return FindResult(current_frame, false);
-
   const KURL& url = request.GetResourceRequest().Url();
   Frame* frame = FindFrameForNavigationInternal(name, url);
   bool new_window = false;

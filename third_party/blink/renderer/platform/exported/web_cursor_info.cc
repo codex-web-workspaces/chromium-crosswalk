@@ -45,6 +45,7 @@ WebCursorInfo::WebCursorInfo(const Cursor& cursor)
     : type(static_cast<ui::CursorType>(cursor.GetType())),
       hot_spot(cursor.HotSpot()),
       image_scale_factor(cursor.ImageScaleFactor()),
+      image_scale_factory(cursor.ImageScaleFactorY()),
       custom_image(GetCursorBitmap(cursor))
 #ifdef WIN32
       ,

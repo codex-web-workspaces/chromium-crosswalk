@@ -396,7 +396,7 @@ bool FillLayer::ImageIsOpaque(const Document& document,
   // Returns whether we have an image that will cover the content below it when
   // composite_ == CompositeSourceOver && blend_mode_ == BlendMode::kNormal.
   return image_->KnownToBeOpaque(document, style) &&
-         !image_->ImageSize(document, style.EffectiveZoom(), LayoutSize())
+         !image_->ImageSize(document, style.EffectiveZoomX(), style.EffectiveZoomY(), LayoutSize())
               .IsEmpty();
 }
 

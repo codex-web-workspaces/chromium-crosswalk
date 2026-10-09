@@ -43,10 +43,10 @@ using namespace html_names;
 
 HTMLFrameSetElement::HTMLFrameSetElement(Document& document)
     : HTMLElement(kFramesetTag, document),
-      border_(6),
+      border_(0),
       border_set_(false),
       border_color_set_(false),
-      frameborder_(true),
+      frameborder_(false),
       frameborder_set_(false),
       noresize_(false) {
   SetHasCustomStyleCallbacks();
@@ -86,19 +86,19 @@ void HTMLFrameSetElement::ParseAttribute(
                           StyleChangeReasonForTracing::FromAttribute(name));
     }
   } else if (name == kFrameborderAttr) {
-    if (!value.IsNull()) {
-      if (DeprecatedEqualIgnoringCase(value, "no") ||
-          DeprecatedEqualIgnoringCase(value, "0")) {
-        frameborder_ = false;
-        frameborder_set_ = true;
-      } else if (DeprecatedEqualIgnoringCase(value, "yes") ||
-                 DeprecatedEqualIgnoringCase(value, "1")) {
-        frameborder_set_ = true;
-      }
-    } else {
+    // if (!value.IsNull()) {
+    //   if (DeprecatedEqualIgnoringCase(value, "no") ||
+    //       DeprecatedEqualIgnoringCase(value, "0")) {
+    //     frameborder_ = false;
+    //     frameborder_set_ = true;
+    //   } else if (DeprecatedEqualIgnoringCase(value, "yes") ||
+    //              DeprecatedEqualIgnoringCase(value, "1")) {
+    //     frameborder_set_ = true;
+    //   }
+    // } else {
       frameborder_ = false;
       frameborder_set_ = false;
-    }
+    // }
   } else if (name == kNoresizeAttr) {
     noresize_ = true;
   } else if (name == kBorderAttr) {
@@ -233,7 +233,7 @@ void HTMLFrameSetElement::AttachLayoutTree(AttachContext& context) {
   if (HTMLFrameSetElement* frameset =
           Traversal<HTMLFrameSetElement>::FirstAncestor(*this)) {
     if (!frameborder_set_)
-      frameborder_ = frameset->HasFrameBorder();
+      frameborder_ = false;
     if (frameborder_) {
       if (!border_set_)
         border_ = frameset->Border();

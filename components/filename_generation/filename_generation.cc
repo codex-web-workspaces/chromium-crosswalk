@@ -118,9 +118,9 @@ base::FilePath GenerateFilename(const base::string16& title,
   if (title == url_formatter::FormatUrl(url)) {
     std::string url_path;
     if (!url.SchemeIs(url::kDataScheme)) {
-      name_with_proper_ext = net::GenerateFileName(
-          url, std::string(), std::string(), std::string(), contents_mime_type,
-          std::string());
+      // name_with_proper_ext = net::GenerateFileName(
+      //     url, std::string(), std::string(), std::string(), contents_mime_type,
+      //     std::string());
 
       // If host is used as file name, try to decode punycode.
       if (name_with_proper_ext.AsUTF8Unsafe() == url.host()) {

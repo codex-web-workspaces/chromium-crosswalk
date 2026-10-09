@@ -304,7 +304,7 @@ void WebPagePopupImpl::Initialize(WebViewImpl* web_view,
 
   scoped_refptr<SharedBuffer> data = SharedBuffer::Create();
   popup_client_->WriteDocument(data.get());
-  frame->SetPageZoomFactor(popup_client_->ZoomFactor());
+  frame->SetPageZoomFactor(popup_client_->ZoomFactorX(),popup_client_->ZoomFactorY());
   frame->ForceSynchronousDocumentInstall("text/html", std::move(data));
 
   WidgetClient()->Show(WebNavigationPolicy());

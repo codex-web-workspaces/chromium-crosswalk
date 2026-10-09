@@ -159,6 +159,7 @@ void QuicHttpProxyBackend::InitializeURLRequestContext() {
   context_builder.DisableHttpCache();
   // Enable HTTP2, but disable QUIC on the backend
   context_builder.SetSpdyAndQuicEnabled(true /* http2 */, false /* quic */);
+  LOG(INFO)<<"getProxy----quic_http_proxy_backend";
 
 #if defined(OS_LINUX)
   // On Linux, use a fixed ProxyConfigService, since the default one

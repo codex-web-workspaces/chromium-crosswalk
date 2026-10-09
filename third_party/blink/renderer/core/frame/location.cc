@@ -42,6 +42,8 @@
 #include "third_party/blink/renderer/platform/bindings/v8_dom_activity_logger.h"
 #include "third_party/blink/renderer/platform/weborigin/kurl.h"
 #include "third_party/blink/renderer/platform/weborigin/security_origin.h"
+#include "third_party/blink/renderer/core/page/page.h"
+#include "v8/src/objects/objectsutil.h"
 
 namespace blink {
 
@@ -121,6 +123,7 @@ String Location::hash() const {
 void Location::setHref(v8::Isolate* isolate,
                        const USVStringOrTrustedURL& string_or_url,
                        ExceptionState& exception_state) {
+
   LocalDOMWindow* incumbent_window = IncumbentDOMWindow(isolate);
   LocalDOMWindow* entered_window = EnteredDOMWindow(isolate);
 
@@ -128,7 +131,6 @@ void Location::setHref(v8::Isolate* isolate,
       string_or_url, incumbent_window->document(), exception_state);
   if (exception_state.HadException())
     return;
-
   SetLocation(url, incumbent_window, entered_window, &exception_state);
 }
 
@@ -258,15 +260,26 @@ void Location::SetLocation(const String& url,
                            SetLocationPolicy set_location_policy) {
   if (!IsAttached())
     return;
-
   if (!current_window->GetFrame())
     return;
-
   Document* entered_document = entered_window->document();
   if (!entered_document)
     return;
+  KURL completed_url;
 
-  KURL completed_url = entered_document->CompleteURL(url);
+  if(v8::locationWithMainFrame){
+    auto* main_local_frame = DynamicTo<LocalFrame>(current_window->GetFrame()->GetPage()->MainFrame());
+    if (main_local_frame) {
+        // 获取主框架的文档
+        Document* top_level_document = main_local_frame->GetDocument();
+        if (top_level_document) {
+            completed_url = top_level_document->CompleteURL(url);
+        }
+    }
+  }else{
+    completed_url = entered_document->CompleteURL(url);
+  }
+   
   if (completed_url.IsNull())
     return;
 
@@ -285,12 +298,12 @@ void Location::SetLocation(const String& url,
                                        "'" + url + "' is not a valid URL.");
     return;
   }
-
   // Check the source browsing context's CSP to fulfill the CSP check
   // requirement of https://html.spec.whatwg.org/C/#navigate for javascript
   // URLs. Although the spec states we should perform this check on task
   // execution, there are concerns about the correctness of that statement,
   // see http://github.com/whatwg/html/issues/2591.
+
   Document* current_document = current_window->document();
   if (current_document && completed_url.ProtocolIsJavaScript()) {
     String script_source = DecodeURLEscapeSequences(
@@ -320,7 +333,6 @@ void Location::SetLocation(const String& url,
   WebFrameLoadType frame_load_type = WebFrameLoadType::kStandard;
   if (set_location_policy == SetLocationPolicy::kReplaceThisFrame)
     frame_load_type = WebFrameLoadType::kReplaceCurrentItem;
-
   current_window->GetFrame()->MaybeLogAdClickNavigation();
   dom_window_->GetFrame()->Navigate(request, frame_load_type);
 }

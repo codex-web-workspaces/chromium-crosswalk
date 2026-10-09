@@ -731,7 +731,7 @@ void HTMLCanvasElement::Paint(GraphicsContext& context,
     // for image elements. Offset it a bit from the upper corner.
     FloatSize icon_size(broken_canvas->Size());
     FloatPoint upper_left =
-        FloatPoint(r.PixelSnappedOffset()) + icon_size.ScaledBy(0.5f);
+        FloatPoint(r.PixelSnappedOffset()) + icon_size.ScaledBy(0.5f,0.5f);
     context.DrawImage(broken_canvas, Image::kSyncDecode,
                       FloatRect(upper_left, icon_size));
     context.Restore();

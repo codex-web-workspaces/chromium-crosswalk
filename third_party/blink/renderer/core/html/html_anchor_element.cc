@@ -176,8 +176,9 @@ static void AppendServerMapMousePosition(StringBuilder& url, Event* event) {
       FloatSize(ToLayoutBox(layout_object)->PhysicalContentBoxOffset());
 
   // CSS zoom is not reflected in the map coordinates.
-  float scale_factor = 1 / layout_object->Style()->EffectiveZoom();
-  map_point.Scale(scale_factor, scale_factor);
+  float scale_factor = 1 / layout_object->Style()->EffectiveZoomX();
+  float scale_factory = 1 / layout_object->Style()->EffectiveZoomY();
+  map_point.Scale(scale_factor, scale_factory);
 
   // Negative coordinates are clamped to 0 such that clicks in the left and
   // top padding/border areas receive an X or Y coordinate of 0.
@@ -406,6 +407,11 @@ void HTMLAnchorElement::HandleClick(Event& event) {
   StringBuilder url;
   url.Append(StripLeadingAndTrailingHTMLSpaces(FastGetAttribute(kHrefAttr)));
   AppendServerMapMousePosition(url, &event);
+  if(url.ToString().IsEmpty() || url.ToString() == "#" || url.ToString().Contains("void(0)")){
+    LOG(INFO)<<"url is not a safe url----";
+    return;
+  }
+  
   KURL completed_url = GetDocument().CompleteURL(url.ToString());
 
   // Schedule the ping before the frame load. Prerender in Chrome may kill the

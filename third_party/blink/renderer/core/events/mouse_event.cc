@@ -56,21 +56,31 @@ DoubleSize ContentsScrollOffset(AbstractView* abstract_view) {
   ScrollableArea* scrollable_area = frame->View()->LayoutViewport();
   if (!scrollable_area)
     return DoubleSize();
-  float scale_factor = frame->PageZoomFactor();
+  float scale_factor = frame->PageZoomFactorX();
+  float scale_factory = frame->PageZoomFactorY();
   return DoubleSize(scrollable_area->ScrollOffsetInt().Width() / scale_factor,
-                    scrollable_area->ScrollOffsetInt().Height() / scale_factor);
+                    scrollable_area->ScrollOffsetInt().Height() / scale_factory);
 }
 
-float PageZoomFactor(const UIEvent* event) {
+float PageZoomFactorX(const UIEvent* event) {
   auto* local_dom_window = DynamicTo<LocalDOMWindow>(event->view());
   if (!local_dom_window)
     return 1;
   LocalFrame* frame = local_dom_window->GetFrame();
   if (!frame)
     return 1;
-  return frame->PageZoomFactor();
+  return frame->PageZoomFactorX();
 }
 
+float PageZoomFactorY(const UIEvent* event) {
+  auto* local_dom_window = DynamicTo<LocalDOMWindow>(event->view());
+  if (!local_dom_window)
+    return 1;
+  LocalFrame* frame = local_dom_window->GetFrame();
+  if (!frame)
+    return 1;
+  return frame->PageZoomFactorY();
+}
 const LayoutObject* FindTargetLayoutObject(Node*& target_node) {
   LayoutObject* layout_object = target_node->GetLayoutObject();
   if (!layout_object || !layout_object->IsSVG())
@@ -225,6 +235,7 @@ void MouseEvent::SetCoordinatesFromWebPointerProperties(
   FloatPoint client_point;
   FloatPoint screen_point = web_pointer_properties.PositionInScreen();
   float scale_factor = 1.0f;
+  float scale_factory = 1.0f;
   if (dom_window && dom_window->GetFrame() && dom_window->GetFrame()->View()) {
     LocalFrame* frame = dom_window->GetFrame();
     FloatPoint root_frame_point = web_pointer_properties.PositionInWidget();
@@ -237,8 +248,9 @@ void MouseEvent::SetCoordinatesFromWebPointerProperties(
     }
     FloatPoint frame_point =
         frame->View()->ConvertFromRootFrame(root_frame_point);
-    scale_factor = 1.0f / frame->PageZoomFactor();
-    client_point = frame_point.ScaledBy(scale_factor);
+    scale_factor = 1.0f / frame->PageZoomFactorX();
+    scale_factory = 1.0f / frame->PageZoomFactorY();
+    client_point = frame_point.ScaledBy(scale_factor,scale_factory);
   }
 
   initializer->setScreenX(screen_point.X());
@@ -458,7 +470,7 @@ void MouseEvent::ComputePageLocation() {
   auto* local_dom_window = DynamicTo<LocalDOMWindow>(view());
   LocalFrame* frame = local_dom_window ? local_dom_window->GetFrame() : nullptr;
   DoublePoint scaled_page_location =
-      page_location_.ScaledBy(PageZoomFactor(this));
+      page_location_.ScaledBy(PageZoomFactorX(this),PageZoomFactorY(this));
   if (frame && frame->View()) {
     absolute_location_ = frame->View()->DocumentToFrame(scaled_page_location);
   } else {
@@ -478,7 +490,8 @@ void MouseEvent::ComputeRelativePosition() {
   // Compute coordinates that are based on the target.
   layer_location_ = page_location_;
   offset_location_ = page_location_;
-  float inverse_zoom_factor = 1 / PageZoomFactor(this);
+  float inverse_zoom_factor = 1 / PageZoomFactorX(this);
+  float inverse_zoom_factory = 1 / PageZoomFactorY(this);
 
   // Must have an updated layout tree for this math to work correctly.
   target_node->GetDocument().UpdateStyleAndLayout();
@@ -498,8 +511,8 @@ void MouseEvent::ComputeRelativePosition() {
     }
 
     offset_location_ = DoublePoint(local_pos);
-    if (inverse_zoom_factor != 1.0f)
-      offset_location_.Scale(inverse_zoom_factor, inverse_zoom_factor);
+    if (inverse_zoom_factor != 1.0f || inverse_zoom_factory != 1.0f)
+      offset_location_.Scale(inverse_zoom_factor, inverse_zoom_factory);
   }
 
   // Adjust layerLocation to be relative to the layer.
@@ -512,7 +525,7 @@ void MouseEvent::ComputeRelativePosition() {
 
   if (n) {
     DoublePoint scaled_page_location =
-        page_location_.ScaledBy(PageZoomFactor(this));
+        page_location_.ScaledBy(PageZoomFactorX(this),PageZoomFactorY(this));
     if (LocalFrameView* view = n->GetLayoutObject()->View()->GetFrameView())
       layer_location_ = view->DocumentToFrame(scaled_page_location);
 

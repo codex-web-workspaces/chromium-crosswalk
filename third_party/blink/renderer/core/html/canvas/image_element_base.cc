@@ -65,7 +65,7 @@ scoped_refptr<Image> ImageElementBase::GetSourceImageForCanvas(
     SVGImage* svg_image = ToSVGImage(source_image.get());
     FloatSize image_size = svg_image->ConcreteObjectSize(default_object_size);
     source_image = SVGImageForContainer::Create(
-        svg_image, image_size, 1,
+        svg_image, image_size, 1,1,
         GetElement().GetDocument().CompleteURL(GetElement().ImageSourceURL()));
   }
 

@@ -45,6 +45,7 @@
 #include "third_party/blink/renderer/core/page/page.h"
 #include "third_party/blink/renderer/core/paint/paint_layer_scrollable_area.h"
 #include "third_party/blink/renderer/platform/geometry/int_rect.h"
+#include "v8/src/objects/objectsutil.h"
 
 namespace blink {
 
@@ -196,17 +197,14 @@ ScrollableArea* ScrollableAreaFor(const Node* node) {
 
 bool IsUnobscured(const FocusCandidate& candidate) {
   DCHECK(candidate.visible_node);
-
   const LocalFrame* local_main_frame = DynamicTo<LocalFrame>(
       candidate.visible_node->GetDocument().GetPage()->MainFrame());
   if (!local_main_frame)
     return false;
-
   // TODO(crbug.com/955952): We cannot evaluate visibility for media element
   // using hit test since attached media controls cover media element.
   if (candidate.visible_node->IsMediaElement())
     return true;
-
   PhysicalRect viewport_rect(
       local_main_frame->GetPage()->GetVisualViewport().VisibleContentRect());
   PhysicalRect interesting_rect =
@@ -214,7 +212,6 @@ bool IsUnobscured(const FocusCandidate& candidate) {
 
   if (interesting_rect.IsEmpty())
     return false;
-
   HitTestLocation location(interesting_rect);
   HitTestResult result =
       local_main_frame->GetEventHandler().HitTestResultAtLocation(
@@ -227,10 +224,10 @@ bool IsUnobscured(const FocusCandidate& candidate) {
     if (candidate.visible_node->ContainsIncludingHostElements(**hit_node))
       return true;
 
-    if (FrameOwnerElement(candidate) &&
-        FrameOwnerElement(candidate)
-            ->contentDocument()
-            ->ContainsIncludingHostElements(**hit_node))
+    // if (FrameOwnerElement(candidate) &&
+    //     FrameOwnerElement(candidate)
+    //         ->contentDocument()
+    //         ->ContainsIncludingHostElements(**hit_node))
       return true;
   }
 
@@ -425,6 +422,7 @@ bool CanScrollInDirection(const LocalFrame* frame,
 }
 
 PhysicalRect NodeRectInRootFrame(const Node* node) {
+  // LOG(INFO)<<"NodeRectInRootFrame----------";
   DCHECK(node);
   DCHECK(node->GetLayoutObject());
   DCHECK(!node->GetDocument().View()->NeedsLayout());
@@ -433,7 +431,7 @@ PhysicalRect NodeRectInRootFrame(const Node* node) {
 
   PhysicalRect rect = PhysicalRect::EnclosingRect(
       object->LocalBoundingBoxRectForAccessibility());
-
+  // LOG(INFO)<<"NodeRectInRootFrame--rect.x="<<rect.X()<<";rect.y="<<rect.Y()<<";rect.right="<<rect.Right()<<";rect.bottom="<<rect.Bottom();
   // Inset the bounding box by the border.
   // TODO(bokan): As far as I can tell, this is to work around empty iframes
   // that have a border. It's unclear if that's still useful.
@@ -441,8 +439,13 @@ PhysicalRect NodeRectInRootFrame(const Node* node) {
                      LayoutUnit(object->StyleRef().BorderRightWidth()),
                      LayoutUnit(object->StyleRef().BorderBottomWidth()),
                      LayoutUnit(object->StyleRef().BorderLeftWidth()));
-
+  if (rect.Y() < 0) {
+    rect.SetY(LayoutUnit(0)); // 将 Y 设置为 0
+    LOG(INFO) << "NodeRectInRootFrame--rect.Y() was negative, set to 0.";
+  }
+  // LOG(INFO)<<"NodeRectInRootFrame2-rect.x="<<rect.X()<<";rect.y="<<rect.Y()<<";rect.right="<<rect.Right()<<";rect.bottom="<<rect.Bottom();
   object->MapToVisualRectInAncestorSpace(/*ancestor=*/nullptr, rect);
+  // LOG(INFO)<<"NodeRectInRootFrame3-rect.x="<<rect.X()<<";rect.y="<<rect.Y()<<";rect.right="<<rect.Right()<<";rect.bottom="<<rect.Bottom();
   return rect;
 }
 
@@ -455,6 +458,8 @@ void EntryAndExitPointsForDirection(SpatialNavigationDirection direction,
                                     const PhysicalRect& potential_rect,
                                     LayoutPoint& exit_point,
                                     LayoutPoint& entry_point) {
+  // LOG(INFO)<<"EntryAndExitPointsForDirection--starting_rect.x="<<starting_rect.X()<<";starting_rect.y="<<starting_rect.Y()<<";starting_rect.right="<<starting_rect.Right()<<";starting_rect.bottom="<<starting_rect.Bottom();
+  // LOG(INFO)<<"EntryAndExitPointsForDirection--potential_rect.x="<<potential_rect.X()<<";potential_rect.y="<<potential_rect.Y()<<";potential_rect.right="<<potential_rect.Right()<<";potential_rect.bottom="<<potential_rect.Bottom();
   switch (direction) {
     case SpatialNavigationDirection::kLeft:
       exit_point.SetX(starting_rect.X());
@@ -582,6 +587,7 @@ double ComputeDistanceDataForNode(SpatialNavigationDirection direction,
   double overlap = 0.0;
   PhysicalRect node_rect = candidate.rect_in_root_frame;
   PhysicalRect current_rect = current_interest.rect_in_root_frame;
+
   if (node_rect.Contains(current_rect)) {
     // When leaving an "insider", don't focus its underlaying container box.
     // Go directly to the outside world. This avoids focus from being trapped
@@ -621,6 +627,8 @@ double ComputeDistanceDataForNode(SpatialNavigationDirection direction,
   LayoutUnit y_axis = (exit_point.Y() - entry_point.Y()).Abs();
   double euclidian_distance =
       sqrt((x_axis * x_axis + y_axis * y_axis).ToDouble());
+      // LOG(INFO)<<"ComputeDistanceDataForNode--euclidian_distance="<<euclidian_distance<<";distance="<<distance<<";x_axis="<<x_axis<<";y_axis="<<y_axis;
+      // LOG(INFO)<<"ComputeDistanceDataForNode--entry.x="<<entry_point.X()<<";entry.y="<<entry_point.Y()<<";exit_point.x="<<exit_point.X()<<";exit_point.y="<<exit_point.Y();
   distance += euclidian_distance;
 
   LayoutUnit navigation_axis_distance;
@@ -658,11 +666,32 @@ double ComputeDistanceDataForNode(SpatialNavigationDirection direction,
       NOTREACHED();
       return kMaxDistance;
   }
-
   // Distance calculation is based on https://drafts.csswg.org/css-nav-1/.
   return distance + navigation_axis_distance -
          Alignment(direction, current_rect, node_rect) +
          weighted_orthogonal_axis_distance - sqrt(overlap);
+  // double alignment = Alignment(direction, current_rect, node_rect);
+  // auto* element = To<Element>(candidate.focusable_node.Get());
+  // // LOG(INFO)<<"spatial_navigation-new-----------"<<  element->getAttribute("id")<<";distance="<<distance<<";sqrt(distance)="<<sqrt(distance)<<";navigation_axis_distance="<<navigation_axis_distance<<";weighted_orthogonal_axis_distance="<<weighted_orthogonal_axis_distance<<";sqrt(overlap)="<<sqrt(overlap);
+  // if(alignment != 0){
+  //   if(v8::logSwitch){
+  //     if(element->hasAttribute("id")){
+  //       // LOG(INFO)<<"spatial_navigation------------"<<  element->getAttribute("id")<<"---"<<alignment<<"----"<<((distance + navigation_axis_distance)/(alignment*alignment)) + weighted_orthogonal_axis_distance - sqrt(overlap);
+  //       LOG(INFO)<<"spatial_navigation-new-----------"<<  element->getAttribute("id")<<"---"<<alignment<<"----"<<(sqrt(distance) + navigation_axis_distance + weighted_orthogonal_axis_distance - sqrt(overlap));
+  //     }
+  //   }
+    // return ((distance + navigation_axis_distance)/(alignment*alignment)) + weighted_orthogonal_axis_distance - sqrt(overlap);
+    // return sqrt(distance) + navigation_axis_distance + weighted_orthogonal_axis_distance - sqrt(overlap);
+  // }else{
+  //   if(v8::logSwitch){
+  //     if(element->hasAttribute("id")){
+  //       LOG(INFO)<<"spatial_navigation------------"<<  element->getAttribute("id")<<"---"<<distance + navigation_axis_distance - Alignment(direction, current_rect, node_rect) + weighted_orthogonal_axis_distance - sqrt(overlap);
+  //     }
+  //   }
+  //   return distance + navigation_axis_distance -
+  //        Alignment(direction, current_rect, node_rect) +
+  //        weighted_orthogonal_axis_distance - sqrt(overlap);
+  // }
 }
 
 // Returns a thin rectangle that represents one of |box|'s edges.

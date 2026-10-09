@@ -131,6 +131,7 @@ void JSEventHandler::InvokeInternal(EventTarget& event_target,
   if (v8_return_value->IsNullOrUndefined())
     return;
 
+
   // https://heycam.github.io/webidl/#invoke-a-callback-function
   // step 13: Set completion to the result of converting callResult.[[Value]] to
   //          an IDL value of the same type as the operation's return type.
@@ -156,6 +157,18 @@ void JSEventHandler::InvokeInternal(EventTarget& event_target,
         std::ref(v8_return_value), std::ref(result_for_beforeunload)));
     if (!result_for_beforeunload)
       return;
+  }
+  
+  if (v8_return_value->IsNumber()) {
+    double number_value = v8_return_value->NumberValue(GetIsolate()->GetCurrentContext()).FromJust();
+    if(number_value <= 0){
+      event.preventDefault();
+    }
+  } else if (v8_return_value->IsBoolean()) {
+    bool bool_value = v8_return_value->BooleanValue(GetIsolate());
+    if(!bool_value || bool_value <= 0){
+      event.preventDefault();
+    }
   }
 
   // Step 5. Process return value as follows:
@@ -191,6 +204,8 @@ void JSEventHandler::InvokeInternal(EventTarget& event_target,
              !v8_return_value.As<v8::Boolean>()->Value())
       event.preventDefault();
   }
+
+
 }
 
 void JSEventHandler::Trace(blink::Visitor* visitor) {

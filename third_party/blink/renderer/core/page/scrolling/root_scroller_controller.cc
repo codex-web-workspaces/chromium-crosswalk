@@ -64,9 +64,10 @@ bool FillsViewport(const Element& element) {
 
   IntSize icb_size = top_document.GetLayoutView()->GetLayoutSize();
 
-  float zoom = top_document.GetFrame()->PageZoomFactor();
+  float zoom = top_document.GetFrame()->PageZoomFactorX();
+  float zoomy = top_document.GetFrame()->PageZoomFactorY();
   IntSize controls_hidden_size = ExpandedIntSize(
-      top_document.View()->ViewportSizeForViewportUnits().ScaledBy(zoom));
+      top_document.View()->ViewportSizeForViewportUnits().ScaledBy(zoom,zoomy));
 
   if (bounding_box.Size() != icb_size &&
       bounding_box.Size() != controls_hidden_size)

@@ -38,7 +38,11 @@
 #include "third_party/blink/renderer/core/page/page.h"
 #include "third_party/blink/renderer/platform/graphics/color_scheme.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_to_number.h"
+#include "base/android/jni_android.h"
+#include "v8/src/objects/objectsutil.h"
 
+extern jobject xwalk_obj;
+extern JavaVM* gJavaVM;
 namespace blink {
 
 using namespace html_names;
@@ -133,6 +137,53 @@ void HTMLMetaElement::ParseContentAttribute(
   }
 }
 
+static void initSize(String jstr){
+    JNIEnv *env;
+    bool isAttached = false;
+    int status = gJavaVM->GetEnv((void **) &env, JNI_VERSION_1_4);
+    if(status < 0) {
+        LOG(INFO) <<"callback_handler: failed to get JNI environment, "
+        "assuming native thread";
+        status = gJavaVM->AttachCurrentThread(&env, NULL);
+        if(status < 0) {
+            LOG(INFO) <<"callback_handler: failed to attach "
+            "current thread";
+            return;
+        }
+        isAttached = true;
+    }
+    /* Construct a Java string */
+    jclass interfaceClass = env->GetObjectClass(xwalk_obj);
+    if(!interfaceClass) {
+        LOG(INFO) <<"callback_handler: failed to get class reference";
+        if(isAttached) gJavaVM->DetachCurrentThread();
+        return;
+    }
+
+    jmethodID gqxMethod = env->GetMethodID(interfaceClass, "getFrameScale", "(Ljava/lang/String;)[F");
+    if(!gqxMethod) {
+        LOG(INFO) <<"callback_handler: failed to get method ID";
+        if(isAttached) gJavaVM->DetachCurrentThread();
+        return;
+    }
+    const char* str = jstr.Utf8().data();
+    jstring js = env->NewStringUTF(str);
+    jfloatArray scaleArray = (jfloatArray)env->CallObjectMethod(xwalk_obj, gqxMethod,js);
+    if(scaleArray != NULL){
+      jfloat* jFloatArrayElements = env->GetFloatArrayElements(scaleArray,NULL);
+      v8::scaleX = jFloatArrayElements[0];
+      v8::scaleY = jFloatArrayElements[1];
+      env->ReleaseFloatArrayElements(scaleArray,jFloatArrayElements,0);   
+    }
+    env->DeleteLocalRef(js);
+    
+    env->DeleteLocalRef(scaleArray); 
+    env->DeleteLocalRef(interfaceClass);
+    if(isAttached) {
+        gJavaVM->DetachCurrentThread();
+    }
+}
+
 static inline float ClampLengthValue(float value) {
   // Limits as defined in the css-device-adapt spec.
   if (value != ViewportDescription::kValueAuto)
@@ -175,6 +226,21 @@ float HTMLMetaElement::ParsePositiveNumber(Document* document,
     *ok = true;
   return value;
 }
+
+
+float HTMLMetaElement::getScalex() const{
+    if(v8::scaleX == 0l){
+      initSize("NULL");
+    }
+    return v8::scaleX ;
+}
+float HTMLMetaElement::getScaley() const{
+    if(v8::scaleY == 0l){
+      initSize("NULL");
+    }
+    return v8::scaleY;
+}
+
 
 Length HTMLMetaElement::ParseViewportValueAsLength(Document* document,
                                                    bool report_warnings,
@@ -489,6 +555,11 @@ void HTMLMetaElement::NameRemoved(const AtomicString& name_value) {
 
 void HTMLMetaElement::ParseAttribute(
     const AttributeModificationParams& params) {
+  if(v8::scaleX == 0l || v8::scaleY == 0l){
+    initSize("NULL");
+    GetDocument().GetFrame()->SetPageZoomFactor(v8::scaleX,v8::scaleY);
+
+  }
   if (params.name == kNameAttr) {
     if (IsInDocumentTree())
       NameRemoved(params.old_value);
@@ -581,6 +652,17 @@ void HTMLMetaElement::ProcessContent() {
   } else if (EqualIgnoringASCIICase(name_value, "mobileoptimized")) {
     ProcessViewportContentAttribute("width=device-width, initial-scale=1",
                                     ViewportDescription::kMobileOptimizedMeta);
+  } else if(EqualIgnoringASCIICase(name_value, "page-view-size")){
+    // if(contentStr.IsNull() || !EqualIgnoringASCIICase(content_value, contentStr)){
+      initSize(content_value);
+      // contentStr = content_value;
+    // }
+    
+    GetDocument().GetFrame()->SetPageZoomFactor(getScalex(),getScaley());
+    auto* topFrame = DynamicTo<LocalFrame>(GetDocument().GetFrame()->Tree().Top());
+    if(topFrame){
+      topFrame->SetPageZoomFactor(getScalex(),getScaley());
+    }
   }
 }
 

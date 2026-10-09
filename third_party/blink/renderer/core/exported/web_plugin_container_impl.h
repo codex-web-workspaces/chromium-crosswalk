@@ -148,7 +148,8 @@ class CORE_EXPORT WebPluginContainerImpl final
 
   float DeviceScaleFactor() override;
   float PageScaleFactor() override;
-  float PageZoomFactor() override;
+  float PageZoomFactorX() override;
+  float PageZoomFactorY() override;
 
   void SetCcLayer(cc::Layer*, bool prevent_contents_opaque_changes) override;
 

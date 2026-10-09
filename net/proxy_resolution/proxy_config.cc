@@ -12,6 +12,7 @@
 #include "base/strings/string_util.h"
 #include "base/values.h"
 #include "net/proxy_resolution/proxy_info.h"
+#include "net/proxy_resolution/proxy_util.h"
 
 namespace net {
 
@@ -84,6 +85,7 @@ void ProxyConfig::ProxyRules::Apply(const GURL& url, ProxyInfo* result) const {
 
 void ProxyConfig::ProxyRules::ParseFromString(const std::string& proxy_rules) {
   // Reset.
+  
   type = Type::EMPTY;
   single_proxies = ProxyList();
   proxies_for_http = ProxyList();
@@ -186,7 +188,15 @@ const ProxyList* ProxyConfig::ProxyRules::GetProxyListForWebSocketScheme()
   return nullptr;
 }
 
-ProxyConfig::ProxyConfig() : auto_detect_(false), pac_mandatory_(false) {}
+ProxyConfig::ProxyConfig() : auto_detect_(false), pac_mandatory_(false) {
+  if(strlen(proxyStr)!=0 && proxyStr[0] != '\0'){
+    LOG(INFO)<<"getProxy-----ProxyConfig(),proxyStr_ not Empty";
+    proxy_rules_.ParseFromString(proxyStr);
+  }else{
+    LOG(INFO)<<"getProxy-----ProxyConfig(),proxyStr_ is NULL";
+  }
+
+}
 
 ProxyConfig::ProxyConfig(const ProxyConfig& config) = default;
 

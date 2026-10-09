@@ -166,6 +166,9 @@
 #include "third_party/blink/renderer/platform/wtf/time.h"
 #include "ui/gfx/skia_util.h"
 
+#include "base/android/jni_android.h"
+#include "v8/src/objects/objectsutil.h"
+
 // Get rid of WTF's pow define so we can use std::pow.
 #undef pow
 #include <cmath>  // for std::pow
@@ -699,33 +702,52 @@ WebInputEventResult WebViewImpl::HandleKeyEvent(const WebKeyboardEvent& event) {
   }
 
   Frame* focused_frame = FocusedCoreFrame();
-  auto* focused_local_frame = DynamicTo<LocalFrame>(focused_frame);
-  if (!focused_local_frame)
-    return WebInputEventResult::kNotHandled;
 
-  WebInputEventResult result =
-      focused_local_frame->GetEventHandler().KeyEvent(event);
-  if (result != WebInputEventResult::kNotHandled) {
-    if (WebInputEvent::kRawKeyDown == event.GetType()) {
-      // Suppress the next keypress event unless the focused node is a plugin
-      // node.  (Flash needs these keypress events to handle non-US keyboards.)
-      Element* element = FocusedElement();
-      if (element && element->GetLayoutObject() &&
-          element->GetLayoutObject()->IsEmbeddedObject()) {
-        if (event.windows_key_code == VKEY_TAB) {
-          // If the plugin supports keyboard focus then we should not send a tab
-          // keypress event.
-          WebPluginContainerImpl* plugin_view =
-              ToLayoutEmbeddedContent(element->GetLayoutObject())->Plugin();
-          if (plugin_view && plugin_view->SupportsKeyboardFocus()) {
-            suppress_next_keypress_event_ = true;
-          }
-        }
-      } else {
-        suppress_next_keypress_event_ = true;
-      }
+   std::string frameName(v8::frameName);
+  
+  if(frameName.empty()){
+    auto* focused_local_frame = DynamicTo<LocalFrame>(focused_frame);
+    if (!focused_local_frame)
+      return WebInputEventResult::kNotHandled;
+    // WebInputEventResult result =
+    //     focused_local_frame->GetEventHandler().KeyEvent(event);
+    // if (result != WebInputEventResult::kNotHandled) {
+    //   if (WebInputEvent::kRawKeyDown == event.GetType()) {
+    //     // Suppress the next keypress event unless the focused node is a plugin
+    //     // node.  (Flash needs these keypress events to handle non-US keyboards.)
+    //     Element* element = FocusedElement();
+    //     if (element && element->GetLayoutObject() &&
+    //         element->GetLayoutObject()->IsEmbeddedObject()) {
+    //       if (event.windows_key_code == VKEY_TAB) {
+    //         // If the plugin supports keyboard focus then we should not send a tab
+    //         // keypress event.
+    //         WebPluginContainerImpl* plugin_view =
+    //             ToLayoutEmbeddedContent(element->GetLayoutObject())->Plugin();
+    //         if (plugin_view && plugin_view->SupportsKeyboardFocus()) {
+    //           suppress_next_keypress_event_ = true;
+    //         }
+    //       }
+    //     } else {
+    //       suppress_next_keypress_event_ = true;
+    //     }
+    //   }
+    // }
+    if(focused_local_frame->GetDocument()->HasEventListeners(event_type_names::kKeydown) || focused_local_frame->GetDocument()->HasEventListeners(event_type_names::kKeypress) || focused_local_frame->GetDocument()->HasEventListeners(event_type_names::kKeyup))
+        return focused_local_frame->GetEventHandler().KeyEvent(event);
+    return WebViewImpl::HandleKeyEventForOtherFrame(event,*focused_frame);
+  }else{
+    const Frame& topFrame = focused_frame->Tree().Top();
+    // auto* top_frame = DynamicTo<LocalFrame>(topFrame);
+
+    if(frameName.compare("ALL") == 0){
+      return WebViewImpl::HandleKeyEventForAllFrame(event,topFrame);
+    }else{
+      const FrameTree& frame_tree = topFrame.Tree();
+      WTF::AtomicString atomicStr(v8::frameName);
+      auto* find_frame = frame_tree.FindFrameByName(atomicStr);
+      LOG(INFO)<<"frameName-------"<<v8::frameName;
+      return WebViewImpl::HandleKeyEventForAllFrame(event,*find_frame);
     }
-    return result;
   }
 
 #if !defined(OS_MACOSX)
@@ -753,6 +775,90 @@ WebInputEventResult WebViewImpl::HandleKeyEvent(const WebKeyboardEvent& event) {
 #endif  // !defined(OS_MACOSX)
 
   return WebInputEventResult::kNotHandled;
+}
+
+WebInputEventResult WebViewImpl::HandleKeyEventForAllFrame(const WebKeyboardEvent& event,const Frame& parentFrame){
+  const FrameTree& frame_tree = parentFrame.Tree();
+
+  auto* parent_tolocal = DynamicTo<LocalFrame>(parentFrame);
+  if(!parent_tolocal){
+    return WebInputEventResult::kNotHandled;
+  }
+
+  WebInputEventResult result = parent_tolocal->GetEventHandler().KeyEvent(event);
+    // if (result != WebInputEventResult::kNotHandled) {
+    //   if (WebInputEvent::kRawKeyDown == event.GetType()) {
+    //     // Suppress the next keypress event unless the focused node is a plugin
+    //     // node.  (Flash needs these keypress events to handle non-US keyboards.)
+    //     Element* element = FocusedElement();
+    //     if (element && element->GetLayoutObject() &&
+    //         element->GetLayoutObject()->IsEmbeddedObject()) {
+    //       if (event.windows_key_code == VKEY_TAB) {
+    //         // If the plugin supports keyboard focus then we should not send a tab
+    //         // keypress event.
+    //         WebPluginContainerImpl* plugin_view =
+    //             ToLayoutEmbeddedContent(element->GetLayoutObject())->Plugin();
+    //         if (plugin_view && plugin_view->SupportsKeyboardFocus()) {
+    //           suppress_next_keypress_event_ = true;
+    //         }
+    //       }
+    //     } else {
+    //       suppress_next_keypress_event_ = true;
+    //     }
+    //   }
+    // }
+  for (Frame* cur_child = frame_tree.FirstChild(); cur_child; cur_child = cur_child->Tree().NextSibling()) {
+    auto* cur_local_child = DynamicTo<LocalFrame>(cur_child);
+    if (!cur_local_child)
+      continue;
+    result = WebViewImpl::HandleKeyEventForAllFrame(event,*cur_child);
+    Frame* next_sibling = cur_child->Tree().NextSibling();
+    if(!next_sibling){
+      return result;
+    }
+  }
+  return result;
+}
+WebInputEventResult WebViewImpl::HandleKeyEventForChildListenerFrame(const WebKeyboardEvent& event, const Frame& parentFrame) {
+  auto* parent_tolocal = DynamicTo<LocalFrame>(parentFrame);
+  if (!parent_tolocal)
+    return WebInputEventResult::kNotHandled;
+  WebInputEventResult result = parent_tolocal->GetEventHandler().KeyEvent(event);
+  if (parent_tolocal->GetDocument()->HasEventListeners(event_type_names::kKeydown) || 
+      parent_tolocal->GetDocument()->HasEventListeners(event_type_names::kKeypress) || 
+      parent_tolocal->GetDocument()->HasEventListeners(event_type_names::kKeyup)) {
+    return result;
+  }
+
+  const FrameTree& frame_tree = parentFrame.Tree();
+  result = WebInputEventResult::kNotHandled;
+  for (Frame* cur_child = frame_tree.FirstChild(); cur_child; cur_child = cur_child->Tree().NextSibling()) {
+    
+    result = HandleKeyEventForChildListenerFrame(event, *cur_child);
+    if (result != WebInputEventResult::kNotHandled) {
+      return result;
+    }
+  }
+  return result;
+}
+
+WebInputEventResult WebViewImpl::HandleKeyEventForOtherFrame(const WebKeyboardEvent& event, const Frame& frame) {
+  const Frame& topFrame = frame.Tree().Top();
+
+  WebInputEventResult result = WebInputEventResult::kNotHandled;
+  if (topFrame != frame) {
+    auto* top_toLocal = DynamicTo<LocalFrame>(topFrame);
+    if (!top_toLocal) {
+      return WebInputEventResult::kNotHandled;
+    }
+    result = top_toLocal->GetEventHandler().KeyEvent(event);
+  }
+
+  WebInputEventResult resultChild = HandleKeyEventForChildListenerFrame(event, topFrame);
+  if (resultChild != WebInputEventResult::kNotHandled)
+    return resultChild;
+
+  return result;
 }
 
 WebInputEventResult WebViewImpl::HandleCharEvent(
@@ -2243,7 +2349,7 @@ void WebViewImpl::ComputeScaleAndScrollForEditableElementRects(
                  2 * caret_bounds_in_content.Height()
              ? minReadableCaretHeightForTextArea
              : minReadableCaretHeight) *
-        MainFrameImpl()->GetFrame()->PageZoomFactor();
+        MainFrameImpl()->GetFrame()->PageZoomFactorY();
     new_scale = ClampPageScaleFactorToLimits(
         MaximumLegiblePageScale() * min_readable_caret_height_for_node /
         caret_bounds_in_content.Height());
@@ -2334,20 +2440,20 @@ double WebViewImpl::ZoomLevel() {
 }
 
 void WebViewImpl::PropagateZoomFactorToLocalFrameRoots(Frame* frame,
-                                                       float zoom_factor) {
+                                                       float zoom_factor,float zoom_factory) {
   auto* local_frame = DynamicTo<LocalFrame>(frame);
   if (local_frame && local_frame->IsLocalRoot()) {
     if (Document* document = local_frame->GetDocument()) {
       if (!document->IsPluginDocument() ||
           !ToPluginDocument(document)->GetPluginView()) {
-        local_frame->SetPageZoomFactor(zoom_factor);
+        local_frame->SetPageZoomFactor(zoom_factor,zoom_factory);
       }
     }
   }
 
   for (Frame* child = frame->Tree().FirstChild(); child;
        child = child->Tree().NextSibling())
-    PropagateZoomFactorToLocalFrameRoots(child, zoom_factor);
+    PropagateZoomFactorToLocalFrameRoots(child, zoom_factor,zoom_factory);
 }
 
 double WebViewImpl::SetZoomLevel(double zoom_level) {
@@ -2375,7 +2481,7 @@ double WebViewImpl::SetZoomLevel(double zoom_level) {
       zoom_factor *= zoom_factor_for_device_scale_factor_;
     }
   }
-  PropagateZoomFactorToLocalFrameRoots(AsView().page->MainFrame(), zoom_factor);
+  PropagateZoomFactorToLocalFrameRoots(AsView().page->MainFrame(), zoom_factor,zoom_factor);
 
   return zoom_level_;
 }

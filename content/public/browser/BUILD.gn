@@ -5,7 +5,6 @@
 import("//build/config/jumbo.gni")
 import("//build/config/ui.gni")
 import("//ppapi/buildflags/buildflags.gni")
-import("//third_party/webrtc/webrtc.gni")
 
 # See //content/BUILD.gn for how this works.
 group("browser") {
@@ -379,10 +378,6 @@ jumbo_source_set("browser_sources") {
     ]
   }
 
-  if (rtc_use_pipewire) {
-    configs +=
-        [ "//third_party/webrtc/modules/desktop_capture:pipewire_config" ]
-  }
 
   public_deps = [
     "//components/download/public/common:public",
@@ -399,7 +394,6 @@ jumbo_source_set("browser_sources") {
     "//services/service_manager/public/cpp",
     "//services/tracing/public/cpp",
     "//services/viz/public/interfaces",
-    "//third_party/webrtc/modules/desktop_capture",
 
     # We expose skia headers in the public API.
     "//skia",

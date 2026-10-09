@@ -32,6 +32,8 @@
 #include "third_party/blink/renderer/platform/keyboard_codes.h"
 #include "third_party/blink/renderer/platform/windows_keyboard_codes.h"
 #include "ui/events/keycodes/dom/keycode_converter.h"
+#include "base/android/jni_android.h"
+#include "v8/src/objects/objectsutil.h"
 
 #if defined(OS_WIN)
 #include <windows.h>
@@ -40,86 +42,85 @@
 #endif
 
 namespace blink {
-
 namespace {
 
 const int kVKeyProcessKey = 229;
 const int kVKeySpatNavBack = 233;
 
-bool MapKeyCodeForScroll(int key_code,
-                         WebInputEvent::Modifiers modifiers,
-                         ScrollDirection* scroll_direction,
-                         ScrollGranularity* scroll_granularity,
-                         WebFeature* scroll_use_uma) {
-  if (modifiers & WebInputEvent::kShiftKey ||
-      modifiers & WebInputEvent::kMetaKey)
-    return false;
+// bool MapKeyCodeForScroll(int key_code,
+//                          WebInputEvent::Modifiers modifiers,
+//                          ScrollDirection* scroll_direction,
+//                          ScrollGranularity* scroll_granularity,
+//                          WebFeature* scroll_use_uma) {
+//   if (modifiers & WebInputEvent::kShiftKey ||
+//       modifiers & WebInputEvent::kMetaKey)
+//     return false;
 
-  if (modifiers & WebInputEvent::kAltKey) {
-    // Alt-Up/Down should behave like PageUp/Down on Mac.  (Note that Alt-keys
-    // on other platforms are suppressed due to isSystemKey being set.)
-    if (key_code == VKEY_UP)
-      key_code = VKEY_PRIOR;
-    else if (key_code == VKEY_DOWN)
-      key_code = VKEY_NEXT;
-    else
-      return false;
-  }
+//   if (modifiers & WebInputEvent::kAltKey) {
+//     // Alt-Up/Down should behave like PageUp/Down on Mac.  (Note that Alt-keys
+//     // on other platforms are suppressed due to isSystemKey being set.)
+//     if (key_code == VKEY_UP)
+//       key_code = VKEY_PRIOR;
+//     else if (key_code == VKEY_DOWN)
+//       key_code = VKEY_NEXT;
+//     else
+//       return false;
+//   }
 
-  if (modifiers & WebInputEvent::kControlKey) {
-    // Match FF behavior in the sense that Ctrl+home/end are the only Ctrl
-    // key combinations which affect scrolling.
-    if (key_code != VKEY_HOME && key_code != VKEY_END)
-      return false;
-  }
+//   if (modifiers & WebInputEvent::kControlKey) {
+//     // Match FF behavior in the sense that Ctrl+home/end are the only Ctrl
+//     // key combinations which affect scrolling.
+//     if (key_code != VKEY_HOME && key_code != VKEY_END)
+//       return false;
+//   }
 
-  switch (key_code) {
-    case VKEY_LEFT:
-      *scroll_direction = kScrollLeftIgnoringWritingMode;
-      *scroll_granularity = ScrollGranularity::kScrollByLine;
-      *scroll_use_uma = WebFeature::kScrollByKeyboardArrowKeys;
-      break;
-    case VKEY_RIGHT:
-      *scroll_direction = kScrollRightIgnoringWritingMode;
-      *scroll_granularity = ScrollGranularity::kScrollByLine;
-      *scroll_use_uma = WebFeature::kScrollByKeyboardArrowKeys;
-      break;
-    case VKEY_UP:
-      *scroll_direction = kScrollUpIgnoringWritingMode;
-      *scroll_granularity = ScrollGranularity::kScrollByLine;
-      *scroll_use_uma = WebFeature::kScrollByKeyboardArrowKeys;
-      break;
-    case VKEY_DOWN:
-      *scroll_direction = kScrollDownIgnoringWritingMode;
-      *scroll_granularity = ScrollGranularity::kScrollByLine;
-      *scroll_use_uma = WebFeature::kScrollByKeyboardArrowKeys;
-      break;
-    case VKEY_HOME:
-      *scroll_direction = kScrollUpIgnoringWritingMode;
-      *scroll_granularity = ScrollGranularity::kScrollByDocument;
-      *scroll_use_uma = WebFeature::kScrollByKeyboardHomeEndKeys;
-      break;
-    case VKEY_END:
-      *scroll_direction = kScrollDownIgnoringWritingMode;
-      *scroll_granularity = ScrollGranularity::kScrollByDocument;
-      *scroll_use_uma = WebFeature::kScrollByKeyboardHomeEndKeys;
-      break;
-    case VKEY_PRIOR:  // page up
-      *scroll_direction = kScrollUpIgnoringWritingMode;
-      *scroll_granularity = ScrollGranularity::kScrollByPage;
-      *scroll_use_uma = WebFeature::kScrollByKeyboardPageUpDownKeys;
-      break;
-    case VKEY_NEXT:  // page down
-      *scroll_direction = kScrollDownIgnoringWritingMode;
-      *scroll_granularity = ScrollGranularity::kScrollByPage;
-      *scroll_use_uma = WebFeature::kScrollByKeyboardPageUpDownKeys;
-      break;
-    default:
-      return false;
-  }
+//   switch (key_code) {
+//     case VKEY_LEFT:
+//       *scroll_direction = kScrollLeftIgnoringWritingMode;
+//       *scroll_granularity = ScrollGranularity::kScrollByLine;
+//       *scroll_use_uma = WebFeature::kScrollByKeyboardArrowKeys;
+//       break;
+//     case VKEY_RIGHT:
+//       *scroll_direction = kScrollRightIgnoringWritingMode;
+//       *scroll_granularity = ScrollGranularity::kScrollByLine;
+//       *scroll_use_uma = WebFeature::kScrollByKeyboardArrowKeys;
+//       break;
+//     case VKEY_UP:
+//       *scroll_direction = kScrollUpIgnoringWritingMode;
+//       *scroll_granularity = ScrollGranularity::kScrollByLine;
+//       *scroll_use_uma = WebFeature::kScrollByKeyboardArrowKeys;
+//       break;
+//     case VKEY_DOWN:
+//       *scroll_direction = kScrollDownIgnoringWritingMode;
+//       *scroll_granularity = ScrollGranularity::kScrollByLine;
+//       *scroll_use_uma = WebFeature::kScrollByKeyboardArrowKeys;
+//       break;
+//     case VKEY_HOME:
+//       *scroll_direction = kScrollUpIgnoringWritingMode;
+//       *scroll_granularity = ScrollGranularity::kScrollByDocument;
+//       *scroll_use_uma = WebFeature::kScrollByKeyboardHomeEndKeys;
+//       break;
+//     case VKEY_END:
+//       *scroll_direction = kScrollDownIgnoringWritingMode;
+//       *scroll_granularity = ScrollGranularity::kScrollByDocument;
+//       *scroll_use_uma = WebFeature::kScrollByKeyboardHomeEndKeys;
+//       break;
+//     case VKEY_PRIOR:  // page up
+//       *scroll_direction = kScrollUpIgnoringWritingMode;
+//       *scroll_granularity = ScrollGranularity::kScrollByPage;
+//       *scroll_use_uma = WebFeature::kScrollByKeyboardPageUpDownKeys;
+//       break;
+//     case VKEY_NEXT:  // page down
+//       *scroll_direction = kScrollDownIgnoringWritingMode;
+//       *scroll_granularity = ScrollGranularity::kScrollByPage;
+//       *scroll_use_uma = WebFeature::kScrollByKeyboardPageUpDownKeys;
+//       break;
+//     default:
+//       return false;
+//   }
 
-  return true;
-}
+//   return true;
+// }
 
 }  // namespace
 
@@ -155,6 +156,9 @@ bool KeyboardEventManager::HandleAccessKey(const WebKeyboardEvent& evt) {
 
 WebInputEventResult KeyboardEventManager::KeyEvent(
     const WebKeyboardEvent& initial_key_event) {
+  if(v8::logSwitch){
+    LOG(INFO)<<"KeyEvent-keyCode="<<initial_key_event.windows_key_code<<";action="<<initial_key_event.GetType();
+  }
   frame_->GetChromeClient().ClearToolTip(*frame_);
 
   if (initial_key_event.windows_key_code == VK_CAPITAL)
@@ -171,13 +175,11 @@ WebInputEventResult KeyboardEventManager::KeyEvent(
     // If we were in panscroll mode, we swallow the key event
     return WebInputEventResult::kHandledSuppressed;
   }
-
   // Check for cases where we are too early for events -- possible unmatched key
   // up from pressing return in the location bar.
   Node* node = EventTargetNodeForDocument(frame_->GetDocument());
   if (!node)
     return WebInputEventResult::kNotHandled;
-
   // To be meaningful enough to indicate user intention, a keyboard event needs
   // - not to be a modifier event
   // https://crbug.com/709765
@@ -247,12 +249,197 @@ WebInputEventResult KeyboardEventManager::KeyEvent(
     send_key_event = initial_key_event.dom_key != kDomKeyNeverSend;
   }
 
+  WebKeyboardEvent itvEvent = initial_key_event;
+  if(itvEvent.windows_key_code == 27 && v8::touchModel){
+    if(itvEvent.GetType() == WebInputEvent::kKeyUp){
+        return WebInputEventResult::kNotHandled;
+    }
+    WebKeyboardEvent key_down_event = itvEvent;
+    key_down_event.windows_key_code = 8;
+    key_down_event.native_key_code = 8;
+    key_down_event.text[0] = 8;
+    if (key_down_event.GetType() != WebInputEvent::kRawKeyDown)
+        key_down_event.SetType(WebInputEvent::kRawKeyDown);
+    KeyboardEvent* keydown = KeyboardEvent::Create(
+          key_down_event, frame_->GetDocument()->domWindow(), false);
+    keydown->preventDefault();
+    keydown->SetTarget(node);
+    frame_->GetEditor().HandleKeyboardEvent(keydown);
+    return WebInputEventResult::kNotHandled;
+  }
+  switch(itvEvent.windows_key_code){
+    case 8:
+    case 13:
+    case 37:
+    case 38:
+    case 39:
+    case 40:
+        itvEvent.windows_key_code = itvEvent.windows_key_code;
+        itvEvent.native_key_code = itvEvent.windows_key_code;
+        itvEvent.text[0] = itvEvent.windows_key_code;
+        break;
+    case 548:
+        itvEvent.windows_key_code = 8;
+        itvEvent.native_key_code = 8;
+        itvEvent.text[0] = 8;
+        break;
+    case 256:
+        itvEvent.windows_key_code = 768;
+        itvEvent.native_key_code = 768;
+        itvEvent.text[0] = 768;
+        break;
+    case 257:
+        itvEvent.windows_key_code = 280;
+        itvEvent.native_key_code = 280;
+        itvEvent.text[0] = 280;
+        break;
+    case 258:
+        itvEvent.windows_key_code = 33;
+        itvEvent.native_key_code = 33;
+        itvEvent.text[0] = 33;
+        break;
+    case 259:
+        itvEvent.windows_key_code = 34;
+        itvEvent.native_key_code = 34;
+        itvEvent.text[0] = 34;
+        break;
+    case 260:
+        // itvEvent.windows_key_code = 768;
+        // itvEvent.native_key_code = 768;
+        // itvEvent.text[0] = 768;
+        break;
+    case 261:
+        itvEvent.windows_key_code = 259;
+        itvEvent.native_key_code = 259;
+        itvEvent.text[0] = 259;
+        break;
+    case 262:
+        itvEvent.windows_key_code = 260;
+        itvEvent.native_key_code = 260;
+        itvEvent.text[0] = 260;
+        break;
+    case 263:
+        itvEvent.windows_key_code = 261;
+        itvEvent.native_key_code = 261;
+        itvEvent.text[0] = 261;
+        break;
+    case 264:
+        itvEvent.windows_key_code = 257;
+        itvEvent.native_key_code = 257;
+        itvEvent.text[0] = 257;
+        break;
+    case 265:
+        itvEvent.windows_key_code = 258;
+        itvEvent.native_key_code = 258;
+        itvEvent.text[0] = 258;
+        break;
+    // case 266:
+    //     itvEvent.windows_key_code = 768;
+    //     itvEvent.native_key_code = 768;
+    //     itvEvent.text[0] = 768;
+    //     break;
+    // case 267:
+    //     itvEvent.windows_key_code = 768;
+    //     itvEvent.native_key_code = 768;
+    //     itvEvent.text[0] = 768;
+    //     break;
+    // case 268:
+    //     itvEvent.windows_key_code = 768;
+    //     itvEvent.native_key_code = 768;
+    //     itvEvent.text[0] = 768;
+    //     break;
+    // case 269:
+    //     itvEvent.windows_key_code = 768;
+    //     itvEvent.native_key_code = 768;
+    //     itvEvent.text[0] = 768;
+    //     break;
+    // case 270:
+    //     itvEvent.windows_key_code = 768;
+    //     itvEvent.native_key_code = 768;
+    //     itvEvent.text[0] = 768;
+    //     break;
+    // case 271:
+    //     itvEvent.windows_key_code = 768;
+    //     itvEvent.native_key_code = 768;
+    //     itvEvent.text[0] = 768;
+    //     break;
+    case 272:
+        itvEvent.windows_key_code = 263;
+        itvEvent.native_key_code = 263;
+        itvEvent.text[0] = 263;
+        break;
+    case 273:
+        itvEvent.windows_key_code = 264;
+        itvEvent.native_key_code = 264;
+        itvEvent.text[0] = 264;
+        break;
+    case 274:
+        itvEvent.windows_key_code = 265;
+        itvEvent.native_key_code = 265;
+        itvEvent.text[0] = 265;
+        break;
+    case 275:
+        //
+        itvEvent.windows_key_code = 287;
+        itvEvent.native_key_code = 287;
+        itvEvent.text[0] = 287;
+        break;
+    case 276:
+        //reload
+        // itvEvent.windows_key_code = 287;
+        // itvEvent.native_key_code = 287;
+        // itvEvent.text[0] = 287;
+        break;
+    case 279:
+        // MENU
+        itvEvent.windows_key_code = 272;
+        itvEvent.native_key_code = 272;
+        itvEvent.text[0] = 272;
+        break;
+    case 280:
+        // 看电视  （直播）
+        itvEvent.windows_key_code = 275;
+        itvEvent.native_key_code = 275;
+        itvEvent.text[0] = 275;
+        break;
+    case 281:
+        // 回看
+        itvEvent.windows_key_code = 276;
+        itvEvent.native_key_code = 276;
+        itvEvent.text[0] = 276;
+        break;
+    case 288:
+        // 信息
+        itvEvent.windows_key_code = 278;
+        itvEvent.native_key_code = 278;
+        itvEvent.text[0] = 278;
+        break;
+    case 290:
+        // 应用
+        itvEvent.windows_key_code = 290;
+        itvEvent.native_key_code = 290;
+        itvEvent.text[0] = 290;
+        break;
+    case 289:
+        // 搜索
+        itvEvent.windows_key_code = 281;
+        itvEvent.native_key_code = 281;
+        itvEvent.text[0] = 281;
+        break;
+    case 291:
+        // 云南首页
+        itvEvent.windows_key_code = 181;
+        itvEvent.native_key_code = 181;
+        itvEvent.text[0] = 181;
+        break;
+  }
+
+
   // TODO: it would be fair to let an input method handle KeyUp events
   // before DOM dispatch.
-  if (initial_key_event.GetType() == WebInputEvent::kKeyUp ||
-      initial_key_event.GetType() == WebInputEvent::kChar) {
+  if (itvEvent.GetType() == WebInputEvent::kKeyUp || itvEvent.GetType() == WebInputEvent::kChar) {
     KeyboardEvent* dom_event = KeyboardEvent::Create(
-        initial_key_event, frame_->GetDocument()->domWindow(),
+        itvEvent, frame_->GetDocument()->domWindow(),
         event_cancellable);
 
     dom_event->SetStopPropagation(!send_key_event);
@@ -260,31 +447,29 @@ WebInputEventResult KeyboardEventManager::KeyEvent(
     return event_handling_util::ToWebInputEventResult(
         node->DispatchEvent(*dom_event));
   }
-
-  WebKeyboardEvent key_down_event = initial_key_event;
+  WebKeyboardEvent key_down_event = itvEvent;
   if (key_down_event.GetType() != WebInputEvent::kRawKeyDown)
     key_down_event.SetType(WebInputEvent::kRawKeyDown);
   KeyboardEvent* keydown = KeyboardEvent::Create(
       key_down_event, frame_->GetDocument()->domWindow(), event_cancellable);
-  if (matched_an_access_key)
+  if (matched_an_access_key || itvEvent.windows_key_code == 13){
     keydown->preventDefault();
+  }
   keydown->SetTarget(node);
 
-  keydown->SetStopPropagation(!send_key_event);
-
-  DispatchEventResult dispatch_result = node->DispatchEvent(*keydown);
-  if (dispatch_result != DispatchEventResult::kNotCanceled)
-    return event_handling_util::ToWebInputEventResult(dispatch_result);
+  // keydown->SetStopPropagation(!send_key_event);
+  node->DispatchEvent(*keydown);
+  // if (dispatch_result != DispatchEventResult::kNotCanceled  && (itvEvent.windows_key_code == 37 || itvEvent.windows_key_code == 38 || itvEvent.windows_key_code == 39 || itvEvent.windows_key_code == 40 || itvEvent.windows_key_code == 8 || itvEvent.windows_key_code == 13))
+  //   return event_handling_util::ToWebInputEventResult(dispatch_result);
 
   // If frame changed as a result of keydown dispatch, then return early to
   // avoid sending a subsequent keypress message to the new frame.
-  bool changed_focused_frame =
-      frame_->GetPage() &&
-      frame_ != frame_->GetPage()->GetFocusController().FocusedOrMainFrame();
-  if (changed_focused_frame)
-    return WebInputEventResult::kHandledSystem;
-
-  if (initial_key_event.GetType() == WebInputEvent::kRawKeyDown)
+    if(v8::frameFocusChange){
+        bool changed_focused_frame =  frame_->GetPage() && frame_ != frame_->GetPage()->GetFocusController().FocusedOrMainFrame();
+        if (changed_focused_frame)
+        return WebInputEventResult::kHandledSystem;
+    }
+  if (itvEvent.GetType() == WebInputEvent::kRawKeyDown)
     return WebInputEventResult::kNotHandled;
 
   // Focus may have changed during keydown handling, so refetch node.
@@ -299,21 +484,20 @@ WebInputEventResult KeyboardEventManager::KeyEvent(
   // function keys. However, some actual private use characters happen to be
   // in this range, e.g. the Apple logo (Option+Shift+K). 0xF7FF is an
   // arbitrary cut-off.
-  if (initial_key_event.text[0U] >= 0xF700 &&
-      initial_key_event.text[0U] <= 0xF7FF) {
+  if (itvEvent.text[0U] >= 0xF700 &&
+      itvEvent.text[0U] <= 0xF7FF) {
     return WebInputEventResult::kNotHandled;
   }
 #endif
 
-  WebKeyboardEvent key_press_event = initial_key_event;
+  WebKeyboardEvent key_press_event = itvEvent;
   key_press_event.SetType(WebInputEvent::kChar);
   if (key_press_event.text[0] == 0)
     return WebInputEventResult::kNotHandled;
   KeyboardEvent* keypress = KeyboardEvent::Create(
       key_press_event, frame_->GetDocument()->domWindow(), event_cancellable);
   keypress->SetTarget(node);
-  keypress->SetStopPropagation(!send_key_event);
-
+  // keypress->SetStopPropagation(!send_key_event);
   return event_handling_util::ToWebInputEventResult(
       node->DispatchEvent(*keypress));
 }
@@ -330,18 +514,27 @@ void KeyboardEventManager::CapsLockStateMayHaveChanged() {
 void KeyboardEventManager::DefaultKeyboardEventHandler(
     KeyboardEvent* event,
     Node* possible_focused_node) {
+    
   if (event->type() == event_type_names::kKeydown) {
-    frame_->GetEditor().HandleKeyboardEvent(event);
-    if (event->DefaultHandled())
-      return;
+    if(v8::logSwitch){
+        LOG(INFO)<<"DefaultKeyboardEventHandler---keydown--"<<event->key();
+    }
+    if(!v8::touchModel || event->key() != "Escape"){
+        frame_->GetEditor().HandleKeyboardEvent(event);
+        if (event->DefaultHandled())
+          return;
+    }
 
+    if(v8::logSwitch){
+        LOG(INFO)<<"DefaultKeyboardEventHandler---keydown1--"<<event->key();
+    }
     // Do not perform the default action when inside a IME composition context.
     // TODO(dtapuska): Replace this with isComposing support. crbug.com/625686
     if (event->keyCode() == kVKeyProcessKey)
       return;
 
     if (event->key() == "Tab") {
-      DefaultTabEventHandler(event);
+      // DefaultTabEventHandler(event);
     } else if (event->key() == "Escape") {
       DefaultEscapeEventHandler(event);
     } else if (event->key() == "Enter") {
@@ -353,24 +546,35 @@ void KeyboardEventManager::DefaultKeyboardEventHandler(
     } else {
       // TODO(bokan): Seems odd to call the default _arrow_ event handler on
       // events that aren't necessarily arrow keys.
-      DefaultArrowEventHandler(event, possible_focused_node);
+        DefaultArrowEventHandler(event, possible_focused_node);
     }
   } else if (event->type() == event_type_names::kKeypress) {
-    frame_->GetEditor().HandleKeyboardEvent(event);
-    if (event->DefaultHandled())
-      return;
+    if(v8::logSwitch){
+        LOG(INFO)<<"DefaultKeyboardEventHandler---keypress--"<<event->key();
+    }
+    if(!v8::touchModel || event->key() != "Escape"){
+        frame_->GetEditor().HandleKeyboardEvent(event);
+        if (event->DefaultHandled())
+          return;
+    }
+
+    if(v8::logSwitch){
+        LOG(INFO)<<"DefaultKeyboardEventHandler---keypress1--"<<event->key();
+    }
     if (event->key() == "Enter") {
       DefaultEnterEventHandler(event);
     } else if (event->charCode() == ' ') {
       DefaultSpaceEventHandler(event, possible_focused_node);
-    }
+    } else {
+        DefaultArrowEventHandler(event, possible_focused_node);
+    } 
   } else if (event->type() == event_type_names::kKeyup) {
     if (event->DefaultHandled())
       return;
     if (event->key() == "Enter") {
       DefaultEnterEventHandler(event);
     } else if (event->keyCode() == kVKeySpatNavBack) {
-      DefaultSpatNavBackEventHandler(event);
+      // DefaultSpatNavBackEventHandler(event);
     }
   }
 }
@@ -401,38 +605,69 @@ void KeyboardEventManager::DefaultSpaceEventHandler(
 void KeyboardEventManager::DefaultArrowEventHandler(
     KeyboardEvent* event,
     Node* possible_focused_node) {
-  DCHECK_EQ(event->type(), event_type_names::kKeydown);
-
-  Page* page = frame_->GetPage();
-  if (!page)
+  // DCHECK_EQ(event->type(), event_type_names::kKeypress);
+    if(v8::logSwitch){
+        LOG(INFO)<<" DefaultArrowEventHandler--------";
+    }
+  if(event->key() != "ArrowUp" && event->key() != "ArrowDown" && event->key() != "ArrowLeft" && event->key() != "ArrowRight"){
+    if(v8::logSwitch){
+        LOG(INFO)<<" DefaultArrowEventHandler-----not a ArrowEvent-SO-RETURN--";
+    }
     return;
-
-  if (IsSpatialNavigationEnabled(frame_) &&
-      !frame_->GetDocument()->InDesignMode()) {
-    if (page->GetSpatialNavigationController().HandleArrowKeyboardEvent(
-            event)) {
+  }
+  // if(!v8::defaultFocus){
+  //   if(v8::logSwitch){
+  //       LOG(INFO)<<" DefaultArrowEventHandler-----DISABLE-DEFAULT-FOCUS-SO-RETURN--";
+  //   }
+  //   return;
+  // }
+  Page* page = frame_->GetPage();
+  if (!page){
+    if(v8::logSwitch){
+        LOG(INFO)<<" DefaultArrowEventHandler-----PAGE-IS-NULL-SO-RETURN--";
+    }
+    return;
+  }
+  // std::string frameName(v8::frameName);
+  //   if(!frameName.empty()){
+  //       const auto* focused_frame = DynamicTo<LocalFrame>(page->GetFocusController().FocusedOrMainFrame());
+  //       if(focused_frame && frame_ != focused_frame){
+  //           if(v8::logSwitch){
+  //               LOG(INFO)<<"has no default focus frame  or Focused Frame is not same-------";
+  //           }
+  //           return;
+  //       }
+  //   }
+  //   if(v8::logSwitch){
+  //       LOG(INFO)<<" has defalut focus frame ,now dispatch event to controller--------";
+  //   }
+  if (IsSpatialNavigationEnabled(frame_) && !frame_->GetDocument()->InDesignMode()) {
+    if(v8::logSwitch){
+        LOG(INFO)<<" DefaultArrowEventHandler-----IsSpatialNavigationEnabled-and-InDesignMode-";
+    }
+    if (page->GetSpatialNavigationController().HandleArrowKeyboardEvent(event)) {
       event->SetDefaultHandled();
       return;
     }
   }
 
-  if (event->KeyEvent() && event->KeyEvent()->is_system_key)
-    return;
+  // if (event->KeyEvent() && event->KeyEvent()->is_system_key)
+  //   return;
 
-  ScrollDirection scroll_direction;
-  ScrollGranularity scroll_granularity;
-  WebFeature scroll_use_uma;
-  if (!MapKeyCodeForScroll(event->keyCode(), event->GetModifiers(),
-                           &scroll_direction, &scroll_granularity,
-                           &scroll_use_uma))
-    return;
+  // ScrollDirection scroll_direction;
+  // ScrollGranularity scroll_granularity;
+  // WebFeature scroll_use_uma;
+  // if (!MapKeyCodeForScroll(event->keyCode(), event->GetModifiers(),
+  //                          &scroll_direction, &scroll_granularity,
+  //                          &scroll_use_uma))
+  //   return;
 
-  if (scroll_manager_->BubblingScroll(scroll_direction, scroll_granularity,
-                                      nullptr, possible_focused_node)) {
-    UseCounter::Count(frame_->GetDocument(), scroll_use_uma);
-    event->SetDefaultHandled();
-    return;
-  }
+  // if (scroll_manager_->BubblingScroll(scroll_direction, scroll_granularity,
+  //                                     nullptr, possible_focused_node)) {
+  //   UseCounter::Count(frame_->GetDocument(), scroll_use_uma);
+  //   event->SetDefaultHandled();
+  //   return;
+  // }
 }
 
 void KeyboardEventManager::DefaultTabEventHandler(KeyboardEvent* event) {

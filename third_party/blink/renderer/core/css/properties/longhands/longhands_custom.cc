@@ -2868,21 +2868,49 @@ const CSSValue* ForcedColorAdjust::CSSValueFromComputedStyleInternal(
   return CSSIdentifierValue::Create(style.ForcedColorAdjust());
 }
 
-void InternalEffectiveZoom::ApplyInitial(StyleResolverState& state) const {
-  auto initial = ComputedStyleInitialValues::InitialInternalEffectiveZoom();
-  state.SetEffectiveZoom(initial);
+void InternalEffectiveZoomX::ApplyInitial(StyleResolverState& state) const {
+  auto initialX = ComputedStyleInitialValues::InitialInternalEffectiveZoomX();
+  auto initialY = ComputedStyleInitialValues::InitialInternalEffectiveZoomY();
+  state.SetEffectiveZoomX(initialX);
+  state.SetEffectiveZoomY(initialY);
 }
 
-void InternalEffectiveZoom::ApplyInherit(StyleResolverState& state) const {
-  state.SetEffectiveZoom(state.ParentStyle()->EffectiveZoom());
+void InternalEffectiveZoomY::ApplyInitial(StyleResolverState& state) const {
+  auto initialX = ComputedStyleInitialValues::InitialInternalEffectiveZoomX();
+  auto initialY = ComputedStyleInitialValues::InitialInternalEffectiveZoomY();
+  state.SetEffectiveZoomX(initialX);
+  state.SetEffectiveZoomY(initialY);
 }
 
-void InternalEffectiveZoom::ApplyValue(StyleResolverState& state,
+void InternalEffectiveZoomX::ApplyInherit(StyleResolverState& state) const {
+  state.SetEffectiveZoomX(state.ParentStyle()->EffectiveZoomX());
+  state.SetEffectiveZoomY(state.ParentStyle()->EffectiveZoomY());
+}
+void InternalEffectiveZoomY::ApplyInherit(StyleResolverState& state) const {
+  state.SetEffectiveZoomX(state.ParentStyle()->EffectiveZoomX());
+  state.SetEffectiveZoomY(state.ParentStyle()->EffectiveZoomY());
+}
+
+void InternalEffectiveZoomX::ApplyValue(StyleResolverState& state,
                                        const CSSValue& value) const {
-  state.SetEffectiveZoom(StyleBuilderConverter::ConvertZoom(state, value));
+  state.SetEffectiveZoomX(StyleBuilderConverter::ConvertZoomX(state, value));
+  state.SetEffectiveZoomY(StyleBuilderConverter::ConvertZoomY(state, value));
+}
+void InternalEffectiveZoomY::ApplyValue(StyleResolverState& state,
+                                       const CSSValue& value) const {
+  state.SetEffectiveZoomX(StyleBuilderConverter::ConvertZoomX(state, value));
+  state.SetEffectiveZoomY(StyleBuilderConverter::ConvertZoomY(state, value));
 }
 
-const CSSValue* InternalEffectiveZoom::ParseSingleValue(
+const CSSValue* InternalEffectiveZoomX::ParseSingleValue(
+    CSSParserTokenRange& range,
+    const CSSParserContext& context,
+    const CSSParserLocalContext& local_context) const {
+  ValueRange value_range = kValueRangeNonNegative;
+  return css_property_parser_helpers::ConsumeNumber(range, value_range);
+}
+
+const CSSValue* InternalEffectiveZoomY::ParseSingleValue(
     CSSParserTokenRange& range,
     const CSSParserContext& context,
     const CSSParserLocalContext& local_context) const {
@@ -5583,7 +5611,7 @@ const CSSValue* ShapeMargin::CSSValueFromComputedStyleInternal(
     const LayoutObject*,
     const Node*,
     bool allow_visited_style) const {
-  return CSSValue::Create(style.ShapeMargin(), style.EffectiveZoom());
+  return CSSValue::Create(style.ShapeMargin(), style.EffectiveZoomX());
 }
 
 const CSSValue* ShapeOutside::ParseSingleValue(
@@ -5718,9 +5746,9 @@ void Size::ApplyValue(StyleResolverState& state, const CSSValue& value) const {
       // <length>{2}
       size = FloatSize(
           first_primitive_value->ComputeLength<float>(
-              state.CssToLengthConversionData().CopyWithAdjustedZoom(1.0)),
+              state.CssToLengthConversionData().CopyWithAdjustedZoom(1.0,1.0)),
           To<CSSPrimitiveValue>(second).ComputeLength<float>(
-              state.CssToLengthConversionData().CopyWithAdjustedZoom(1.0)));
+              state.CssToLengthConversionData().CopyWithAdjustedZoom(1.0,1.0)));
     } else {
       // <page-size> <orientation>
       size = GetPageSizeFromName(To<CSSIdentifierValue>(first));
@@ -5742,7 +5770,7 @@ void Size::ApplyValue(StyleResolverState& state, const CSSValue& value) const {
       // <length>
       page_size_type = EPageSizeType::kResolved;
       float width = first_primitive_value->ComputeLength<float>(
-          state.CssToLengthConversionData().CopyWithAdjustedZoom(1.0));
+          state.CssToLengthConversionData().CopyWithAdjustedZoom(1.0,1.0));
       size = FloatSize(width, width);
     } else {
       const auto& ident = To<CSSIdentifierValue>(first);
@@ -5958,7 +5986,7 @@ const CSSValue* StrokeWidth::CSSValueFromComputedStyleInternal(
     return CSSNumericLiteralValue::Create(length.Value(),
                                           CSSPrimitiveValue::UnitType::kPixels);
   }
-  return CSSValue::Create(length, style.EffectiveZoom());
+  return CSSValue::Create(length, style.EffectiveZoomX());
 }
 
 const CSSValue* TabSize::ParseSingleValue(CSSParserTokenRange& range,
@@ -8192,7 +8220,7 @@ const CSSValue* ZIndex::CSSValueFromComputedStyleInternal(
                                         CSSPrimitiveValue::UnitType::kInteger);
 }
 
-const CSSValue* Zoom::ParseSingleValue(CSSParserTokenRange& range,
+const CSSValue* ZoomX::ParseSingleValue(CSSParserTokenRange& range,
                                        const CSSParserContext& context,
                                        const CSSParserLocalContext&) const {
   const CSSParserToken& token = range.Peek();
@@ -8219,26 +8247,79 @@ const CSSValue* Zoom::ParseSingleValue(CSSParserTokenRange& range,
   return zoom;
 }
 
-const CSSValue* Zoom::CSSValueFromComputedStyleInternal(
+const CSSValue* ZoomY::ParseSingleValue(CSSParserTokenRange& range,
+                                       const CSSParserContext& context,
+                                       const CSSParserLocalContext&) const {
+  const CSSParserToken& token = range.Peek();
+  CSSValue* zoom = nullptr;
+  if (token.GetType() == kIdentToken) {
+    zoom =
+        css_property_parser_helpers::ConsumeIdent<CSSValueID::kNormal>(range);
+  } else {
+    zoom = css_property_parser_helpers::ConsumePercent(range,
+                                                       kValueRangeNonNegative);
+    if (!zoom) {
+      zoom = css_property_parser_helpers::ConsumeNumber(range,
+                                                        kValueRangeNonNegative);
+    }
+  }
+  if (zoom) {
+    if (!(token.Id() == CSSValueID::kNormal ||
+          (token.GetType() == kNumberToken &&
+           To<CSSPrimitiveValue>(zoom)->GetDoubleValue() == 1) ||
+          (token.GetType() == kPercentageToken &&
+           To<CSSPrimitiveValue>(zoom)->GetDoubleValue() == 100)))
+      context.Count(WebFeature::kCSSZoomNotEqualToOne);
+  }
+  return zoom;
+}
+
+const CSSValue* ZoomX::CSSValueFromComputedStyleInternal(
     const ComputedStyle& style,
     const SVGComputedStyle&,
     const LayoutObject*,
     const Node*,
     bool allow_visited_style) const {
-  return CSSNumericLiteralValue::Create(style.Zoom(),
+  return CSSNumericLiteralValue::Create(style.ZoomX(),
+                                        CSSPrimitiveValue::UnitType::kNumber);
+}
+const CSSValue* ZoomY::CSSValueFromComputedStyleInternal(
+    const ComputedStyle& style,
+    const SVGComputedStyle&,
+    const LayoutObject*,
+    const Node*,
+    bool allow_visited_style) const {
+  return CSSNumericLiteralValue::Create(style.ZoomY(),
                                         CSSPrimitiveValue::UnitType::kNumber);
 }
 
-void Zoom::ApplyInitial(StyleResolverState& state) const {
-  state.SetZoom(ComputedStyleInitialValues::InitialZoom());
+void ZoomX::ApplyInitial(StyleResolverState& state) const {
+  state.SetZoomX(ComputedStyleInitialValues::InitialZoomX());
+  state.SetZoomY(ComputedStyleInitialValues::InitialZoomY());
+}
+void ZoomY::ApplyInitial(StyleResolverState& state) const {
+  state.SetZoomX(ComputedStyleInitialValues::InitialZoomX());
+  state.SetZoomY(ComputedStyleInitialValues::InitialZoomY());
 }
 
-void Zoom::ApplyInherit(StyleResolverState& state) const {
-  state.SetZoom(state.ParentStyle()->Zoom());
+void ZoomX::ApplyInherit(StyleResolverState& state) const {
+  state.SetZoomX(state.ParentStyle()->ZoomX());
+  state.SetZoomY(state.ParentStyle()->ZoomY());
 }
 
-void Zoom::ApplyValue(StyleResolverState& state, const CSSValue& value) const {
-  state.SetZoom(StyleBuilderConverter::ConvertZoom(state, value));
+void ZoomY::ApplyInherit(StyleResolverState& state) const {
+  state.SetZoomX(state.ParentStyle()->ZoomX());
+  state.SetZoomY(state.ParentStyle()->ZoomY());
+}
+
+void ZoomX::ApplyValue(StyleResolverState& state, const CSSValue& value) const {
+  state.SetZoomX(StyleBuilderConverter::ConvertZoomX(state, value));
+  state.SetZoomY(StyleBuilderConverter::ConvertZoomY(state, value));
+}
+
+void ZoomY::ApplyValue(StyleResolverState& state, const CSSValue& value) const {
+  state.SetZoomX(StyleBuilderConverter::ConvertZoomX(state, value));
+  state.SetZoomY(StyleBuilderConverter::ConvertZoomY(state, value));
 }
 
 }  // namespace css_longhand

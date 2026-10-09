@@ -796,6 +796,10 @@ TransformationMatrix::TransformationMatrix(const AffineTransform& t) {
 TransformationMatrix& TransformationMatrix::Scale(double s) {
   return ScaleNonUniform(s, s);
 }
+TransformationMatrix& TransformationMatrix::Scale(double s,double sy) {
+  return ScaleNonUniform(s, sy);
+}
+
 
 FloatPoint TransformationMatrix::ProjectPoint(const FloatPoint& p,
                                               bool* clamped) const {

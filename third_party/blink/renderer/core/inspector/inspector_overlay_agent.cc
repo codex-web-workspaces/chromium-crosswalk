@@ -952,7 +952,7 @@ void InspectorOverlayAgent::Reset(const IntSize& viewport_size) {
   // The zoom factor in the overlay frame already has been multiplied by the
   // window to viewport scale (aka device scale factor), so cancel it.
   reset_data->setDouble("pageZoomFactor",
-                        GetFrame()->PageZoomFactor() / WindowToViewportScale());
+                        GetFrame()->PageZoomFactorX() / WindowToViewportScale());
 
   // TODO(szager): These values have been zero since root layer scrolling
   // landed. Probably they should be derived from

@@ -42,6 +42,7 @@ class PollingProxyConfigService::Core
   }
 
   bool GetLatestProxyConfig(ProxyConfigWithAnnotation* config) {
+    LOG(INFO)<<"getProxy---GetLatestProxyConfig ---polling";
     LazyInitializeOriginLoop();
     DCHECK(origin_task_runner_->BelongsToCurrentThread());
 
@@ -176,6 +177,7 @@ void PollingProxyConfigService::RemoveObserver(Observer* observer) {
 ProxyConfigService::ConfigAvailability
 PollingProxyConfigService::GetLatestProxyConfig(
     ProxyConfigWithAnnotation* config) {
+  LOG(INFO)<<"getProxy---GetLatestProxyConfig ---polling-2";
   return core_->GetLatestProxyConfig(config) ? CONFIG_VALID : CONFIG_PENDING;
 }
 

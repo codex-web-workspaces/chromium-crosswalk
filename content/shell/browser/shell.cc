@@ -418,14 +418,16 @@ WebContents* Shell::OpenURLFromTab(WebContents* source,
     // so we treat the cases below just like a NEW_WINDOW disposition.
     case WindowOpenDisposition::NEW_BACKGROUND_TAB:
     case WindowOpenDisposition::NEW_FOREGROUND_TAB: {
-      Shell* new_window =
-          Shell::CreateNewWindow(source->GetBrowserContext(),
-                                 GURL(),  // Don't load anything just yet.
-                                 params.source_site_instance,
-                                 gfx::Size());  // Use default size.
-      target = new_window->web_contents();
-      if (switches::IsRunWebTestsSwitchPresent())
-        SecondaryTestWindowObserver::CreateForWebContents(target);
+      // Shell* new_window =
+      //     Shell::CreateNewWindow(source->GetBrowserContext(),
+      //                            GURL(),  // Don't load anything just yet.
+      //                            params.source_site_instance,
+      //                            gfx::Size());  // Use default size.
+      // target = new_window->web_contents();
+      // if (switches::IsRunWebTestsSwitchPresent())
+      //   SecondaryTestWindowObserver::CreateForWebContents(target);
+      // break;
+      target = source;
       break;
     }
 

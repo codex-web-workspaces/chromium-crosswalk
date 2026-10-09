@@ -450,7 +450,8 @@ void ThemePainter::PaintSliderTicks(const LayoutObject& o,
   }
 
   IntSize tick_size = LayoutTheme::GetTheme().SliderTickSize();
-  float zoom_factor = o.StyleRef().EffectiveZoom();
+  float zoom_factor = o.StyleRef().EffectiveZoomX();
+  float zoom_factory = o.StyleRef().EffectiveZoomY();
   FloatRect tick_rect;
   int tick_region_side_margin = 0;
   int tick_region_width = 0;
@@ -464,18 +465,18 @@ void ThemePainter::PaintSliderTicks(const LayoutObject& o,
 
   if (is_horizontal) {
     tick_rect.SetWidth(floor(tick_size.Width() * zoom_factor));
-    tick_rect.SetHeight(floor(tick_size.Height() * zoom_factor));
+    tick_rect.SetHeight(floor(tick_size.Height() * zoom_factory));
     tick_rect.SetY(
         floor(rect.Y() + rect.Height() / 2.0 +
               LayoutTheme::GetTheme().SliderTickOffsetFromTrackCenter() *
-                  zoom_factor));
+                  zoom_factory));
     tick_region_side_margin =
         track_bounds.X() +
         (thumb_size.Width() - tick_size.Width() * zoom_factor) / 2.0;
     tick_region_width = track_bounds.Width() - thumb_size.Width();
   } else {
     tick_rect.SetWidth(floor(tick_size.Height() * zoom_factor));
-    tick_rect.SetHeight(floor(tick_size.Width() * zoom_factor));
+    tick_rect.SetHeight(floor(tick_size.Width() * zoom_factory));
     tick_rect.SetX(
         floor(rect.X() + rect.Width() / 2.0 +
               LayoutTheme::GetTheme().SliderTickOffsetFromTrackCenter() *
@@ -535,14 +536,15 @@ bool ThemePainter::PaintCheckboxUsingFallbackTheme(const Node* node,
   extra_params.button.checked = LayoutTheme::IsChecked(node);
   extra_params.button.indeterminate = LayoutTheme::IsIndeterminate(node);
 
-  float zoom_level = style.EffectiveZoom();
+  float zoom_level = style.EffectiveZoomX();
+  float zoom_levely = style.EffectiveZoomY();
   GraphicsContextStateSaver state_saver(paint_info.context);
   IntRect unzoomed_rect = paint_rect;
-  if (zoom_level != 1) {
+  if (zoom_level != 1 || zoom_levely != 1) {
     unzoomed_rect.SetWidth(unzoomed_rect.Width() / zoom_level);
-    unzoomed_rect.SetHeight(unzoomed_rect.Height() / zoom_level);
+    unzoomed_rect.SetHeight(unzoomed_rect.Height() / zoom_levely);
     paint_info.context.Translate(unzoomed_rect.X(), unzoomed_rect.Y());
-    paint_info.context.Scale(zoom_level, zoom_level);
+    paint_info.context.Scale(zoom_level, zoom_levely);
     paint_info.context.Translate(-unzoomed_rect.X(), -unzoomed_rect.Y());
   }
 
@@ -559,14 +561,15 @@ bool ThemePainter::PaintRadioUsingFallbackTheme(const Node* node,
   ui::NativeTheme::ExtraParams extra_params;
   extra_params.button.checked = LayoutTheme::IsChecked(node);
 
-  float zoom_level = style.EffectiveZoom();
+  float zoom_level = style.EffectiveZoomX();
+  float zoom_levely = style.EffectiveZoomY();
   GraphicsContextStateSaver state_saver(paint_info.context);
   IntRect unzoomed_rect = paint_rect;
-  if (zoom_level != 1) {
+  if (zoom_level != 1 || zoom_levely != 1) {
     unzoomed_rect.SetWidth(unzoomed_rect.Width() / zoom_level);
-    unzoomed_rect.SetHeight(unzoomed_rect.Height() / zoom_level);
+    unzoomed_rect.SetHeight(unzoomed_rect.Height() / zoom_levely);
     paint_info.context.Translate(unzoomed_rect.X(), unzoomed_rect.Y());
-    paint_info.context.Scale(zoom_level, zoom_level);
+    paint_info.context.Scale(zoom_level, zoom_levely);
     paint_info.context.Translate(-unzoomed_rect.X(), -unzoomed_rect.Y());
   }
 

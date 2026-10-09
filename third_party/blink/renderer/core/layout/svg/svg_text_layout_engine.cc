@@ -368,8 +368,8 @@ void SVGTextLayoutEngine::LayoutTextOnLineOrPath(
 
   const Font& font = style.GetFont();
 
-  SVGTextLayoutEngineSpacing spacing_layout(font, style.EffectiveZoom());
-  SVGTextLayoutEngineBaseline baseline_layout(font, style.EffectiveZoom());
+  SVGTextLayoutEngineSpacing spacing_layout(font, style.EffectiveZoomX());
+  SVGTextLayoutEngineBaseline baseline_layout(font, style.EffectiveZoomX());
 
   bool did_start_text_fragment = false;
   bool apply_spacing_to_next_character = false;

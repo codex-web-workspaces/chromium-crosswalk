@@ -214,8 +214,12 @@ class CORE_EXPORT CSSPrimitiveValue : public CSSValue {
   template <typename T>
   T ComputeLength(const CSSToLengthConversionData&) const;
 
+  template <typename T>
+  T ComputeLengthY(const CSSToLengthConversionData&) const;
+
   // Converts to a Length (Fixed, Percent or Calculated)
   Length ConvertToLength(const CSSToLengthConversionData&) const;
+  Length ConvertToLengthY(const CSSToLengthConversionData&) const;
 
   bool IsZero() const;
 
@@ -263,6 +267,7 @@ class CORE_EXPORT CSSPrimitiveValue : public CSSValue {
   static UnitType StringToUnitType(const UChar*, unsigned length);
 
   double ComputeLengthDouble(const CSSToLengthConversionData&) const;
+  double ComputeLengthDoubleY(const CSSToLengthConversionData&) const;
 };
 
 using CSSLengthArray = CSSPrimitiveValue::CSSLengthArray;
@@ -293,6 +298,29 @@ float CSSPrimitiveValue::ComputeLength(const CSSToLengthConversionData&) const;
 
 template <>
 double CSSPrimitiveValue::ComputeLength(const CSSToLengthConversionData&) const;
+
+
+
+
+template <>
+int CSSPrimitiveValue::ComputeLengthY(const CSSToLengthConversionData&) const;
+
+template <>
+Length CSSPrimitiveValue::ComputeLengthY(const CSSToLengthConversionData&) const;
+
+template <>
+unsigned CSSPrimitiveValue::ComputeLengthY(
+    const CSSToLengthConversionData&) const;
+
+template <>
+int16_t CSSPrimitiveValue::ComputeLengthY(
+    const CSSToLengthConversionData&) const;
+
+template <>
+float CSSPrimitiveValue::ComputeLengthY(const CSSToLengthConversionData&) const;
+
+template <>
+double CSSPrimitiveValue::ComputeLengthY(const CSSToLengthConversionData&) const;
 }  // namespace blink
 
 #endif  // THIRD_PARTY_BLINK_RENDERER_CORE_CSS_CSS_PRIMITIVE_VALUE_H_

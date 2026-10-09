@@ -501,6 +501,8 @@ EGLConfig ChooseConfig(GLSurfaceFormat format, bool surfaceless) {
     EGLint config_size = 1;
     EGLConfig config = nullptr;
     EGLConfig* config_data = &config;
+
+    LOG(INFO) << "eglChooseConfig ----";
     // Validate if there are any configs for given attribs.
     if (!ValidateEglConfig(g_egl_display, choose_attributes, &num_configs)) {
       // Try the next renderable_type
@@ -517,6 +519,8 @@ EGLConfig ChooseConfig(GLSurfaceFormat format, bool surfaceless) {
                          config_size, &num_configs)) {
       LOG(ERROR) << "eglChooseConfig failed with error "
                  << GetLastEGLErrorString();
+
+    LOG(INFO) << "eglChooseConfig --return--1";
       return config;
     }
 
@@ -554,10 +558,12 @@ EGLConfig ChooseConfig(GLSurfaceFormat format, bool surfaceless) {
                              &num_configs)) {
           LOG(ERROR) << "eglChooseConfig failed with error "
                      << GetLastEGLErrorString();
+                     LOG(INFO) << "eglChooseConfig --return--2";
           return config;
         }
       }
     }
+    LOG(INFO) << "eglChooseConfig --return--3";
     return config;
   }
 

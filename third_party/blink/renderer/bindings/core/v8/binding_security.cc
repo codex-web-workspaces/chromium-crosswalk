@@ -98,34 +98,34 @@ bool CanAccessWindowInternal(const LocalDOMWindow* accessing_window,
   // possible for a remote frame and local frame to have the same security
   // origin, depending on the model being used to allocate Frames between
   // processes. See https://crbug.com/601629.
-  const auto* local_target_window = DynamicTo<LocalDOMWindow>(target_window);
-  if (!(accessing_window && local_target_window))
-    return false;
+  // const auto* local_target_window = DynamicTo<LocalDOMWindow>(target_window);
+  // if (!(accessing_window && local_target_window))
+  //   return false;
 
-  const SecurityOrigin* accessing_origin =
-      accessing_window->document()->GetSecurityOrigin();
+  // const SecurityOrigin* accessing_origin =
+  //     accessing_window->document()->GetSecurityOrigin();
 
-  SecurityOrigin::AccessResultDomainDetail detail;
-  bool can_access = accessing_origin->CanAccess(
-      local_target_window->document()->GetSecurityOrigin(), detail);
-  if (detail ==
-          SecurityOrigin::AccessResultDomainDetail::kDomainSetByOnlyOneOrigin ||
-      detail ==
-          SecurityOrigin::AccessResultDomainDetail::kDomainMatchNecessary ||
-      detail == SecurityOrigin::AccessResultDomainDetail::kDomainMismatch) {
-    UseCounter::Count(
-        accessing_window->document(),
-        can_access ? WebFeature::kDocumentDomainEnabledCrossOriginAccess
-                   : WebFeature::kDocumentDomainBlockedCrossOriginAccess);
-  }
-  if (!can_access)
-    return false;
+  // SecurityOrigin::AccessResultDomainDetail detail;
+  // bool can_access = accessing_origin->CanAccess(
+  //     local_target_window->document()->GetSecurityOrigin(), detail);
+  // if (detail ==
+  //         SecurityOrigin::AccessResultDomainDetail::kDomainSetByOnlyOneOrigin ||
+  //     detail ==
+  //         SecurityOrigin::AccessResultDomainDetail::kDomainMatchNecessary ||
+  //     detail == SecurityOrigin::AccessResultDomainDetail::kDomainMismatch) {
+  //   UseCounter::Count(
+  //       accessing_window->document(),
+  //       can_access ? WebFeature::kDocumentDomainEnabledCrossOriginAccess
+  //                  : WebFeature::kDocumentDomainBlockedCrossOriginAccess);
+  // }
+  // if (!can_access)
+  //   return false;
 
-  // Notify the loader's client if the initial document has been accessed.
-  LocalFrame* target_frame = local_target_window->GetFrame();
-  if (target_frame &&
-      target_frame->Loader().StateMachine()->IsDisplayingInitialEmptyDocument())
-    target_frame->Loader().DidAccessInitialDocument();
+  // // Notify the loader's client if the initial document has been accessed.
+  // LocalFrame* target_frame = local_target_window->GetFrame();
+  // if (target_frame &&
+  //     target_frame->Loader().StateMachine()->IsDisplayingInitialEmptyDocument())
+  //   target_frame->Loader().DidAccessInitialDocument();
 
   return true;
 }

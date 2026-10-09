@@ -316,11 +316,18 @@ float WebPluginContainerImpl::PageScaleFactor() {
   return page->PageScaleFactor();
 }
 
-float WebPluginContainerImpl::PageZoomFactor() {
+float WebPluginContainerImpl::PageZoomFactorX() {
   LocalFrame* frame = element_->GetDocument().GetFrame();
   if (!frame)
     return 1.0;
-  return frame->PageZoomFactor();
+  return frame->PageZoomFactorX();
+}
+
+float WebPluginContainerImpl::PageZoomFactorY() {
+  LocalFrame* frame = element_->GetDocument().GetFrame();
+  if (!frame)
+    return 1.0;
+  return frame->PageZoomFactorY();
 }
 
 void WebPluginContainerImpl::SetCcLayer(cc::Layer* new_layer,

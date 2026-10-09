@@ -3537,7 +3537,7 @@ Element* LayoutObject::OffsetParent(const Element* base) const {
   if (IsFixedPositioned())
     return nullptr;
 
-  float effective_zoom = StyleRef().EffectiveZoom();
+  float effective_zoom = StyleRef().EffectiveZoomX();
   Node* node = nullptr;
   for (LayoutObject* ancestor = Parent(); ancestor;
        ancestor = ancestor->Parent()) {
@@ -3572,7 +3572,7 @@ Element* LayoutObject::OffsetParent(const Element* base) const {
       break;
 
     // Webkit specific extension where offsetParent stops at zoom level changes.
-    if (effective_zoom != ancestor->StyleRef().EffectiveZoom())
+    if (effective_zoom != ancestor->StyleRef().EffectiveZoomX())
       break;
   }
 

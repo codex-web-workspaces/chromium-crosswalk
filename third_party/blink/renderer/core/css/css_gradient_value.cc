@@ -126,7 +126,7 @@ scoped_refptr<Image> CSSGradientValue::GetImage(
   const ComputedStyle* root_style =
       document.documentElement()->GetComputedStyle();
   CSSToLengthConversionData conversion_data(
-      &style, root_style, document.GetLayoutView(), style.EffectiveZoom());
+      &style, root_style, document.GetLayoutView(), style.EffectiveZoomX(), style.EffectiveZoomY());
 
   scoped_refptr<Gradient> gradient;
   switch (GetClassType()) {
@@ -677,7 +677,7 @@ static float PositionFromValue(const CSSValue* value,
 
   if (primitive_value->IsNumber())
     return origin +
-           sign * primitive_value->GetFloatValue() * conversion_data.Zoom();
+           sign * primitive_value->GetFloatValue() * conversion_data.ZoomX();
 
   if (primitive_value->IsPercentage())
     return origin +
@@ -1151,7 +1151,7 @@ float ResolveRadius(const CSSPrimitiveValue* radius,
                     float* width_or_height = nullptr) {
   float result = 0;
   if (radius->IsNumber())
-    result = radius->GetFloatValue() * conversion_data.Zoom();
+    result = radius->GetFloatValue() * conversion_data.ZoomX();
   else if (width_or_height && radius->IsPercentage())
     result = *width_or_height * radius->GetFloatValue() / 100;
   else

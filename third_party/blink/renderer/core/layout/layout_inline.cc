@@ -773,7 +773,7 @@ void LayoutInline::AddChildToContinuation(LayoutObject* new_child,
 }
 
 void LayoutInline::Paint(const PaintInfo& paint_info) const {
-  InlinePainter(*this).Paint(paint_info);
+  // InlinePainter(*this).Paint(paint_info);
 }
 
 template <typename PhysicalRectCollector>

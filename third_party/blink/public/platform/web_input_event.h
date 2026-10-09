@@ -425,8 +425,10 @@ class WebInputEvent {
     return "";
   }
 
-  float FrameScale() const { return frame_scale_; }
-  void SetFrameScale(float scale) { frame_scale_ = scale; }
+  float FrameScaleX() const { return frame_scalex_; }
+  float FrameScaleY() const { return frame_scaley_; }
+  void SetFrameScaleX(float scale) { frame_scalex_ = scale; }
+  void SetFrameScaleY(float scale) { frame_scaley_ = scale; }
 
   WebFloatPoint FrameTranslate() const { return frame_translate_; }
   void SetFrameTranslate(WebFloatPoint translate) {
@@ -450,7 +452,8 @@ class WebInputEvent {
 
  protected:
   // The root frame scale.
-  float frame_scale_;
+  float frame_scalex_;
+  float frame_scaley_;
 
   // The root frame translation (applied post scale).
   WebFloatPoint frame_translate_;
@@ -469,9 +472,11 @@ class WebInputEvent {
 #if DCHECK_IS_ON()
     // If dcheck is on force failures if frame scale is not initialized
     // correctly by causing DIV0.
-    frame_scale_ = 0;
+    frame_scalex_ = 0;
+    frame_scaley_ = 0;
 #else
-    frame_scale_ = 1;
+    frame_scalex_ = 1;
+    frame_scaley_ = 1;
 #endif
   }
 
@@ -485,9 +490,11 @@ class WebInputEvent {
 #if DCHECK_IS_ON()
     // If dcheck is on force failures if frame scale is not initialized
     // correctly by causing DIV0.
-    frame_scale_ = 0;
+    frame_scalex_ = 0;
+    frame_scaley_ = 0;
 #else
-    frame_scale_ = 1;
+    frame_scalex_ = 1;
+    frame_scaley_ = 1;
 #endif
   }
 

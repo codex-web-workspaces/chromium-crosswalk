@@ -73,6 +73,7 @@
 #include "net/log/net_log.h"
 #include "net/log/net_log_values.h"
 #include "url/origin.h"
+#include "base/android/jni_android.h"
 
 using base::Time;
 using base::TimeDelta;
@@ -683,6 +684,7 @@ void CookieMonster::SetCookieWithOptions(const GURL& url,
                                          const std::string& cookie_line,
                                          const CookieOptions& options,
                                          SetCookiesCallback callback) {
+
   DCHECK(thread_checker_.CalledOnValidThread());
 
   if (!HasCookieableScheme(url)) {

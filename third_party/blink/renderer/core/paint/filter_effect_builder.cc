@@ -124,11 +124,13 @@ Vector<float> SepiaMatrix(double amount) {
 FilterEffectBuilder::FilterEffectBuilder(
     const FloatRect& reference_box,
     float zoom,
+    float zoomy,
     const PaintFlags* fill_flags,
     const PaintFlags* stroke_flags,
     SkBlurImageFilter::TileMode blur_tile_mode)
     : reference_box_(reference_box),
       zoom_(zoom),
+      zoomy_(zoomy),
       fill_flags_(fill_flags),
       stroke_flags_(stroke_flags),
       blur_tile_mode_(blur_tile_mode) {}
@@ -441,7 +443,7 @@ Filter* FilterEffectBuilder::BuildReferenceFilter(
   Filter::UnitScaling unit_scaling =
       primitive_bounding_box_mode ? Filter::kBoundingBox : Filter::kUserSpace;
   auto* result = MakeGarbageCollected<Filter>(reference_box_, filter_region,
-                                              zoom_, unit_scaling);
+                                              zoom_,zoomy_, unit_scaling);
   if (!previous_effect)
     previous_effect = result->GetSourceGraphic();
   SVGFilterBuilder builder(previous_effect, node_map, fill_flags_,

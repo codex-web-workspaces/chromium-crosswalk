@@ -83,17 +83,18 @@ class CORE_EXPORT CSSToLengthConversionData {
     DoubleSize size_;
   };
 
-  CSSToLengthConversionData() : style_(nullptr), zoom_(1) {}
+  CSSToLengthConversionData() : style_(nullptr), zoomx_(1), zoomy_(1) {}
   CSSToLengthConversionData(const ComputedStyle*,
                             const FontSizes&,
                             const ViewportSize&,
-                            float zoom);
+                            float zoom,float zoomy);
   CSSToLengthConversionData(const ComputedStyle* curr_style,
                             const ComputedStyle* root_style,
                             const LayoutView*,
-                            float zoom);
+                            float zoom,float zoomy);
 
-  float Zoom() const { return zoom_; }
+  float ZoomX() const { return zoomx_; }
+  float ZoomY() const { return zoomy_; }
 
   float EmFontSize() const { return font_sizes_.Em(); }
   float RemFontSize() const;
@@ -107,24 +108,31 @@ class CORE_EXPORT CSSToLengthConversionData {
   double ViewportMaxPercent() const;
 
   void SetFontSizes(const FontSizes& font_sizes) { font_sizes_ = font_sizes; }
-  void SetZoom(float zoom) {
+  void SetZoomX(float zoom) {
     DCHECK(std::isfinite(zoom));
     DCHECK_GT(zoom, 0);
-    zoom_ = zoom;
+    zoomx_ = zoom;
+  }
+  void SetZoomY(float zoom) {
+    DCHECK(std::isfinite(zoom));
+    DCHECK_GT(zoom, 0);
+    zoomy_ = zoom;
   }
 
-  CSSToLengthConversionData CopyWithAdjustedZoom(float new_zoom) const {
+  CSSToLengthConversionData CopyWithAdjustedZoom(float new_zoom,float new_zoomy) const {
     return CSSToLengthConversionData(style_, font_sizes_, viewport_size_,
-                                     new_zoom);
+                                     new_zoom,new_zoomy);
   }
 
   double ZoomedComputedPixels(double value, CSSPrimitiveValue::UnitType) const;
+  double ZoomedComputedPixelsY(double value, CSSPrimitiveValue::UnitType) const;
 
  private:
   const ComputedStyle* style_;
   FontSizes font_sizes_;
   ViewportSize viewport_size_;
-  float zoom_;
+  float zoomx_;
+  float zoomy_;
 };
 
 }  // namespace blink

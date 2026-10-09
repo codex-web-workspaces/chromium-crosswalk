@@ -136,17 +136,17 @@ static inline float DimensionForViewportUnit(const SVGElement* context,
   switch (unit) {
     case CSSPrimitiveValue::UnitType::kViewportWidth:
       return ViewportLengthPercent(viewport_size.Width()) /
-             style->EffectiveZoom();
+             style->EffectiveZoomX();
 
     case CSSPrimitiveValue::UnitType::kViewportHeight:
       return ViewportLengthPercent(viewport_size.Height()) /
-             style->EffectiveZoom();
+             style->EffectiveZoomY();
 
     case CSSPrimitiveValue::UnitType::kViewportMin:
-      return ViewportMinPercent(viewport_size) / style->EffectiveZoom();
+      return ViewportMinPercent(viewport_size) / style->EffectiveZoomX();
 
     case CSSPrimitiveValue::UnitType::kViewportMax:
-      return ViewportMaxPercent(viewport_size) / style->EffectiveZoom();
+      return ViewportMaxPercent(viewport_size) / style->EffectiveZoomX();
     default:
       break;
   }
@@ -204,9 +204,10 @@ FloatPoint SVGLengthContext::ResolveLengthPair(
   if (x_length.IsPercentOrCalc() || y_length.IsPercentOrCalc())
     DetermineViewport(viewport_size);
 
-  float zoom = style.EffectiveZoom();
+  float zoom = style.EffectiveZoomX();
+  float zoomy = style.EffectiveZoomY();
   return FloatPoint(ValueForLength(x_length, zoom, viewport_size.Width()),
-                    ValueForLength(y_length, zoom, viewport_size.Height()));
+                    ValueForLength(y_length, zoomy, viewport_size.Height()));
 }
 
 float SVGLengthContext::ResolveLength(const SVGElement* context,
@@ -232,7 +233,7 @@ float SVGLengthContext::ValueForLength(const UnzoomedLength& unzoomed_length,
 float SVGLengthContext::ValueForLength(const Length& length,
                                        const ComputedStyle& style,
                                        SVGLengthMode mode) const {
-  return ValueForLength(length, style.EffectiveZoom(), mode);
+  return ValueForLength(length, style.EffectiveZoomX(), mode);
 }
 
 float SVGLengthContext::ValueForLength(const Length& length,
@@ -251,7 +252,7 @@ float SVGLengthContext::ValueForLength(const Length& length,
 float SVGLengthContext::ValueForLength(const Length& length,
                                        const ComputedStyle& style,
                                        float dimension) {
-  return ValueForLength(length, style.EffectiveZoom(), dimension);
+  return ValueForLength(length, style.EffectiveZoomX(), dimension);
 }
 
 float SVGLengthContext::ValueForLength(const Length& length,
@@ -396,7 +397,7 @@ float SVGLengthContext::ConvertValueFromUserUnitsToCHS(float value) const {
   if (!font_data)
     return 0;
   float zero_width =
-      font_data->GetFontMetrics().ZeroWidth() / style->EffectiveZoom();
+      font_data->GetFontMetrics().ZeroWidth() / style->EffectiveZoomX();
   if (!zero_width)
     return 0;
   return value / zero_width;
@@ -410,7 +411,7 @@ float SVGLengthContext::ConvertValueFromCHSToUserUnits(float value) const {
   if (!font_data)
     return 0;
   return value * font_data->GetFontMetrics().ZeroWidth() /
-         style->EffectiveZoom();
+         style->EffectiveZoomX();
 }
 
 float SVGLengthContext::ConvertValueFromUserUnitsToEXS(float value) const {
@@ -424,7 +425,7 @@ float SVGLengthContext::ConvertValueFromUserUnitsToEXS(float value) const {
   // coords-units-03-b.svg, if this causes problems in real world cases maybe it
   // would be best to remove this.
   float x_height =
-      ceilf(font_data->GetFontMetrics().XHeight() / style->EffectiveZoom());
+      ceilf(font_data->GetFontMetrics().XHeight() / style->EffectiveZoomY());
   if (!x_height)
     return 0;
   return value / x_height;
@@ -441,7 +442,7 @@ float SVGLengthContext::ConvertValueFromEXSToUserUnits(float value) const {
   // coords-units-03-b.svg, if this causes problems in real world cases maybe it
   // would be best to remove this.
   return value *
-         ceilf(font_data->GetFontMetrics().XHeight() / style->EffectiveZoom());
+         ceilf(font_data->GetFontMetrics().XHeight() / style->EffectiveZoomY());
 }
 
 bool SVGLengthContext::DetermineViewport(FloatSize& viewport_size) const {
@@ -478,7 +479,7 @@ float SVGLengthContext::ResolveValue(const CSSPrimitiveValue& primitive_value,
     return 0;
 
   CSSToLengthConversionData conversion_data = CSSToLengthConversionData(
-      style, root_style, context_->GetDocument().GetLayoutView(), 1.0f);
+      style, root_style, context_->GetDocument().GetLayoutView(), 1.0f, 1.0f);
   Length length = primitive_value.ConvertToLength(conversion_data);
   return ValueForLength(length, 1.0f, mode);
 }

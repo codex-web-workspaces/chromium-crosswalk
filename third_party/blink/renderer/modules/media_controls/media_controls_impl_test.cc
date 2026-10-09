@@ -319,7 +319,8 @@ void MediaControlsImplTest::MouseDownAt(WebFloatPoint pos) {
                                  WebPointerProperties::Button::kLeft, 1,
                                  WebInputEvent::Modifiers::kLeftButtonDown,
                                  WebInputEvent::GetStaticTimeStampForTests());
-  mouse_down_event.SetFrameScale(1);
+  mouse_down_event.SetFrameScaleX(1);
+  mouse_down_event.SetFrameScaleY(1);
   GetDocument().GetFrame()->GetEventHandler().HandleMousePressEvent(
       mouse_down_event);
 }
@@ -330,7 +331,8 @@ void MediaControlsImplTest::MouseMoveTo(WebFloatPoint pos) {
                                  WebPointerProperties::Button::kLeft, 1,
                                  WebInputEvent::Modifiers::kLeftButtonDown,
                                  WebInputEvent::GetStaticTimeStampForTests());
-  mouse_move_event.SetFrameScale(1);
+  mouse_move_event.SetFrameScaleX(1);
+  mouse_move_event.SetFrameScaleY(1);
   GetDocument().GetFrame()->GetEventHandler().HandleMouseMoveEvent(
       mouse_move_event, {}, {});
 }
@@ -340,7 +342,8 @@ void MediaControlsImplTest::MouseUpAt(WebFloatPoint pos) {
       WebMouseEvent::kMouseUp, pos /* client pos */, pos /* screen pos */,
       WebPointerProperties::Button::kLeft, 1, WebInputEvent::kNoModifiers,
       WebInputEvent::GetStaticTimeStampForTests());
-  mouse_up_event.SetFrameScale(1);
+  mouse_up_event.SetFrameScaleX(1);
+  mouse_up_event.SetFrameScaleY(1);
   GetDocument().GetFrame()->GetEventHandler().HandleMouseReleaseEvent(
       mouse_up_event);
 }
@@ -351,10 +354,12 @@ void MediaControlsImplTest::GestureTapAt(WebFloatPoint pos) {
       WebInputEvent::GetStaticTimeStampForTests());
 
   // Adjust |pos| by current frame scale.
-  float frame_scale = GetDocument().GetFrame()->PageZoomFactor();
-  gesture_tap_event.SetFrameScale(frame_scale);
+  float frame_scale = GetDocument().GetFrame()->PageZoomFactorX();
+  float frame_scaley = GetDocument().GetFrame()->PageZoomFactorX();
+  gesture_tap_event.SetFrameScaleX(frame_scale);
+  gesture_tap_event.SetFrameScaleY(frame_scaley);
   pos.x = pos.x * frame_scale;
-  pos.y = pos.y * frame_scale;
+  pos.y = pos.y * frame_scaley;
   gesture_tap_event.SetPositionInWidget(pos);
 
   // Fire the event.

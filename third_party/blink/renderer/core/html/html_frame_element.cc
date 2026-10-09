@@ -34,7 +34,7 @@ using namespace html_names;
 
 HTMLFrameElement::HTMLFrameElement(Document& document)
     : HTMLFrameElementBase(kFrameTag, document),
-      frame_border_(true),
+      frame_border_(false),
       frame_border_set_(false) {}
 
 const AttrNameToTrustedType& HTMLFrameElement::GetCheckedAttributeTypes()
@@ -64,15 +64,15 @@ void HTMLFrameElement::AttachLayoutTree(AttachContext& context) {
   if (HTMLFrameSetElement* frame_set_element =
           Traversal<HTMLFrameSetElement>::FirstAncestor(*this)) {
     if (!frame_border_set_)
-      frame_border_ = frame_set_element->HasFrameBorder();
+      frame_border_ = false;
   }
 }
 
 void HTMLFrameElement::ParseAttribute(
     const AttributeModificationParams& params) {
   if (params.name == kFrameborderAttr) {
-    frame_border_ = params.new_value.ToInt();
-    frame_border_set_ = !params.new_value.IsNull();
+    frame_border_ = 0;
+    frame_border_set_ = false;
     // FIXME: If we are already attached, this has no effect.
   } else if (params.name == kNoresizeAttr) {
     if (GetLayoutObject())

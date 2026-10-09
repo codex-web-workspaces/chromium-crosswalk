@@ -795,7 +795,7 @@ int Element::OffsetLeft() {
 int Element::OffsetTop() {
   GetDocument().EnsurePaintLocationDataValidForNode(this);
   if (LayoutBoxModelObject* layout_object = GetLayoutBoxModelObject())
-    return AdjustForAbsoluteZoom::AdjustLayoutUnit(
+    return AdjustForAbsoluteZoom::AdjustLayoutUnitY(
                LayoutUnit(layout_object->PixelSnappedOffsetTop(OffsetParent())),
                layout_object->StyleRef())
         .Round();
@@ -816,7 +816,7 @@ int Element::OffsetWidth() {
 int Element::OffsetHeight() {
   GetDocument().EnsurePaintLocationDataValidForNode(this);
   if (LayoutBoxModelObject* layout_object = GetLayoutBoxModelObject())
-    return AdjustForAbsoluteZoom::AdjustLayoutUnit(
+    return AdjustForAbsoluteZoom::AdjustLayoutUnitY(
                LayoutUnit(
                    layout_object->PixelSnappedOffsetHeight(OffsetParent())),
                layout_object->StyleRef())
@@ -845,7 +845,7 @@ int Element::clientTop() {
   GetDocument().UpdateStyleAndLayoutForNode(this);
 
   if (LayoutBox* layout_object = GetLayoutBox())
-    return AdjustForAbsoluteZoom::AdjustLayoutUnit(layout_object->ClientTop(),
+    return AdjustForAbsoluteZoom::AdjustLayoutUnitY(layout_object->ClientTop(),
                                                    layout_object->StyleRef())
         .Round();
   return 0;
@@ -901,11 +901,11 @@ int Element::clientHeight() {
           !GetDocument().GetFrame()->IsLocalRoot())
         GetDocument().UpdateStyleAndLayoutForNode(this);
       if (GetDocument().GetPage()->GetSettings().GetForceZeroLayoutHeight())
-        return AdjustForAbsoluteZoom::AdjustLayoutUnit(
+        return AdjustForAbsoluteZoom::AdjustLayoutUnitY(
                    layout_view->OverflowClipRect(PhysicalOffset()).Height(),
                    layout_view->StyleRef())
             .Round();
-      return AdjustForAbsoluteZoom::AdjustLayoutUnit(
+      return AdjustForAbsoluteZoom::AdjustLayoutUnitY(
                  LayoutUnit(layout_view->GetLayoutSize().Height()),
                  layout_view->StyleRef())
           .Round();
@@ -915,7 +915,7 @@ int Element::clientHeight() {
   GetDocument().UpdateStyleAndLayoutForNode(this);
 
   if (LayoutBox* layout_object = GetLayoutBox())
-    return AdjustForAbsoluteZoom::AdjustLayoutUnit(
+    return AdjustForAbsoluteZoom::AdjustLayoutUnitY(
                LayoutUnit(layout_object->PixelSnappedClientHeight()),
                layout_object->StyleRef())
         .Round();
@@ -954,7 +954,7 @@ double Element::scrollTop() {
   }
 
   if (LayoutBox* box = GetLayoutBox()) {
-    return AdjustForAbsoluteZoom::AdjustScroll(box->ScrollTop(), *box);
+    return AdjustForAbsoluteZoom::AdjustScrollY(box->ScrollTop(), *box);
   }
 
   return 0;
@@ -979,7 +979,7 @@ void Element::setScrollLeft(double new_left) {
     if (!box)
       return;
 
-    FloatPoint end_point(new_left * box->Style()->EffectiveZoom(),
+    FloatPoint end_point(new_left * box->Style()->EffectiveZoomX(),
                          box->ScrollTop().ToFloat());
     std::unique_ptr<cc::SnapSelectionStrategy> strategy =
         cc::SnapSelectionStrategy::CreateForEndPosition(
@@ -1012,7 +1012,7 @@ void Element::setScrollTop(double new_top) {
       return;
 
     FloatPoint end_point(box->ScrollLeft().ToFloat(),
-                         new_top * box->Style()->EffectiveZoom());
+                         new_top * box->Style()->EffectiveZoomY());
     std::unique_ptr<cc::SnapSelectionStrategy> strategy =
         cc::SnapSelectionStrategy::CreateForEndPosition(
             gfx::ScrollOffset(end_point), false, true);
@@ -1034,7 +1034,7 @@ int Element::scrollWidth() {
     if (GetDocument().View()) {
       return AdjustForAbsoluteZoom::AdjustInt(
           GetDocument().View()->LayoutViewport()->ContentsSize().Width(),
-          GetDocument().GetFrame()->PageZoomFactor());
+          GetDocument().GetFrame()->PageZoomFactorX());
     }
     return 0;
   }
@@ -1056,13 +1056,13 @@ int Element::scrollHeight() {
     if (GetDocument().View()) {
       return AdjustForAbsoluteZoom::AdjustInt(
           GetDocument().View()->LayoutViewport()->ContentsSize().Height(),
-          GetDocument().GetFrame()->PageZoomFactor());
+          GetDocument().GetFrame()->PageZoomFactorY());
     }
     return 0;
   }
 
   if (LayoutBox* box = GetLayoutBox()) {
-    return AdjustForAbsoluteZoom::AdjustInt(box->PixelSnappedScrollHeight(),
+    return AdjustForAbsoluteZoom::AdjustIntY(box->PixelSnappedScrollHeight(),
                                             box);
   }
   return 0;
@@ -1130,7 +1130,7 @@ void Element::ScrollLayoutBoxBy(const ScrollToOptions* scroll_to_options) {
   if (box) {
     gfx::ScrollOffset current_position(box->ScrollLeft().ToFloat(),
                                        box->ScrollTop().ToFloat());
-    displacement.Scale(box->Style()->EffectiveZoom());
+    displacement.Scale(box->Style()->EffectiveZoomX(),box->Style()->EffectiveZoomY());
     gfx::ScrollOffset new_offset(current_position + displacement);
     FloatPoint new_position(new_offset.x(), new_offset.y());
 
@@ -1157,12 +1157,12 @@ void Element::ScrollLayoutBoxTo(const ScrollToOptions* scroll_to_options) {
     if (scroll_to_options->hasLeft()) {
       new_position.SetX(
           ScrollableArea::NormalizeNonFiniteScroll(scroll_to_options->left()) *
-          box->Style()->EffectiveZoom());
+          box->Style()->EffectiveZoomX());
     }
     if (scroll_to_options->hasTop()) {
       new_position.SetY(
           ScrollableArea::NormalizeNonFiniteScroll(scroll_to_options->top()) *
-          box->Style()->EffectiveZoom());
+          box->Style()->EffectiveZoomY());
     }
 
     std::unique_ptr<cc::SnapSelectionStrategy> strategy =
@@ -1199,7 +1199,7 @@ void Element::ScrollFrameBy(const ScrollToOptions* scroll_to_options) {
   if (!viewport)
     return;
 
-  displacement.Scale(frame->PageZoomFactor());
+  displacement.Scale(frame->PageZoomFactorX(),frame->PageZoomFactorY());
   FloatPoint new_position = viewport->ScrollPosition() +
                             FloatPoint(displacement.x(), displacement.y());
 
@@ -1232,12 +1232,12 @@ void Element::ScrollFrameTo(const ScrollToOptions* scroll_to_options) {
   if (scroll_to_options->hasLeft()) {
     new_offset.SetWidth(
         ScrollableArea::NormalizeNonFiniteScroll(scroll_to_options->left()) *
-        frame->PageZoomFactor());
+        frame->PageZoomFactorX());
   }
   if (scroll_to_options->hasTop()) {
     new_offset.SetHeight(
         ScrollableArea::NormalizeNonFiniteScroll(scroll_to_options->top()) *
-        frame->PageZoomFactor());
+        frame->PageZoomFactorY());
   }
 
   FloatPoint new_position = viewport->ScrollOffsetToPosition(new_offset);
@@ -3638,6 +3638,7 @@ bool Element::IsKeyboardFocusable() const {
   // isn't active (style can't be invalidated in a non-active document).
   DCHECK(!GetDocument().IsActive() ||
          !GetDocument().NeedsLayoutTreeUpdateForNode(*this));
+  
   return isConnected() && !IsInert() && IsFocusableStyle() &&
          ((SupportsFocus() && tabIndex() >= 0) ||
           (RuntimeEnabledFeatures::KeyboardFocusableScrollersEnabled() &&

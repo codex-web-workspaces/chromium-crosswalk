@@ -62,11 +62,12 @@ class SVGImageForContainer final : public Image {
       SVGImage* image,
       const FloatSize& target_size,
       float zoom,
+      float zoomy,
       const KURL& url) {
     FloatSize container_size_without_zoom(target_size);
-    container_size_without_zoom.Scale(1 / zoom);
+    container_size_without_zoom.Scale(1 / zoom,1/zoomy);
     return base::AdoptRef(new SVGImageForContainer(
-        image, container_size_without_zoom, zoom, url));
+        image, container_size_without_zoom, zoom,zoomy, url));
   }
 
   IntSize Size() const override;
@@ -101,10 +102,12 @@ class SVGImageForContainer final : public Image {
   SVGImageForContainer(SVGImage* image,
                        const FloatSize& container_size,
                        float zoom,
+                       float zoomy,
                        const KURL& url)
       : image_(image),
         container_size_(container_size),
         zoom_(zoom),
+        zoomy_(zoomy),
         url_(url) {}
 
   void DestroyDecodedData() override {}
@@ -118,6 +121,7 @@ class SVGImageForContainer final : public Image {
   SVGImage* image_;
   const FloatSize container_size_;
   const float zoom_;
+  const float zoomy_;
   const KURL url_;
 };
 }  // namespace blink

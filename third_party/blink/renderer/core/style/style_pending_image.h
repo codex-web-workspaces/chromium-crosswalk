@@ -73,6 +73,7 @@ class StylePendingImage final : public StyleImage {
 
   FloatSize ImageSize(const Document&,
                       float /*multiplier*/,
+                      float /*multiplier*/,
                       const LayoutSize& /*defaultObjectSize*/) const override {
     return FloatSize();
   }

@@ -85,7 +85,7 @@ class CORE_EXPORT NinePieceImageGrid {
       ENinePieceImageRule vertical;
     } tile_rule;
   };
-  NinePieceDrawInfo GetNinePieceDrawInfo(NinePiece, float) const;
+  NinePieceDrawInfo GetNinePieceDrawInfo(NinePiece, float,float) const;
 
   struct Edge {
     DISALLOW_NEW();

@@ -121,11 +121,12 @@ WebPointerEvent TransformWebPointerEvent(float frame_scale,
                                          FloatPoint frame_translate,
                                          const WebPointerEvent& event) {
   // frameScale is default initialized in debug builds to be 0.
-  DCHECK_EQ(0, event.FrameScale());
+  DCHECK_EQ(0, event.FrameScaleX());
   DCHECK_EQ(0, event.FrameTranslate().x);
   DCHECK_EQ(0, event.FrameTranslate().y);
   WebPointerEvent result = event;
-  result.SetFrameScale(frame_scale);
+  result.SetFrameScaleX(frame_scale);
+  result.SetFrameScaleY(frame_scale);
   result.SetFrameTranslate(frame_translate);
   return result;
 }
@@ -142,7 +143,8 @@ WebMouseEvent TransformWebMouseEvent(LocalFrameView* frame_view,
     result.SetModifiers(event.GetModifiers() &
                         ~ToWebInputEventModifierFrom(event.button));
   }
-  result.SetFrameScale(FrameScale(frame_view));
+  result.SetFrameScaleX(FrameScale(frame_view));
+  result.SetFrameScaleY(FrameScale(frame_view));
   result.SetFrameTranslate(FrameTranslation(frame_view));
   return result;
 }
@@ -151,7 +153,8 @@ WebMouseWheelEvent TransformWebMouseWheelEvent(
     LocalFrameView* frame_view,
     const WebMouseWheelEvent& event) {
   WebMouseWheelEvent result = event;
-  result.SetFrameScale(FrameScale(frame_view));
+  result.SetFrameScaleX(FrameScale(frame_view));
+  result.SetFrameScaleY(FrameScale(frame_view));
   result.SetFrameTranslate(FrameTranslation(frame_view));
   return result;
 }
@@ -159,7 +162,8 @@ WebMouseWheelEvent TransformWebMouseWheelEvent(
 WebGestureEvent TransformWebGestureEvent(LocalFrameView* frame_view,
                                          const WebGestureEvent& event) {
   WebGestureEvent result = event;
-  result.SetFrameScale(FrameScale(frame_view));
+  result.SetFrameScaleX(FrameScale(frame_view));
+  result.SetFrameScaleY(FrameScale(frame_view));
   result.SetFrameTranslate(FrameTranslation(frame_view));
   return result;
 }
@@ -273,7 +277,8 @@ WebMouseEventBuilder::WebMouseEventBuilder(const LocalFrameView* plugin_parent,
 
   time_stamp_ = event.PlatformTimeStamp();
   modifiers_ = event.GetModifiers();
-  frame_scale_ = 1;
+  frame_scalex_ = 1;
+  frame_scaley_ = 1;
   frame_translate_ = WebFloatPoint();
 
   // The mouse event co-ordinates should be generated from the co-ordinates of

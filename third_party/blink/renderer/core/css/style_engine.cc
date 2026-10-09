@@ -1813,6 +1813,23 @@ void StyleEngine::RebuildLayoutTree() {
     ancestor->ClearChildNeedsStyleRecalc();
     ancestor->ClearChildNeedsReattachLayoutTree();
   }
+
+
+  //  const AtomicString& span_tag_name = html_names::kSpanTag.LocalName();
+  // for (Element* element : GetDocument().getElementsByTagName(span_tag_name)) {
+  //   if (!element->GetComputedStyle()) {
+  //     continue; // 跳过未计算样式的元素
+  //   }
+  //   const ComputedStyle& computed_style = *element->GetComputedStyle();
+  //   if (computed_style.GetPosition() != EPosition::kStatic &&
+  //       computed_style.Display() == EDisplay::kInline) {
+  //     // 克隆样式并强制设置 display: inline-block
+  //     scoped_refptr<ComputedStyle> modified_style = ComputedStyle::Clone(computed_style);
+  //     modified_style->SetDisplay(EDisplay::kInlineBlock);
+  //     element->SetStyle(modified_style);
+  //   }
+  // }
+
   layout_tree_rebuild_root_.Clear();
   in_layout_tree_rebuild_ = false;
 }

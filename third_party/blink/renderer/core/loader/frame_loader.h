@@ -177,6 +177,7 @@ class CORE_EXPORT FrameLoader final {
   // events and abort XHR requests. Returns true if the frame is ready to
   // receive the next document commit, or false otherwise.
   bool DetachDocument();
+  void notifyUnloadToJni();
 
   FrameLoaderStateMachine* StateMachine() const { return &state_machine_; }
 

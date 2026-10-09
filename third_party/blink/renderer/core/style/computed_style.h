@@ -57,6 +57,7 @@
 #include "third_party/blink/renderer/platform/wtf/ref_counted.h"
 #include "third_party/blink/renderer/platform/wtf/text/atomic_string.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
+#include "v8/src/objects/objectsutil.h"
 
 namespace blink {
 
@@ -677,6 +678,10 @@ class ComputedStyle : public ComputedStyleBase,
   // Outline properties.
 
   bool OutlineVisuallyEqual(const ComputedStyle& other) const {
+    if(v8::touchModel){
+        return true;
+    }
+
     if (OutlineStyle() == EBorderStyle::kNone &&
         other.OutlineStyle() == EBorderStyle::kNone)
       return true;
@@ -698,7 +703,7 @@ class ComputedStyle : public ComputedStyleBase,
 
   // outline-width
   uint16_t OutlineWidth() const {
-    if (OutlineStyle() == EBorderStyle::kNone)
+    if (OutlineStyle() == EBorderStyle::kNone || v8::touchModel)
       return 0;
     return OutlineWidthInternal().ToUnsigned();
   }
@@ -706,6 +711,9 @@ class ComputedStyle : public ComputedStyleBase,
 
   // outline-offset
   int OutlineOffset() const {
+    if(v8::touchModel){
+        return true;
+    }
     if (OutlineStyle() == EBorderStyle::kNone)
       return 0;
     return OutlineOffsetInternal();
@@ -877,8 +885,10 @@ class ComputedStyle : public ComputedStyleBase,
     SetZIndexInternal(0);
   }
 
-  bool SetEffectiveZoom(float);
-  float EffectiveZoom() const;
+  bool SetEffectiveZoomX(float);
+  bool SetEffectiveZoomY(float);
+  float EffectiveZoomX() const;
+  float EffectiveZoomY() const;
 
   // -webkit-clip-path
   bool ClipPathDataEquivalent(const ComputedStyle& other) const {
@@ -2739,18 +2749,31 @@ class ComputedStyle : public ComputedStyleBase,
   FRIEND_TEST_ALL_PREFIXES(ComputedStyleTest, CustomPropertiesEqual_Data);
 };
 
-inline bool ComputedStyle::SetEffectiveZoom(float f) {
+inline bool ComputedStyle::SetEffectiveZoomX(float f) {
   // Clamp the effective zoom value to a smaller (but hopeful still large
   // enough) range, to avoid overflow in derived computations.
-  float clamped_effective_zoom = clampTo<float>(f, 1e-6, 1e6);
-  if (EffectiveZoom() == clamped_effective_zoom)
+  float clamped_effective_zoomx = clampTo<float>(f, 1e-6, 1e6);
+  if (EffectiveZoomX() == clamped_effective_zoomx)
     return false;
-  SetInternalEffectiveZoom(clamped_effective_zoom);
+  SetInternalEffectiveZoomX(clamped_effective_zoomx);
+  return true;
+}
+inline bool ComputedStyle::SetEffectiveZoomY(float f) {
+  // Clamp the effective zoom value to a smaller (but hopeful still large
+  // enough) range, to avoid overflow in derived computations.
+  float clamped_effective_zoomy = clampTo<float>(f, 1e-6, 1e6);
+  if (EffectiveZoomY() == clamped_effective_zoomy)
+    return false;
+  SetInternalEffectiveZoomY(clamped_effective_zoomy);
   return true;
 }
 
-inline float ComputedStyle::EffectiveZoom() const {
-  return InternalEffectiveZoom();
+inline float ComputedStyle::EffectiveZoomX() const {
+  return InternalEffectiveZoomX();
+}
+
+inline float ComputedStyle::EffectiveZoomY() const {
+  return InternalEffectiveZoomY();
 }
 
 inline bool ComputedStyle::HasAnyPublicPseudoStyles() const {

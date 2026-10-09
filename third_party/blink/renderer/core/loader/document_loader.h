@@ -325,6 +325,7 @@ class CORE_EXPORT DocumentLoader
   void DidInstallNewDocument(Document*);
   void WillCommitNavigation();
   void DidCommitNavigation(GlobalObjectReusePolicy);
+  void notifyToJni();
 
   void PrepareForNavigationCommit();
   void FinishNavigationCommit(const AtomicString& mime_type,

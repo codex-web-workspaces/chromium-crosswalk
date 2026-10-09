@@ -133,12 +133,15 @@ void UpdateCommonPointerEventInit(const WebPointerEvent& web_pointer_event,
   if (web_pointer_event_in_root_frame.HasWidth() &&
       web_pointer_event_in_root_frame.HasHeight()) {
     float scale_factor = 1.0f;
-    if (dom_window && dom_window->GetFrame())
-      scale_factor = 1.0f / dom_window->GetFrame()->PageZoomFactor();
+    float scale_factory = 1.0f;
+    if (dom_window && dom_window->GetFrame()){
+      scale_factor = 1.0f / dom_window->GetFrame()->PageZoomFactorX();
+      scale_factory = 1.0f / dom_window->GetFrame()->PageZoomFactorY();
+    }
 
     FloatSize point_shape = FloatSize(web_pointer_event_in_root_frame.width,
                                       web_pointer_event_in_root_frame.height)
-                                .ScaledBy(scale_factor);
+                                .ScaledBy(scale_factor,scale_factory);
     pointer_event_init->setWidth(point_shape.Width());
     pointer_event_init->setHeight(point_shape.Height());
   }

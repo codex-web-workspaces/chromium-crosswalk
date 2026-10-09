@@ -40,14 +40,16 @@ FloatPoint ContentsOffset(LocalFrame* frame) {
   LocalFrameView* frame_view = frame->View();
   if (!frame_view)
     return FloatPoint();
-  float scale = 1.0f / frame->PageZoomFactor();
+  float scale = 1.0f / frame->PageZoomFactorX();
+  float scaley = 1.0f / frame->PageZoomFactorY();
   return FloatPoint(frame_view->LayoutViewport()->GetScrollOffset())
-      .ScaledBy(scale);
+      .ScaledBy(scale,scaley);
 }
 
 LayoutPoint PageToAbsolute(LocalFrame* frame, const FloatPoint& page_pos) {
-  float scale_factor = frame ? frame->PageZoomFactor() : 1.0f;
-  FloatPoint converted_point = page_pos.ScaledBy(scale_factor);
+  float scale_factor = frame ? frame->PageZoomFactorX() : 1.0f;
+  float scale_factory = frame ? frame->PageZoomFactorY() : 1.0f;
+  FloatPoint converted_point = page_pos.ScaledBy(scale_factor,scale_factory);
 
   if (frame && frame->View())
     converted_point = frame->View()->DocumentToFrame(converted_point);

@@ -272,134 +272,135 @@ blink::WebMediaPlayer* MediaFactory::CreateMediaPlayer(
     const blink::WebString& sink_id,
     blink::WebLayerTreeView* layer_tree_view,
     const cc::LayerTreeSettings& settings) {
-  blink::WebLocalFrame* web_frame = render_frame_->GetWebFrame();
-  blink::WebSecurityOrigin security_origin =
-      render_frame_->GetWebFrame()->GetSecurityOrigin();
-  blink::WebMediaStream web_stream =
-      blink::GetWebMediaStreamFromWebMediaPlayerSource(source);
-  if (!web_stream.IsNull())
-    return CreateWebMediaPlayerForMediaStream(
-        client, sink_id, security_origin, web_frame, layer_tree_view, settings);
+//   blink::WebLocalFrame* web_frame = render_frame_->GetWebFrame();
+//   blink::WebSecurityOrigin security_origin =
+//       render_frame_->GetWebFrame()->GetSecurityOrigin();
+//   blink::WebMediaStream web_stream =
+//       blink::GetWebMediaStreamFromWebMediaPlayerSource(source);
+//   if (!web_stream.IsNull())
+//     return CreateWebMediaPlayerForMediaStream(
+//         client, sink_id, security_origin, web_frame, layer_tree_view, settings);
 
-  // If |source| was not a MediaStream, it must be a URL.
-  // TODO(guidou): Fix this when support for other srcObject types is added.
-  DCHECK(source.IsURL());
-  blink::WebURL url = source.GetAsURL();
+//   // If |source| was not a MediaStream, it must be a URL.
+//   // TODO(guidou): Fix this when support for other srcObject types is added.
+//   DCHECK(source.IsURL());
+//   blink::WebURL url = source.GetAsURL();
 
-  RenderThreadImpl* render_thread = RenderThreadImpl::current();
-  // Render thread may not exist in tests, returning nullptr if it does not.
-  if (!render_thread)
+//   RenderThreadImpl* render_thread = RenderThreadImpl::current();
+//   // Render thread may not exist in tests, returning nullptr if it does not.
+//   if (!render_thread)
+//     return nullptr;
+
+//   scoped_refptr<media::SwitchableAudioRendererSink> audio_renderer_sink =
+//       AudioDeviceFactory::NewSwitchableAudioRendererSink(
+//           blink::WebAudioDeviceSourceType::kMediaElement,
+//           render_frame_->GetRoutingID(),
+//           media::AudioSinkParameters(0, sink_id.Utf8()));
+
+//   const WebPreferences webkit_preferences =
+//       render_frame_->GetWebkitPreferences();
+//   bool embedded_media_experience_enabled = false;
+//   bool use_media_player_renderer = false;
+// #if defined(OS_ANDROID)
+//   use_media_player_renderer = UseMediaPlayerRenderer(url);
+//   embedded_media_experience_enabled =
+//       webkit_preferences.embedded_media_experience_enabled;
+// #endif  // defined(OS_ANDROID)
+
+//   // When memory pressure based garbage collection is enabled for MSE, the
+//   // |enable_instant_source_buffer_gc| flag controls whether the GC is done
+//   // immediately on memory pressure notification or during the next SourceBuffer
+//   // append (slower, but is MSE-spec compliant).
+//   bool enable_instant_source_buffer_gc =
+//       base::GetFieldTrialParamByFeatureAsBool(
+//           media::kMemoryPressureBasedSourceBufferGC,
+//           "enable_instant_source_buffer_gc", false);
+
+//   // This must be created for every new WebMediaPlayer, each instance generates
+//   // a new player id which is used to collate logs on the browser side.
+//   std::unique_ptr<media::MediaLog> media_log(new RenderMediaLog(
+//       url::Origin(security_origin).GetURL(),
+//       render_frame_->GetTaskRunner(blink::TaskType::kInternalMedia)));
+
+//   base::WeakPtr<media::MediaObserver> media_observer;
+
+//   auto factory_selector = CreateRendererFactorySelector(
+//       media_log.get(), use_media_player_renderer,
+//       render_frame_->GetRenderFrameMediaPlaybackOptions()
+//           .is_mojo_renderer_enabled,
+//       GetDecoderFactory(),
+//       std::make_unique<media::RemotePlaybackClientWrapperImpl>(client),
+//       &media_observer);
+
+// #if BUILDFLAG(ENABLE_MEDIA_REMOTING)
+//   DCHECK(media_observer);
+// #endif
+
+//   if (!fetch_context_) {
+//     fetch_context_ = std::make_unique<FrameFetchContext>(web_frame);
+//     DCHECK(!url_index_);
+//     url_index_ = std::make_unique<media::UrlIndex>(fetch_context_.get());
+//   }
+//   DCHECK_EQ(static_cast<FrameFetchContext*>(fetch_context_.get())->frame(),
+//             web_frame);
+
+//   media::mojom::MediaMetricsProviderPtr metrics_provider;
+//   remote_interfaces_->GetInterface(mojo::MakeRequest(&metrics_provider));
+
+//   scoped_refptr<base::SingleThreadTaskRunner>
+//       video_frame_compositor_task_runner;
+//   std::unique_ptr<blink::WebVideoFrameSubmitter> submitter =
+//       CreateSubmitter(&video_frame_compositor_task_runner, settings);
+
+//   DCHECK(layer_tree_view);
+//   scoped_refptr<base::SingleThreadTaskRunner> media_task_runner =
+//       render_thread->GetMediaThreadTaskRunner();
+
+//   if (!media_task_runner) {
+//     // If the media thread failed to start, we will receive a null task runner.
+//     // Fail the creation by returning null, and let callers handle the error.
+//     // See https://crbug.com/775393.
+//     return nullptr;
+//   }
+
+//   std::unique_ptr<media::WebMediaPlayerParams> params(
+//       new media::WebMediaPlayerParams(
+//           std::move(media_log),
+//           base::BindRepeating(&ContentRendererClient::DeferMediaLoad,
+//                               base::Unretained(GetContentClient()->renderer()),
+//                               static_cast<RenderFrame*>(render_frame_),
+//                               GetWebMediaPlayerDelegate()->has_played_media()),
+//           audio_renderer_sink, media_task_runner,
+//           render_thread->GetWorkerTaskRunner(),
+//           render_thread->compositor_task_runner(),
+//           video_frame_compositor_task_runner,
+//           base::Bind(&v8::Isolate::AdjustAmountOfExternalAllocatedMemory,
+//                      base::Unretained(blink::MainThreadIsolate())),
+//           initial_cdm, request_routing_token_cb_, media_observer,
+//           enable_instant_source_buffer_gc, embedded_media_experience_enabled,
+//           std::move(metrics_provider),
+//           base::BindOnce(&blink::WebSurfaceLayerBridge::Create,
+//                          layer_tree_view),
+//           RenderThreadImpl::current()->SharedMainThreadContextProvider(),
+//           GetVideoSurfaceLayerMode(),
+//           render_frame_->GetRenderFrameMediaPlaybackOptions()
+//               .is_background_suspend_enabled,
+//           render_frame_->GetRenderFrameMediaPlaybackOptions()
+//               .is_background_video_playback_enabled,
+//           render_frame_->GetRenderFrameMediaPlaybackOptions()
+//               .is_background_video_track_optimization_supported));
+
+//   std::unique_ptr<media::VideoFrameCompositor> vfc =
+//       std::make_unique<media::VideoFrameCompositor>(
+//           params->video_frame_compositor_task_runner(), std::move(submitter));
+
+//   media::WebMediaPlayerImpl* media_player = new media::WebMediaPlayerImpl(
+//       web_frame, client, encrypted_client, GetWebMediaPlayerDelegate(),
+//       std::move(factory_selector), url_index_.get(), std::move(vfc),
+//       std::move(params));
+
+//   return media_player;
     return nullptr;
-
-  scoped_refptr<media::SwitchableAudioRendererSink> audio_renderer_sink =
-      AudioDeviceFactory::NewSwitchableAudioRendererSink(
-          blink::WebAudioDeviceSourceType::kMediaElement,
-          render_frame_->GetRoutingID(),
-          media::AudioSinkParameters(0, sink_id.Utf8()));
-
-  const WebPreferences webkit_preferences =
-      render_frame_->GetWebkitPreferences();
-  bool embedded_media_experience_enabled = false;
-  bool use_media_player_renderer = false;
-#if defined(OS_ANDROID)
-  use_media_player_renderer = UseMediaPlayerRenderer(url);
-  embedded_media_experience_enabled =
-      webkit_preferences.embedded_media_experience_enabled;
-#endif  // defined(OS_ANDROID)
-
-  // When memory pressure based garbage collection is enabled for MSE, the
-  // |enable_instant_source_buffer_gc| flag controls whether the GC is done
-  // immediately on memory pressure notification or during the next SourceBuffer
-  // append (slower, but is MSE-spec compliant).
-  bool enable_instant_source_buffer_gc =
-      base::GetFieldTrialParamByFeatureAsBool(
-          media::kMemoryPressureBasedSourceBufferGC,
-          "enable_instant_source_buffer_gc", false);
-
-  // This must be created for every new WebMediaPlayer, each instance generates
-  // a new player id which is used to collate logs on the browser side.
-  std::unique_ptr<media::MediaLog> media_log(new RenderMediaLog(
-      url::Origin(security_origin).GetURL(),
-      render_frame_->GetTaskRunner(blink::TaskType::kInternalMedia)));
-
-  base::WeakPtr<media::MediaObserver> media_observer;
-
-  auto factory_selector = CreateRendererFactorySelector(
-      media_log.get(), use_media_player_renderer,
-      render_frame_->GetRenderFrameMediaPlaybackOptions()
-          .is_mojo_renderer_enabled,
-      GetDecoderFactory(),
-      std::make_unique<media::RemotePlaybackClientWrapperImpl>(client),
-      &media_observer);
-
-#if BUILDFLAG(ENABLE_MEDIA_REMOTING)
-  DCHECK(media_observer);
-#endif
-
-  if (!fetch_context_) {
-    fetch_context_ = std::make_unique<FrameFetchContext>(web_frame);
-    DCHECK(!url_index_);
-    url_index_ = std::make_unique<media::UrlIndex>(fetch_context_.get());
-  }
-  DCHECK_EQ(static_cast<FrameFetchContext*>(fetch_context_.get())->frame(),
-            web_frame);
-
-  media::mojom::MediaMetricsProviderPtr metrics_provider;
-  remote_interfaces_->GetInterface(mojo::MakeRequest(&metrics_provider));
-
-  scoped_refptr<base::SingleThreadTaskRunner>
-      video_frame_compositor_task_runner;
-  std::unique_ptr<blink::WebVideoFrameSubmitter> submitter =
-      CreateSubmitter(&video_frame_compositor_task_runner, settings);
-
-  DCHECK(layer_tree_view);
-  scoped_refptr<base::SingleThreadTaskRunner> media_task_runner =
-      render_thread->GetMediaThreadTaskRunner();
-
-  if (!media_task_runner) {
-    // If the media thread failed to start, we will receive a null task runner.
-    // Fail the creation by returning null, and let callers handle the error.
-    // See https://crbug.com/775393.
-    return nullptr;
-  }
-
-  std::unique_ptr<media::WebMediaPlayerParams> params(
-      new media::WebMediaPlayerParams(
-          std::move(media_log),
-          base::BindRepeating(&ContentRendererClient::DeferMediaLoad,
-                              base::Unretained(GetContentClient()->renderer()),
-                              static_cast<RenderFrame*>(render_frame_),
-                              GetWebMediaPlayerDelegate()->has_played_media()),
-          audio_renderer_sink, media_task_runner,
-          render_thread->GetWorkerTaskRunner(),
-          render_thread->compositor_task_runner(),
-          video_frame_compositor_task_runner,
-          base::Bind(&v8::Isolate::AdjustAmountOfExternalAllocatedMemory,
-                     base::Unretained(blink::MainThreadIsolate())),
-          initial_cdm, request_routing_token_cb_, media_observer,
-          enable_instant_source_buffer_gc, embedded_media_experience_enabled,
-          std::move(metrics_provider),
-          base::BindOnce(&blink::WebSurfaceLayerBridge::Create,
-                         layer_tree_view),
-          RenderThreadImpl::current()->SharedMainThreadContextProvider(),
-          GetVideoSurfaceLayerMode(),
-          render_frame_->GetRenderFrameMediaPlaybackOptions()
-              .is_background_suspend_enabled,
-          render_frame_->GetRenderFrameMediaPlaybackOptions()
-              .is_background_video_playback_enabled,
-          render_frame_->GetRenderFrameMediaPlaybackOptions()
-              .is_background_video_track_optimization_supported));
-
-  std::unique_ptr<media::VideoFrameCompositor> vfc =
-      std::make_unique<media::VideoFrameCompositor>(
-          params->video_frame_compositor_task_runner(), std::move(submitter));
-
-  media::WebMediaPlayerImpl* media_player = new media::WebMediaPlayerImpl(
-      web_frame, client, encrypted_client, GetWebMediaPlayerDelegate(),
-      std::move(factory_selector), url_index_.get(), std::move(vfc),
-      std::move(params));
-
-  return media_player;
 }
 
 blink::WebEncryptedMediaClient* MediaFactory::EncryptedMediaClient() {

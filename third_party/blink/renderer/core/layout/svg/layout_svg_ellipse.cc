@@ -73,7 +73,7 @@ void LayoutSVGEllipse::UpdateShapeFromElement() {
   if (!use_path_fallback_)
     ClearPath();
 
-  fill_bounding_box_ = FloatRect(center_ - radii_, radii_.ScaledBy(2));
+  fill_bounding_box_ = FloatRect(center_ - radii_, radii_.ScaledBy(2,2));
   stroke_bounding_box_ = CalculateStrokeBoundingBox();
 }
 

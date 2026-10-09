@@ -145,7 +145,8 @@ class WebPluginContainer {
 
   virtual float DeviceScaleFactor() = 0;
   virtual float PageScaleFactor() = 0;
-  virtual float PageZoomFactor() = 0;
+  virtual float PageZoomFactorX() = 0;
+  virtual float PageZoomFactorY() = 0;
 
   // Sets the layer representing the plugin for compositing. The
   // WebPluginContainer does *not* take ownership.

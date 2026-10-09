@@ -151,11 +151,12 @@ void MediaCustomControlsFullscreenDetector::OnIntersectionChanged(
   const IntersectionGeometry& geometry = entries.back()->GetGeometry();
 
   // Target and intersection rects must be converted from CSS to device pixels.
-  float zoom = VideoElement().GetLayoutObject()->StyleRef().EffectiveZoom();
+  float zoom = VideoElement().GetLayoutObject()->StyleRef().EffectiveZoomX();
+  float zoomy = VideoElement().GetLayoutObject()->StyleRef().EffectiveZoomY();
   PhysicalSize target_size = geometry.TargetRect().size;
-  target_size.Scale(zoom);
+  target_size.Scale(zoom,zoomy);
   PhysicalSize intersection_size = geometry.IntersectionRect().size;
-  intersection_size.Scale(zoom);
+  intersection_size.Scale(zoom,zoomy);
   PhysicalSize root_size = geometry.RootRect().size;
 
   bool is_dominant = ComputeIsDominantVideoForTests(

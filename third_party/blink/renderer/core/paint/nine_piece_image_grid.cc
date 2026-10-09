@@ -304,7 +304,7 @@ void NinePieceImageGrid::SetDrawInfoMiddle(NinePieceDrawInfo& draw_info) const {
 
 NinePieceImageGrid::NinePieceDrawInfo NinePieceImageGrid::GetNinePieceDrawInfo(
     NinePiece piece,
-    float image_scale_factor) const {
+    float image_scale_factor,float image_scale_factory) const {
   DCHECK_NE(image_scale_factor, 0);
 
   NinePieceDrawInfo draw_info;
@@ -319,13 +319,13 @@ NinePieceImageGrid::NinePieceDrawInfo NinePieceImageGrid::GetNinePieceDrawInfo(
   else
     SetDrawInfoMiddle(draw_info);
 
-  if (image_scale_factor != 1) {
+  if (image_scale_factor != 1 && image_scale_factory != 1) {
     // The nine piece grid is computed in unscaled image coordinates but must be
     // drawn using scaled image coordinates.
-    draw_info.source.Scale(image_scale_factor);
+    draw_info.source.Scale(image_scale_factor,image_scale_factory);
 
     // Compensate for source scaling by scaling down the individual tiles.
-    draw_info.tile_scale.Scale(1 / image_scale_factor);
+    draw_info.tile_scale.Scale(1 / image_scale_factor,1/image_scale_factory);
   }
 
   return draw_info;

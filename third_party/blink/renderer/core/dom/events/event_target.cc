@@ -858,7 +858,6 @@ bool EventTarget::FireEventListeners(Event& event,
       }
     }
   }
-
   ExecutionContext* context = GetExecutionContext();
   if (!context)
     return false;
@@ -913,6 +912,7 @@ bool EventTarget::FireEventListeners(Event& event,
 
     // To match Mozilla, the AT_TARGET phase fires both capturing and bubbling
     // event listeners, even though that violates some versions of the DOM spec.
+   
     listener->Invoke(context, &event);
     fired_listener = true;
 

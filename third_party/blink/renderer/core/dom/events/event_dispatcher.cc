@@ -134,7 +134,6 @@ void EventDispatcher::DispatchSimulatedClick(
 DispatchEventResult EventDispatcher::Dispatch() {
   TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("blink.debug"),
                "EventDispatcher::dispatch");
-
 #if DCHECK_IS_ON()
   DCHECK(!event_dispatched_);
   event_dispatched_ = true;
@@ -149,7 +148,6 @@ DispatchEventResult EventDispatcher::Dispatch() {
   if (frame && frame->DomWindow())
     eventTiming = EventTiming::Create(frame->DomWindow(), *event_);
   event_->GetEventPath().EnsureWindowEventContext();
-
   const bool is_click =
       event_->IsMouseEvent() && event_->type() == event_type_names::kClick;
 
@@ -198,6 +196,12 @@ DispatchEventResult EventDispatcher::Dispatch() {
   TRACE_EVENT1("devtools.timeline", "EventDispatch", "data",
                inspector_event_dispatch_event::Data(*event_));
   EventDispatchHandlingState* pre_dispatch_event_handler_result = nullptr;
+  
+  Document* focused_document = &node_->GetDocument();
+  Node* old_focused_note;
+  if (focused_document)
+    old_focused_note = focused_document->FocusedElement();
+
   if (DispatchEventPreProcess(activation_target,
                               pre_dispatch_event_handler_result) ==
       kContinueDispatching) {
@@ -205,10 +209,21 @@ DispatchEventResult EventDispatcher::Dispatch() {
       // TODO(crbug/882574): Remove these.
       CHECK(event_->HasEventPath());
       CHECK(!event_->GetEventPath().IsEmpty());
-      if (DispatchEventAtTarget() == kContinueDispatching)
+      if (DispatchEventAtTarget() == kContinueDispatching){
         DispatchEventAtBubbling();
+      }
     }
   }
+  Node* new_focused_node;
+  if (focused_document)
+    new_focused_node = focused_document->FocusedElement();
+
+  if(event_->type() == event_type_names::kKeypress || event_->type() == event_type_names::kKeydown){
+    if((old_focused_note && new_focused_node && old_focused_note != new_focused_node) || (!old_focused_note && new_focused_node) || (old_focused_note && !new_focused_node)){
+      event_->preventDefault();
+    }
+  }
+
   DispatchEventPostProcess(activation_target,
                            pre_dispatch_event_handler_result);
   if (eventTiming)
@@ -241,7 +256,7 @@ inline EventDispatchContinuation EventDispatcher::DispatchEventAtCapturing() {
           *event_) &&
       event_->PropagationStopped())
     return kDoneDispatching;
-
+  
   for (wtf_size_t i = event_->GetEventPath().size() - 1; i > 0; --i) {
     const NodeEventContext& event_context = event_->GetEventPath()[i];
     if (event_context.CurrentTargetSameAsTarget()) {
@@ -284,8 +299,6 @@ inline void EventDispatcher::DispatchEventAtBubbling() {
     } else {
       continue;
     }
-    if (event_->PropagationStopped())
-      return;
   }
   if (event_->bubbles() && !event_->cancelBubble()) {
     event_->SetEventPhase(Event::kBubblingPhase);

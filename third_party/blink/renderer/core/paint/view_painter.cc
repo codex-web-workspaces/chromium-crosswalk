@@ -144,7 +144,7 @@ void ViewPainter::PaintBoxDecorationBackgroundInternal(
     // instead, otherwise keep transparent as is.
     if (paints_base_background || root_background_color.Alpha() ||
         layout_view_.StyleRef().BackgroundLayers().AnyLayerHasImage())
-      context.FillRect(background_rect, Color::kWhite, SkBlendMode::kSrc);
+      context.FillRect(background_rect, Color::kBlack, SkBlendMode::kSrc);
     return;
   }
 

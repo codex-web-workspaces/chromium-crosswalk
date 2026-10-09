@@ -13,7 +13,8 @@ WebTouchEvent WebTouchEvent::FlattenTransform() const {
   }
   transformed_event.frame_translate_.x = 0;
   transformed_event.frame_translate_.y = 0;
-  transformed_event.frame_scale_ = 1;
+  transformed_event.frame_scalex_ = 1;
+  transformed_event.frame_scaley_ = 1;
 
   return transformed_event;
 }
@@ -24,12 +25,12 @@ WebTouchPoint WebTouchEvent::TouchPointInRootFrame(unsigned point) const {
     return WebTouchPoint();
 
   WebTouchPoint transformed_point = touches[point];
-  transformed_point.radius_x /= frame_scale_;
-  transformed_point.radius_y /= frame_scale_;
+  transformed_point.radius_x /= frame_scalex_;
+  transformed_point.radius_y /= frame_scaley_;
   transformed_point.SetPositionInWidget(
-      (transformed_point.PositionInWidget().x / frame_scale_) +
+      (transformed_point.PositionInWidget().x / frame_scalex_) +
           frame_translate_.x,
-      (transformed_point.PositionInWidget().y / frame_scale_) +
+      (transformed_point.PositionInWidget().y / frame_scaley_) +
           frame_translate_.y);
   return transformed_point;
 }

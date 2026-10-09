@@ -43,6 +43,11 @@ import java.lang.reflect.Method;
 public class ProxyChangeListener {
     private static final String TAG = "ProxyChangeListener";
     private static boolean sEnabled = true;
+    private static boolean sSystem = true;
+    private static String shost;
+    private static int sport;
+    private static String spacUrl;
+    private static String[] sexclusionList;
 
     private final Looper mLooper;
     private final Handler mHandler;
@@ -74,6 +79,7 @@ public class ProxyChangeListener {
 
         @TargetApi(Build.VERSION_CODES.LOLLIPOP)
         private static ProxyConfig fromProxyInfo(ProxyInfo proxyInfo) {
+            Log.i("getProxy","fromProxyInfo--1");
             if (proxyInfo == null) {
                 return null;
             }
@@ -105,22 +111,55 @@ public class ProxyChangeListener {
         sEnabled = enabled;
     }
 
+    public static void setProxySystem(boolean enabled,String host, int port, String pacUrl, String[] exclusionList) {
+       
+        ProxyChangeListener listener = new ProxyChangeListener();
+        listener.setItvProxy(enabled,host, port, pacUrl, exclusionList);
+            
+    }
+    public void setItvProxy(boolean enabled,String host, int port, String pacUrl, String[] exclusionList) {
+        sSystem = enabled;
+        if(!enabled){
+            shost = host;
+            sport = port;
+            spacUrl = pacUrl;
+            sexclusionList = exclusionList;
+            registerReceiver();
+            runOnThread(() -> proxySettingsChanged(new ProxyConfig(host,port,pacUrl,exclusionList)));
+        }
+    }
+
     public void setDelegateForTesting(Delegate delegate) {
         mDelegate = delegate;
     }
 
     @CalledByNative
     public static ProxyChangeListener create() {
+            Log.i("getProxy","create--1");
         return new ProxyChangeListener();
     }
 
     @CalledByNative
     public static String getProperty(String property) {
-        return System.getProperty(property);
+        String rValue = "";
+        if(sSystem){
+            Log.i("getProxy","getProperty--1");
+            rValue = System.getProperty(property);
+        }else{
+            Log.i("getProxy","getProperty--2");
+            if(property.equals("http.proxyHost") || property.equals("https.proxyHost") || property.equals("socksProxyHost")){
+                rValue = shost;
+            }else if(property.equals("http.proxyPort") || property.equals("https.proxyPort") || property.equals("socksProxyPort")){
+                rValue = sport+"";
+            }
+        }
+        Log.i("getProxy","getProperty--"+property+";returnValue:"+rValue);
+        return rValue;
     }
 
     @CalledByNative
     public void start(long nativePtr) {
+            Log.i("getProxy","start--1");
         assertOnThread();
         assert mNativePtr == 0;
         mNativePtr = nativePtr;
@@ -129,6 +168,7 @@ public class ProxyChangeListener {
 
     @CalledByNative
     public void stop() {
+            Log.i("getProxy","stop--1");
         assertOnThread();
         mNativePtr = 0;
         unregisterReceiver();
@@ -139,6 +179,7 @@ public class ProxyChangeListener {
         @Override
         @UsedByReflection("WebView embedders call this to override proxy settings")
         public void onReceive(Context context, final Intent intent) {
+            Log.i("getProxy","onReceive--1");
             if (intent.getAction().equals(Proxy.PROXY_CHANGE_ACTION)) {
                 runOnThread(() -> proxySettingsChanged(extractNewProxy(intent)));
             }
@@ -150,84 +191,103 @@ public class ProxyChangeListener {
         // methods on it. If we fail, return an empty proxy config (meaning
         // use system properties).
         private ProxyConfig extractNewProxy(Intent intent) {
+            Log.i("getProxy","extractNewProxy--1");
             Bundle extras = intent.getExtras();
             if (extras == null) {
                 return null;
             }
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-                return ProxyConfig.fromProxyInfo(
-                        (ProxyInfo) extras.get("android.intent.extra.PROXY_INFO"));
-            }
+            if(sSystem){
+                Log.i("getProxy","extractNewProxy--use-system");
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                    return ProxyConfig.fromProxyInfo(
+                            (ProxyInfo) extras.get("android.intent.extra.PROXY_INFO"));
+                }
 
-            try {
-                final String getHostName = "getHost";
-                final String getPortName = "getPort";
-                final String getPacFileUrl = "getPacFileUrl";
-                final String getExclusionList = "getExclusionList";
-                final String className = "android.net.ProxyProperties";
+                try {
+                    final String getHostName = "getHost";
+                    final String getPortName = "getPort";
+                    final String getPacFileUrl = "getPacFileUrl";
+                    final String getExclusionList = "getExclusionList";
+                    final String className = "android.net.ProxyProperties";
 
-                Object props = extras.get("proxy");
-                if (props == null) {
+                    Object props = extras.get("proxy");
+                    if (props == null) {
+                        return null;
+                    }
+
+                    Class<?> cls = Class.forName(className);
+                    Method getHostMethod = cls.getDeclaredMethod(getHostName);
+                    Method getPortMethod = cls.getDeclaredMethod(getPortName);
+                    Method getExclusionListMethod = cls.getDeclaredMethod(getExclusionList);
+
+                    String host = (String) getHostMethod.invoke(props);
+                    int port = (Integer) getPortMethod.invoke(props);
+
+                    String[] exclusionList;
+                    String s = (String) getExclusionListMethod.invoke(props);
+                    exclusionList = s.split(",");
+
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
+                        Method getPacFileUrlMethod = cls.getDeclaredMethod(getPacFileUrl);
+                        String pacFileUrl = (String) getPacFileUrlMethod.invoke(props);
+                        if (!TextUtils.isEmpty(pacFileUrl)) {
+                            return new ProxyConfig(host, port, pacFileUrl, exclusionList);
+                        }
+                    }
+                    return new ProxyConfig(host, port, null, exclusionList);
+                } catch (ClassNotFoundException | NoSuchMethodException | IllegalAccessException
+                        | InvocationTargetException | NullPointerException ex) {
+                    Log.e(TAG, "Using no proxy configuration due to exception:" + ex);
                     return null;
                 }
-
-                Class<?> cls = Class.forName(className);
-                Method getHostMethod = cls.getDeclaredMethod(getHostName);
-                Method getPortMethod = cls.getDeclaredMethod(getPortName);
-                Method getExclusionListMethod = cls.getDeclaredMethod(getExclusionList);
-
-                String host = (String) getHostMethod.invoke(props);
-                int port = (Integer) getPortMethod.invoke(props);
-
-                String[] exclusionList;
-                String s = (String) getExclusionListMethod.invoke(props);
-                exclusionList = s.split(",");
-
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
-                    Method getPacFileUrlMethod = cls.getDeclaredMethod(getPacFileUrl);
-                    String pacFileUrl = (String) getPacFileUrlMethod.invoke(props);
-                    if (!TextUtils.isEmpty(pacFileUrl)) {
-                        return new ProxyConfig(host, port, pacFileUrl, exclusionList);
-                    }
-                }
-                return new ProxyConfig(host, port, null, exclusionList);
-            } catch (ClassNotFoundException | NoSuchMethodException | IllegalAccessException
-                    | InvocationTargetException | NullPointerException ex) {
-                Log.e(TAG, "Using no proxy configuration due to exception:" + ex);
-                return null;
+            }else{
+                Log.i("getProxy","extractNewProxy--use-mine");
+                return new ProxyConfig(shost, sport, spacUrl, sexclusionList);
             }
         }
     }
 
     private void proxySettingsChanged(ProxyConfig cfg) {
+            Log.i("getProxy","proxySettingsChanged--1");
         assertOnThread();
+            Log.i("getProxy","proxySettingsChanged--2");
 
         if (!sEnabled) {
+            Log.i("getProxy","proxySettingsChanged--a");
             return;
         }
         if (mDelegate != null) {
             // proxySettingsChanged is called even if mNativePtr == 0, for testing purposes.
+            Log.i("getProxy","proxySettingsChanged--3");
             mDelegate.proxySettingsChanged();
         }
         if (mNativePtr == 0) {
+            Log.i("getProxy","proxySettingsChanged--b");
             return;
         }
 
         if (cfg != null) {
+            Log.i("getProxy","proxySettingsChanged--4");
             nativeProxySettingsChangedTo(
                     mNativePtr, cfg.mHost, cfg.mPort, cfg.mPacUrl, cfg.mExclusionList);
         } else {
+            Log.i("getProxy","proxySettingsChanged--5");
             nativeProxySettingsChanged(mNativePtr);
         }
     }
 
     @TargetApi(Build.VERSION_CODES.M)
     private ProxyConfig getProxyConfig() {
-        ConnectivityManager connectivityManager =
-                (ConnectivityManager) ContextUtils.getApplicationContext().getSystemService(
-                        Context.CONNECTIVITY_SERVICE);
-        ProxyInfo proxyInfo = connectivityManager.getDefaultProxy();
-        return proxyInfo == null ? ProxyConfig.DIRECT : ProxyConfig.fromProxyInfo(proxyInfo);
+        Log.i("getProxy","getProxyConfig--1");
+        if(sSystem){
+            ConnectivityManager connectivityManager =
+                    (ConnectivityManager) ContextUtils.getApplicationContext().getSystemService(
+                            Context.CONNECTIVITY_SERVICE);
+            ProxyInfo proxyInfo = connectivityManager.getDefaultProxy();
+            return proxyInfo == null ? ProxyConfig.DIRECT : ProxyConfig.fromProxyInfo(proxyInfo);
+        }else{
+            return new ProxyConfig(shost, sport, spacUrl, sexclusionList);
+        }
     }
 
     /* package */ void updateProxyConfigFromConnectivityManager() {
@@ -235,6 +295,7 @@ public class ProxyChangeListener {
     }
 
     private void registerReceiver() {
+            Log.i("getProxy","registerReceiver--1");
         assertOnThread();
         assert mProxyReceiver == null;
         assert mRealProxyReceiver == null;
@@ -261,6 +322,7 @@ public class ProxyChangeListener {
     }
 
     private void unregisterReceiver() {
+            Log.i("getProxy","unregisterReceiver--1");
         assertOnThread();
         assert mProxyReceiver != null;
 

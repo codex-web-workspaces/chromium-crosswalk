@@ -58,6 +58,7 @@
 #include "third_party/blink/renderer/platform/web_test_support.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
 #include "ui/native_theme/native_theme.h"
+#include "v8/src/objects/objectsutil.h"
 
 // The methods in this file are shared by all themes on every platform.
 
@@ -205,7 +206,7 @@ Color LayoutTheme::PlatformActiveSelectionBackgroundColor() const {
 
 Color LayoutTheme::PlatformActiveSelectionForegroundColor() const {
   // Use a white color by default if the platform theme doesn't define anything.
-  return Color::kWhite;
+  return Color::kBlack;
 }
 
 Color LayoutTheme::PlatformInactiveSelectionBackgroundColor() const {
@@ -268,16 +269,33 @@ bool LayoutTheme::IsControlStyled(const ComputedStyle& style) const {
 
 bool LayoutTheme::ShouldDrawDefaultFocusRing(const Node* node,
                                              const ComputedStyle& style) const {
-  if (ThemeDrawsFocusRing(style))
+  
+  if (ThemeDrawsFocusRing(style)){
     return false;
-  if (!node)
+  }
+  if (!node){
     return true;
+  }
+  if(v8::touchModel){
+    return false;
+  }
+
+
+  // 检查元素的宽高是否大于等于1px
+  // 确保 node 是 Element 类型
+  // 获取元素的 LayoutObject
+  PhysicalRect rect = node->BoundingBox();
+  // 获取布局对象的物理边界矩形
+  if (rect.Width() <= 2 || rect.Height() <= 2) {
+    return false;  // 如果宽高小于1px，不绘制焦点边框
+  }
   if (!style.HasAppearance() && !node->IsLink())
     return true;
   // We can't use LayoutTheme::isFocused because outline:auto might be
   // specified to non-:focus rulesets.
   if (node->IsFocused() && !node->ShouldHaveFocusAppearance())
     return false;
+
   return true;
 }
 
@@ -752,9 +770,10 @@ void LayoutTheme::AdjustCheckboxStyleUsingFallbackTheme(
   IntSize size(GetFallbackTheme().GetPartSize(ui::NativeTheme::kCheckbox,
                                               ui::NativeTheme::kNormal,
                                               ui::NativeTheme::ExtraParams()));
-  float zoom_level = style.EffectiveZoom();
+  float zoom_level = style.EffectiveZoomX();
+  float zoom_levely = style.EffectiveZoomY();
   size.SetWidth(size.Width() * zoom_level);
-  size.SetHeight(size.Height() * zoom_level);
+  size.SetHeight(size.Height() * zoom_levely);
   SetMinimumSizeIfAuto(style, size);
   SetSizeIfAuto(style, size);
 
@@ -776,9 +795,10 @@ void LayoutTheme::AdjustRadioStyleUsingFallbackTheme(
   IntSize size(GetFallbackTheme().GetPartSize(ui::NativeTheme::kRadio,
                                               ui::NativeTheme::kNormal,
                                               ui::NativeTheme::ExtraParams()));
-  float zoom_level = style.EffectiveZoom();
+  float zoom_level = style.EffectiveZoomX();
+  float zoom_levely = style.EffectiveZoomY();
   size.SetWidth(size.Width() * zoom_level);
-  size.SetHeight(size.Height() * zoom_level);
+  size.SetHeight(size.Height() * zoom_levely);
   SetMinimumSizeIfAuto(style, size);
   SetSizeIfAuto(style, size);
 
@@ -793,7 +813,7 @@ void LayoutTheme::AdjustRadioStyleUsingFallbackTheme(
 
 Color LayoutTheme::RootElementColor(ColorScheme color_scheme) const {
   if (color_scheme == ColorScheme::kDark)
-    return Color::kWhite;
+    return Color::kBlack;
   return ComputedStyleInitialValues::InitialColor();
 }
 

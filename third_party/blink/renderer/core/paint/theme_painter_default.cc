@@ -155,15 +155,16 @@ bool ThemePainterDefault::PaintCheckbox(const Node* node,
   extra_params.button.checked = LayoutTheme::IsChecked(node);
   extra_params.button.indeterminate = LayoutTheme::IsIndeterminate(node);
 
-  float zoom_level = style.EffectiveZoom();
+  float zoom_level = style.EffectiveZoomX();
+  float zoom_levely = style.EffectiveZoomY();
   GraphicsContextStateSaver state_saver(paint_info.context, false);
   IntRect unzoomed_rect = rect;
-  if (zoom_level != 1) {
+  if (zoom_level != 1 || zoom_levely != 1) {
     state_saver.Save();
     unzoomed_rect.SetWidth(unzoomed_rect.Width() / zoom_level);
-    unzoomed_rect.SetHeight(unzoomed_rect.Height() / zoom_level);
+    unzoomed_rect.SetHeight(unzoomed_rect.Height() / zoom_levely);
     paint_info.context.Translate(unzoomed_rect.X(), unzoomed_rect.Y());
-    paint_info.context.Scale(zoom_level, zoom_level);
+    paint_info.context.Scale(zoom_level, zoom_levely);
     paint_info.context.Translate(-unzoomed_rect.X(), -unzoomed_rect.Y());
   }
 
@@ -358,15 +359,16 @@ bool ThemePainterDefault::PaintSliderTrack(const LayoutObject& o,
   PaintSliderTicks(o, i, rect);
 
   // FIXME: Mock theme doesn't handle zoomed sliders.
-  float zoom_level = UseMockTheme() ? 1 : o.StyleRef().EffectiveZoom();
+  float zoom_level = UseMockTheme() ? 1 : o.StyleRef().EffectiveZoomX();
+  float zoom_levely = UseMockTheme() ? 1 : o.StyleRef().EffectiveZoomY();
   GraphicsContextStateSaver state_saver(i.context, false);
   IntRect unzoomed_rect = rect;
-  if (zoom_level != 1) {
+  if (zoom_level != 1 || zoom_levely != 1) {
     state_saver.Save();
     unzoomed_rect.SetWidth(unzoomed_rect.Width() / zoom_level);
-    unzoomed_rect.SetHeight(unzoomed_rect.Height() / zoom_level);
+    unzoomed_rect.SetHeight(unzoomed_rect.Height() / zoom_levely);
     i.context.Translate(unzoomed_rect.X(), unzoomed_rect.Y());
-    i.context.Scale(zoom_level, zoom_level);
+    i.context.Scale(zoom_level, zoom_levely);
     i.context.Translate(-unzoomed_rect.X(), -unzoomed_rect.Y());
   }
 
@@ -383,7 +385,7 @@ bool ThemePainterDefault::PaintSliderTrack(const LayoutObject& o,
     if (thumb) {
       IntRect thumb_rect = PixelSnappedIntRect(thumb->FrameRect());
       extra_params.slider.thumb_x = thumb_rect.X() / zoom_level;
-      extra_params.slider.thumb_y = thumb_rect.Y() / zoom_level;
+      extra_params.slider.thumb_y = thumb_rect.Y() / zoom_levely;
     }
   }
 
@@ -403,15 +405,16 @@ bool ThemePainterDefault::PaintSliderThumb(const Node* node,
   extra_params.slider.in_drag = LayoutTheme::IsPressed(node);
 
   // FIXME: Mock theme doesn't handle zoomed sliders.
-  float zoom_level = UseMockTheme() ? 1 : style.EffectiveZoom();
+  float zoom_level = UseMockTheme() ? 1 : style.EffectiveZoomX();
+  float zoom_levely = UseMockTheme() ? 1 : style.EffectiveZoomY();
   GraphicsContextStateSaver state_saver(paint_info.context, false);
   IntRect unzoomed_rect = rect;
-  if (zoom_level != 1) {
+  if (zoom_level != 1 || zoom_levely != 1) {
     state_saver.Save();
     unzoomed_rect.SetWidth(unzoomed_rect.Width() / zoom_level);
-    unzoomed_rect.SetHeight(unzoomed_rect.Height() / zoom_level);
+    unzoomed_rect.SetHeight(unzoomed_rect.Height() / zoom_levely);
     paint_info.context.Translate(unzoomed_rect.X(), unzoomed_rect.Y());
-    paint_info.context.Scale(zoom_level, zoom_level);
+    paint_info.context.Scale(zoom_level, zoom_levely);
     paint_info.context.Translate(-unzoomed_rect.X(), -unzoomed_rect.Y());
   }
 

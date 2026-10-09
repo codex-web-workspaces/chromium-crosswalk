@@ -48,6 +48,7 @@ class CORE_EXPORT StyleGeneratedImage final : public StyleImage {
 
   FloatSize ImageSize(const Document&,
                       float multiplier,
+                      float multipliery,
                       const LayoutSize& default_object_size) const override;
   bool HasIntrinsicSize() const override { return fixed_size_; }
   void AddClient(ImageResourceObserver*) override;

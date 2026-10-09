@@ -44,6 +44,15 @@ class CORE_EXPORT PaintWorkletInput : public cc::PaintWorkletInput {
       PaintWorkletStylePropertyMap::CrossThreadData values,
       Vector<std::unique_ptr<CrossThreadStyleValue>> parsed_input_args);
 
+  PaintWorkletInput(
+      const String& name,
+      const FloatSize& container_size,
+      float effective_zoomx,
+      float effective_zoomy,
+      int worklet_id,
+      PaintWorkletStylePropertyMap::CrossThreadData values,
+      Vector<std::unique_ptr<CrossThreadStyleValue>> parsed_input_args);
+
   ~PaintWorkletInput() override = default;
 
   // PaintWorkletInput implementation
@@ -54,7 +63,8 @@ class CORE_EXPORT PaintWorkletInput : public cc::PaintWorkletInput {
 
   // These accessors are safe on any thread.
   const FloatSize& ContainerSize() const { return container_size_; }
-  float EffectiveZoom() const { return effective_zoom_; }
+  float EffectiveZoomX() const { return effective_zoomx_; }
+  float EffectiveZoomY() const { return effective_zoomy_; }
   const Vector<std::unique_ptr<CrossThreadStyleValue>>& ParsedInputArguments()
       const {
     return parsed_input_arguments_;
@@ -69,7 +79,8 @@ class CORE_EXPORT PaintWorkletInput : public cc::PaintWorkletInput {
  private:
   const String name_;
   const FloatSize container_size_;
-  const float effective_zoom_;
+  const float effective_zoomx_;
+  const float effective_zoomy_;
   const int worklet_id_;
   PaintWorkletStylePropertyMap::CrossThreadData style_map_data_;
   Vector<std::unique_ptr<CrossThreadStyleValue>> parsed_input_arguments_;

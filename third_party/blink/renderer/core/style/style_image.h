@@ -87,6 +87,7 @@ class CORE_EXPORT StyleImage : public GarbageCollectedFinalized<StyleImage> {
   // a container.
   virtual FloatSize ImageSize(const Document&,
                               float multiplier,
+                              float multipliery,
                               const LayoutSize& default_object_size) const = 0;
 
   // The <image> has intrinsic dimensions.
@@ -119,6 +120,7 @@ class CORE_EXPORT StyleImage : public GarbageCollectedFinalized<StyleImage> {
   // A scale factor indicating how many physical pixels in an image represent a
   // logical (CSS) pixel.
   virtual float ImageScaleFactor() const { return 1; }
+  virtual float ImageScaleFactorY() const { return 1; }
 
   // Returns true if it can be determined that this <image> will always provide
   // an opaque Image.
@@ -159,9 +161,10 @@ class CORE_EXPORT StyleImage : public GarbageCollectedFinalized<StyleImage> {
 
   virtual bool IsEqual(const StyleImage&) const = 0;
 
-  FloatSize ApplyZoom(const FloatSize&, float multiplier) const;
+  FloatSize ApplyZoom(const FloatSize&, float multiplier, float multipliery) const;
   FloatSize ImageSizeForSVGImage(SVGImage*,
                                  float multiplier,
+                                 float multipliery,
                                  const LayoutSize& default_object_size) const;
 };
 

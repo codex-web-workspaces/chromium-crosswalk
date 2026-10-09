@@ -928,6 +928,128 @@ void NavigationRequest::BeginNavigation() {
                               base::Unretained(this)));
 }
 
+void NavigationRequest::BeginNavigation2() {
+  DCHECK(state_ == NOT_STARTED || state_ == WAITING_FOR_RENDERER_RESPONSE);
+  TRACE_EVENT_ASYNC_STEP_INTO0("navigation", "NavigationRequest", this,
+                               "BeginNavigation");
+  DCHECK(!loader_);
+  DCHECK(!render_frame_host_);
+
+  state_ = STARTED;
+
+#if defined(OS_ANDROID)
+  base::WeakPtr<NavigationRequest> this_ptr(weak_factory_.GetWeakPtr());
+  bool should_override_url_loading = false;
+
+  if (!GetContentClient()->browser()->ShouldOverrideUrlLoading(
+          frame_tree_node_->frame_tree_node_id(), browser_initiated_,
+          commit_params_.original_url, commit_params_.original_method,
+          common_params_.has_user_gesture, false,
+          frame_tree_node_->IsMainFrame(), common_params_.transition,
+          &should_override_url_loading)) {
+    // A Java exception was thrown by the embedding application; we
+    // need to return from this task. Specifically, it's not safe from
+    // this point on to make any JNI calls.
+    return;
+  }
+
+  // The content/ embedder might cause |this| to be deleted while
+  // |ShouldOverrideUrlLoading| is called.
+  // See https://crbug.com/770157.
+  if (!this_ptr)
+    return;
+
+  if (should_override_url_loading) {
+    // Don't create a NavigationHandle here to simulate what happened with the
+    // old navigation code path (i.e. doesn't fire onPageFinished notification
+    // for aborted loads).
+    OnRequestFailedInternal(
+        network::URLLoaderCompletionStatus(net::ERR_ABORTED),
+        false /*skip_throttles*/, base::nullopt /*error_page_content*/,
+        false /*collapse_frame*/);
+    return;
+  }
+#endif
+
+  // Check Content Security Policy before the NavigationThrottles run. This
+  // gives CSP a chance to modify requests that NavigationThrottles would
+  // otherwise block. Similarly, the NavigationHandle is created afterwards, so
+  // that it gets the request URL after potentially being modified by CSP.
+  net::Error net_error = CheckContentSecurityPolicy(
+      false /* has_followed redirect */,
+      false /* url_upgraded_after_redirect */, false /* is_response_check */);
+  if (net_error != net::OK) {
+    // Create a navigation handle so that the correct error code can be set on
+    // it by OnRequestFailedInternal().
+    CreateNavigationHandle(false);
+    OnRequestFailedInternal(network::URLLoaderCompletionStatus(net_error),
+                            false /* skip_throttles */,
+                            base::nullopt /* error_page_content */,
+                            false /* collapse_frame */);
+    // DO NOT ADD CODE after this. The previous call to OnRequestFailedInternal
+    // has destroyed the NavigationRequest.
+    return;
+  }
+
+  if (CheckCredentialedSubresource() ==
+          CredentialedSubresourceCheckResult::BLOCK_REQUEST ||
+      CheckLegacyProtocolInSubresource() ==
+          LegacyProtocolInSubresourceCheckResult::BLOCK_REQUEST) {
+    // Create a navigation handle so that the correct error code can be set on
+    // it by OnRequestFailedInternal().
+    CreateNavigationHandle(false);
+    OnRequestFailedInternal(
+        network::URLLoaderCompletionStatus(net::ERR_ABORTED),
+        false /* skip_throttles  */, base::nullopt /* error_page_content */,
+        false /* collapse_frame */);
+
+    // DO NOT ADD CODE after this. The previous call to OnRequestFailedInternal
+    // has destroyed the NavigationRequest.
+    return;
+  }
+
+  CreateNavigationHandle(false);
+
+  if (CheckAboutSrcDoc() == AboutSrcDocCheckResult::BLOCK_REQUEST) {
+    OnRequestFailedInternal(
+        network::URLLoaderCompletionStatus(net::ERR_INVALID_URL),
+        true /* skip_throttles */, base::nullopt /* error_page_content*/,
+        false /* collapse_frame */);
+    // DO NOT ADD CODE after this. The previous call to OnRequestFailedInternal
+    // has destroyed the NavigationRequest.
+    return;
+  }
+
+  if (!NeedsUrlLoader()) {
+    // There is no need to make a network request for this navigation, so commit
+    // it immediately.
+    TRACE_EVENT_ASYNC_STEP_INTO0("navigation", "NavigationRequest", this,
+                                 "ResponseStarted");
+    state_ = RESPONSE_STARTED;
+
+    // Select an appropriate RenderFrameHost.
+    render_frame_host_ =
+        frame_tree_node_->render_manager()->GetFrameHostForNavigation(*this);
+    NavigatorImpl::CheckWebUIRendererDoesNotDisplayNormalURL(
+        render_frame_host_, common_params_.url);
+
+    ReadyToCommitNavigation(false /* is_error */);
+    CommitNavigation();
+    return;
+  }
+
+  common_params_.previews_state =
+      GetContentClient()->browser()->DetermineAllowedPreviews(
+          common_params_.previews_state, navigation_handle_.get(),
+          common_params_.url);
+
+  // It's safe to use base::Unretained because this NavigationRequest owns
+  // the NavigationHandle where the callback will be stored.
+  // TODO(clamy): pass the method to the NavigationHandle instead of a
+  // boolean.
+  WillStartRequest2(base::Bind(&NavigationRequest::OnStartChecksComplete,
+                              base::Unretained(this)));
+}
 void NavigationRequest::SetWaitingForRendererResponse() {
   TRACE_EVENT_ASYNC_STEP_INTO0("navigation", "NavigationRequest", this,
                                "WaitingForRendererResponse");
@@ -2651,6 +2773,43 @@ void NavigationRequest::WillStartRequest(
   // by the previous call.
 }
 
+
+void NavigationRequest::WillStartRequest2(
+    ThrottleChecksFinishedCallback callback) {
+  TRACE_EVENT_ASYNC_STEP_INTO0("navigation", "NavigationRequest", this,
+                               "WillStartRequest");
+  // WillStartRequest should only be called once.
+  if (handle_state_ != INITIAL) {
+    handle_state_ = CANCELING;
+    RunCompleteCallback(NavigationThrottle::CANCEL);
+    return;
+  }
+
+  handle_state_ = PROCESSING_WILL_START_REQUEST;
+  complete_callback_ = std::move(callback);
+
+  if (IsSelfReferentialURL()) {
+    handle_state_ = CANCELING;
+    RunCompleteCallback(NavigationThrottle::CANCEL);
+    return;
+  }
+
+  throttle_runner_->RegisterNavigationThrottles();
+
+  // If the content/ embedder did not pass the NavigationUIData at the beginning
+  // of the navigation, ask for it now.
+  if (!navigation_ui_data_) {
+    navigation_ui_data_ =
+        GetDelegate()->GetNavigationUIData(navigation_handle_.get());
+  }
+
+  // Notify each throttle of the request.
+  throttle_runner_->ProcessNavigationEvent2(
+      NavigationThrottleRunner::Event::WillStartRequest);
+  // DO NOT ADD CODE AFTER THIS, as the NavigationHandle might have been deleted
+  // by the previous call.
+}
+
 void NavigationRequest::WillRedirectRequest(
     const GURL& new_referrer_url,
     RenderProcessHost* post_redirect_process,
@@ -2708,30 +2867,30 @@ bool NavigationRequest::IsSelfReferentialURL() {
   // about: URLs should be exempted since they are reserved for other purposes
   // and cannot be the source of infinite recursion.
   // See https://crbug.com/341858 .
-  if (common_params_.url.SchemeIs(url::kAboutScheme))
-    return false;
+  // if (common_params_.url.SchemeIs(url::kAboutScheme))
+  //   return false;
 
-  // Browser-triggered navigations should be exempted.
-  if (browser_initiated())
-    return false;
+  // // Browser-triggered navigations should be exempted.
+  // if (browser_initiated())
+  //   return false;
 
-  // Some sites rely on constructing frame hierarchies where frames are loaded
-  // via POSTs with the same URLs, so exempt POST requests.
-  // See https://crbug.com/710008.
-  if (common_params_.method == "POST")
-    return false;
+  // // Some sites rely on constructing frame hierarchies where frames are loaded
+  // // via POSTs with the same URLs, so exempt POST requests.
+  // // See https://crbug.com/710008.
+  // if (common_params_.method == "POST")
+  //   return false;
 
-  // We allow one level of self-reference because some sites depend on that,
-  // but we don't allow more than one.
-  bool found_self_reference = false;
-  for (const FrameTreeNode* node = frame_tree_node()->parent(); node;
-       node = node->parent()) {
-    if (node->current_url().EqualsIgnoringRef(common_params_.url)) {
-      if (found_self_reference)
-        return true;
-      found_self_reference = true;
-    }
-  }
+  // // We allow one level of self-reference because some sites depend on that,
+  // // but we don't allow more than one.
+  // bool found_self_reference = false;
+  // for (const FrameTreeNode* node = frame_tree_node()->parent(); node;
+  //      node = node->parent()) {
+  //   if (node->current_url().EqualsIgnoringRef(common_params_.url)) {
+  //     if (found_self_reference)
+  //       return true;
+  //     // found_self_reference = true;
+  //   }
+  // }
   return false;
 }
 

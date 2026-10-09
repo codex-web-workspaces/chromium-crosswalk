@@ -51,17 +51,17 @@ CompositorKeyframeValue* CompositorKeyframeValueFactory::Create(
       return CompositorKeyframeFilterOperations::Create(style.BackdropFilter());
     case CSSPropertyID::kTransform:
       return CompositorKeyframeTransform::Create(style.Transform(),
-                                                 style.EffectiveZoom());
+                                                 style.EffectiveZoomX());
     case CSSPropertyID::kTranslate: {
       return CreateFromTransformProperties(style.Translate(),
-                                           style.EffectiveZoom(), nullptr);
+                                           style.EffectiveZoomX(), nullptr);
     }
     case CSSPropertyID::kRotate: {
       return CreateFromTransformProperties(style.Rotate(),
-                                           style.EffectiveZoom(), nullptr);
+                                           style.EffectiveZoomX(), nullptr);
     }
     case CSSPropertyID::kScale: {
-      return CreateFromTransformProperties(style.Scale(), style.EffectiveZoom(),
+      return CreateFromTransformProperties(style.Scale(), style.EffectiveZoomX(),
                                            nullptr);
     }
     case CSSPropertyID::kVariable: {

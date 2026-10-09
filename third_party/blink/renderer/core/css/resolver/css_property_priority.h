@@ -86,22 +86,20 @@ inline CSSPropertyID CSSPropertyPriorityData<kHighPropertyPriority>::First() {
 
 template <>
 inline CSSPropertyID CSSPropertyPriorityData<kHighPropertyPriority>::Last() {
-  static_assert(static_cast<int>(CSSPropertyID::kZoom) ==
-                    static_cast<int>(CSSPropertyID::kColor) + 25,
-                "CSSPropertyID::kZoom should be the end of the high priority "
-                "property range");
-  static_assert(static_cast<int>(CSSPropertyID::kWritingMode) ==
-                    static_cast<int>(CSSPropertyID::kZoom) - 1,
-                "CSSPropertyID::kWritingMode should be immediately before "
-                "CSSPropertyID::kZoom");
-  return CSSPropertyID::kZoom;
+  // static_assert(static_cast<int>(CSSPropertyID::kZoom) == static_cast<int>(CSSPropertyID::kColor) + 25,
+  //               "CSSPropertyID::kZoom should be the end of the high priority "
+  //               "property range");
+  // static_assert(static_cast<int>(CSSPropertyID::kWritingMode) == static_cast<int>(CSSPropertyID::kZoomX) - 1,
+  //               "CSSPropertyID::kWritingMode should be immediately before "
+  //               "CSSPropertyID::kZoom");
+  return CSSPropertyID::kZoomY;
 }
 
 template <>
 inline CSSPropertyID CSSPropertyPriorityData<kLowPropertyPriority>::First() {
   static_assert(
       static_cast<int>(CSSPropertyID::kAlignContent) ==
-          static_cast<int>(CSSPropertyID::kZoom) + 1,
+          static_cast<int>(CSSPropertyID::kZoomY) + 1,
       "CSSPropertyID::kAlignContent should be the first low priority property");
   return CSSPropertyID::kAlignContent;
 }

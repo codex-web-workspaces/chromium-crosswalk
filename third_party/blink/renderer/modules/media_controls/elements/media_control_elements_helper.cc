@@ -86,6 +86,7 @@ WebSize MediaControlElementsHelper::GetSizeOrDefault(
     const Element& element,
     const WebSize& default_size) {
   float zoom_factor = 1.0f;
+  float zoom_factorY = 1.0f;
   int width = default_size.width;
   int height = default_size.height;
 
@@ -94,10 +95,12 @@ WebSize MediaControlElementsHelper::GetSizeOrDefault(
     height = box->LogicalHeight().Round();
   }
 
-  if (element.GetDocument().GetLayoutView())
-    zoom_factor = element.GetDocument().GetLayoutView()->ZoomFactor();
+  if (element.GetDocument().GetLayoutView()){
+    zoom_factor = element.GetDocument().GetLayoutView()->ZoomFactorX();
+    zoom_factorY = element.GetDocument().GetLayoutView()->ZoomFactorY();
+  }
 
-  return WebSize(round(width / zoom_factor), round(height / zoom_factor));
+  return WebSize(round(width / zoom_factor), round(height / zoom_factorY));
 }
 
 // static

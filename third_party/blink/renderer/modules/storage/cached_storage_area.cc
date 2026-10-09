@@ -21,6 +21,7 @@
 #include "third_party/blink/renderer/platform/wtf/text/unicode.h"
 #include "third_party/blink/renderer/platform/wtf/text/utf8.h"
 
+
 namespace blink {
 
 namespace {
@@ -133,6 +134,8 @@ bool CachedStorageArea::SetItem(const String& key,
 
   KURL page_url = source->GetPageUrl();
   String source_id = areas_->at(source);
+
+    
 
   blink::WebScopedVirtualTimePauser virtual_time_pauser =
       source->CreateWebScopedVirtualTimePauser(

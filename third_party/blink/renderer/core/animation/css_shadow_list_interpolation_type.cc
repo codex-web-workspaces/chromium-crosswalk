@@ -99,7 +99,7 @@ InterpolationValue CSSShadowListInterpolationType::MaybeConvertInherit(
       CssProperty(),
       const_cast<ShadowList*>(inherited_shadow_list)));  // Take ref.
   return ConvertShadowList(inherited_shadow_list,
-                           state.ParentStyle()->EffectiveZoom());
+                           state.ParentStyle()->EffectiveZoomX());
 }
 
 InterpolationValue CSSShadowListInterpolationType::MaybeConvertValue(
@@ -134,7 +134,7 @@ InterpolationValue
 CSSShadowListInterpolationType::MaybeConvertStandardPropertyUnderlyingValue(
     const ComputedStyle& style) const {
   return ConvertShadowList(GetShadowList(CssProperty(), style),
-                           style.EffectiveZoom());
+                           style.EffectiveZoomX());
 }
 
 void CSSShadowListInterpolationType::Composite(

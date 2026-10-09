@@ -80,8 +80,10 @@
 #include "third_party/blink/renderer/platform/wtf/typed_arrays/array_buffer_contents.h"
 #include "v8/include/v8-profiler.h"
 #include "v8/include/v8.h"
+#include "v8/src/objects/objectsutil.h"
 
 namespace blink {
+
 
 static void ReportFatalErrorInMainThread(const char* location,
                                          const char* message) {
@@ -689,6 +691,7 @@ void V8Initializer::InitializeMainThread(const intptr_t* reference_table) {
 
   v8::Isolate* isolate = V8PerIsolateData::Initialize(scheduler->V8TaskRunner(),
                                                       v8_context_snapshot_mode);
+
   scheduler->SetV8Isolate(isolate);
 
   // ThreadState::isolate_ needs to be set before setting the EmbedderHeapTracer
@@ -718,6 +721,35 @@ void V8Initializer::InitializeMainThread(const intptr_t* reference_table) {
   }
 
   isolate->SetPromiseRejectCallback(PromiseRejectHandlerInMainThread);
+
+  // if (!v8::GetInjectedJsCode().empty()) {
+  //   LOG(INFO) << "EvaluateGlobalJavaScript--jsCode is not Empty-->"<<v8::GetInjectedJsCode();
+  //   v8::HandleScope handle_scope(isolate);
+  //   // 创建全局模板
+  //   v8::Local<v8::ObjectTemplate> global_template = v8::ObjectTemplate::New(isolate);
+  //   // 创建临时上下文并执行代码
+  //   v8::Local<v8::Context> context = v8::Context::New(isolate, nullptr, global_template);
+  //   // v8::Local<v8::Context> context = isolate->GetCurrentContext();
+  //   if (!context.IsEmpty()) {
+  //     v8::Context::Scope context_scope(context);
+  //     // 编译并执行 JavaScript 代码
+  //     v8::Local<v8::String> source = v8::String::NewFromUtf8(isolate, v8::GetInjectedJsCode().c_str()).ToLocalChecked();
+  //     v8::MaybeLocal<v8::Script> script = v8::Script::Compile(context, source);
+  //     if (!script.IsEmpty()) {
+  //       v8::MaybeLocal<v8::Value> result = script.ToLocalChecked()->Run(context);
+  //       if (result.IsEmpty()) {
+  //         LOG(ERROR) << "EvaluateGlobalJavaScript--OOO Failed to run JavaScript code.";
+  //       }
+  //     } else {
+  //       LOG(ERROR) << "EvaluateGlobalJavaScript--OOO Failed to compile JavaScript code.";
+  //     }
+  //   }else{
+  //     LOG(ERROR) << "EvaluateGlobalJavaScript--OOO Context is empty!";
+  //   }
+  // }else{
+  //   LOG(ERROR) << "EvaluateGlobalJavaScript--OOO jsCode is Empty.";
+  // }
+
 
   V8PerIsolateData::From(isolate)->SetThreadDebugger(
       std::make_unique<MainThreadDebugger>(isolate));

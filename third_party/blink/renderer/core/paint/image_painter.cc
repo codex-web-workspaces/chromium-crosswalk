@@ -162,7 +162,7 @@ void ImagePainter::PaintReplaced(const PaintInfo& paint_info,
     IntRect paint_rect = PixelSnappedIntRect(content_rect);
     DrawingRecorder recorder(context, layout_image_, paint_info.phase);
     context.SetStrokeStyle(kSolidStroke);
-    context.SetStrokeColor(Color::kLightGray);
+    context.SetStrokeColor(Color::kTransparent);
     context.SetFillColor(Color::kTransparent);
     context.DrawRect(paint_rect);
     return;
@@ -230,8 +230,7 @@ void ImagePainter::PaintIntoRect(GraphicsContext& context,
       scoped_refptr<PlaceholderImage> placeholder_image =
           PlaceholderImage::Create(nullptr, image->Size(),
                                    image->Data() ? image->Data()->size() : 0);
-      placeholder_image->SetIconAndTextScaleFactor(
-          layout_image_.GetFrame()->PageZoomFactor());
+      placeholder_image->SetIconAndTextScaleFactor(layout_image_.GetFrame()->PageZoomFactorX(),layout_image_.GetFrame()->PageZoomFactorY());
       image = std::move(placeholder_image);
     }
   }

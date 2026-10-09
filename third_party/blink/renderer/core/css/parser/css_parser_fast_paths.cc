@@ -113,6 +113,7 @@ static inline bool ParseSimpleLength(const CharacterType* characters,
 static CSSValue* ParseSimpleLengthValue(CSSPropertyID property_id,
                                         const String& string,
                                         CSSParserMode css_parser_mode) {
+  
   DCHECK(!string.IsEmpty());
   bool accepts_negative_numbers = false;
 
@@ -138,8 +139,10 @@ static CSSValue* ParseSimpleLengthValue(CSSPropertyID property_id,
       unit = CSSPrimitiveValue::UnitType::kUserUnits;
     else if (!number)
       unit = CSSPrimitiveValue::UnitType::kPixels;
-    else
-      return nullptr;
+    else{
+      // 默认将无单位数值转换为 px
+      unit = CSSPrimitiveValue::UnitType::kPixels;
+    }
   }
 
   if (number < 0 && !accepts_negative_numbers)

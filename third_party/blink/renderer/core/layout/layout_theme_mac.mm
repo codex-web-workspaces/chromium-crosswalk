@@ -460,7 +460,7 @@ bool LayoutThemeMac::IsControlStyled(const ComputedStyle& style) const {
     // at style adjustment time so that will just have to stay broken.  We
     // can however detect that we're zooming. If zooming is in effect we
     // treat it like the control is styled.
-    if (style.EffectiveZoom() != 1.0f)
+    if (style.EffectiveZoomX() != 1.0f)
       return true;
     if (!FontSizeMatchesToControlSize(style))
       return true;
@@ -471,7 +471,7 @@ bool LayoutThemeMac::IsControlStyled(const ComputedStyle& style) const {
       return true;
   }
   // Some other cells don't work well when scaled.
-  if (style.EffectiveZoom() != 1) {
+  if (style.EffectiveZoomX() != 1) {
     switch (style.Appearance()) {
       case kButtonPart:
       case kPushButtonPart:
@@ -498,12 +498,12 @@ void LayoutThemeMac::AddVisualOverflow(const Node* node,
     case kInnerSpinButtonPart:
       return AddVisualOverflowHelper(style.Appearance(),
                                      ControlStatesForNode(node, style),
-                                     style.EffectiveZoom(), rect);
+                                     style.EffectiveZoomX(), rect);
     default:
       break;
   }
 
-  float zoom_level = style.EffectiveZoom();
+  float zoom_level = style.EffectiveZoomY();
 
   if (part == kMenulistPart) {
     SetPopupButtonCellState(node, style, rect);
@@ -593,20 +593,20 @@ void LayoutThemeMac::SetControlSize(NSCell* cell,
 
 IntSize LayoutThemeMac::SizeForFont(const ComputedStyle& style,
                                     const IntSize* sizes) const {
-  if (style.EffectiveZoom() != 1.0f) {
+  if (style.EffectiveZoomX() != 1.0f || style.EffectiveZoomY() != 1.0f) {
     IntSize result = sizes[ControlSizeForFont(style)];
-    return IntSize(result.Width() * style.EffectiveZoom(),
-                   result.Height() * style.EffectiveZoom());
+    return IntSize(result.Width() * style.EffectiveZoomX(),
+                   result.Height() * style.EffectiveZoomY());
   }
   return sizes[ControlSizeForFont(style)];
 }
 
 IntSize LayoutThemeMac::SizeForSystemFont(const ComputedStyle& style,
                                           const IntSize* sizes) const {
-  if (style.EffectiveZoom() != 1.0f) {
+  if (style.EffectiveZoomX() != 1.0f || style.EffectiveZoomY() != 1.0f) {
     IntSize result = sizes[ControlSizeForSystemFont(style)];
-    return IntSize(result.Width() * style.EffectiveZoom(),
-                   result.Height() * style.EffectiveZoom());
+    return IntSize(result.Width() * style.EffectiveZoomX(),
+                   result.Height() * style.EffectiveZoomY());
   }
   return sizes[ControlSizeForSystemFont(style)];
 }
@@ -631,8 +631,8 @@ void LayoutThemeMac::SetFontFromControlSize(ComputedStyle& style,
   NSFont* font = [NSFont
       systemFontOfSize:[NSFont systemFontSizeForControlSize:control_size]];
   font_description.FirstFamily().SetFamily(font_family_names::kSystemUi);
-  font_description.SetComputedSize([font pointSize] * style.EffectiveZoom());
-  font_description.SetSpecifiedSize([font pointSize] * style.EffectiveZoom());
+  font_description.SetComputedSize([font pointSize] * style.EffectiveZoomX());
+  font_description.SetSpecifiedSize([font pointSize] * style.EffectiveZoomX());
 
   // Reset line height.
   style.SetLineHeight(ComputedStyleInitialValues::InitialLineHeight());
@@ -646,7 +646,7 @@ void LayoutThemeMac::SetFontFromControlSize(ComputedStyle& style,
 NSControlSize LayoutThemeMac::ControlSizeForSystemFont(
     const ComputedStyle& style) const {
   float font_size = style.FontSize();
-  float zoom_level = style.EffectiveZoom();
+  float zoom_level = style.EffectiveZoomX();
   if (zoom_level != 1)
     font_size /= zoom_level;
   if (font_size >= [NSFont systemFontSizeForControlSize:NSRegularControlSize])
@@ -735,9 +735,9 @@ int LayoutThemeMac::PopupInternalPaddingStart(
     const ComputedStyle& style) const {
   if (style.Appearance() == kMenulistPart)
     return PopupButtonPadding(ControlSizeForFont(style))[kLeftMargin] *
-           style.EffectiveZoom();
+           style.EffectiveZoomX();
   if (style.Appearance() == kMenulistButtonPart)
-    return kStyledPopupPaddingStart * style.EffectiveZoom();
+    return kStyledPopupPaddingStart * style.EffectiveZoomX();
   return 0;
 }
 
@@ -745,22 +745,22 @@ int LayoutThemeMac::PopupInternalPaddingEnd(const ChromeClient*,
                                             const ComputedStyle& style) const {
   if (style.Appearance() == kMenulistPart)
     return PopupButtonPadding(ControlSizeForFont(style))[kRightMargin] *
-           style.EffectiveZoom();
+           style.EffectiveZoomX();
   if (style.Appearance() != kMenulistButtonPart)
     return 0;
   float font_scale = style.FontSize() / kBaseFontSize;
   float arrow_width = kMenuListBaseArrowWidth * font_scale;
   return static_cast<int>(ceilf(
       arrow_width + (kMenuListArrowPaddingStart + kMenuListArrowPaddingEnd) *
-                        style.EffectiveZoom()));
+                        style.EffectiveZoomX()));
 }
 
 int LayoutThemeMac::PopupInternalPaddingTop(const ComputedStyle& style) const {
   if (style.Appearance() == kMenulistPart)
     return PopupButtonPadding(ControlSizeForFont(style))[kTopMargin] *
-           style.EffectiveZoom();
+           style.EffectiveZoomY();
   if (style.Appearance() == kMenulistButtonPart)
-    return kStyledPopupPaddingTop * style.EffectiveZoom();
+    return kStyledPopupPaddingTop * style.EffectiveZoomY();
   return 0;
 }
 
@@ -768,9 +768,9 @@ int LayoutThemeMac::PopupInternalPaddingBottom(
     const ComputedStyle& style) const {
   if (style.Appearance() == kMenulistPart)
     return PopupButtonPadding(ControlSizeForFont(style))[kBottomMargin] *
-           style.EffectiveZoom();
+           style.EffectiveZoomY();
   if (style.Appearance() == kMenulistButtonPart)
-    return kStyledPopupPaddingBottom * style.EffectiveZoom();
+    return kStyledPopupPaddingBottom * style.EffectiveZoomY();
   return 0;
 }
 
@@ -796,7 +796,7 @@ void LayoutThemeMac::SetPopupButtonCellState(const Node* node,
 
   // Set the control size based off the rectangle we're painting into.
   SetControlSize(popup_button, PopupButtonSizes(), rect.Size(),
-                 style.EffectiveZoom());
+                 style.EffectiveZoomX());
 
   // Update the various states we respond to.
   UpdateActiveState(popup_button, node);
@@ -855,7 +855,7 @@ const uint8_t kSearchFieldBorderWidth = 2;
 void LayoutThemeMac::AdjustSearchFieldStyle(ComputedStyle& style) const {
   // Override border.
   style.ResetBorder();
-  const float border_width = kSearchFieldBorderWidth * style.EffectiveZoom();
+  const float border_width = kSearchFieldBorderWidth * style.EffectiveZoomX();
   style.SetBorderLeftWidth(border_width);
   style.SetBorderLeftStyle(EBorderStyle::kInset);
   style.SetBorderRightWidth(border_width);
@@ -872,9 +872,9 @@ void LayoutThemeMac::AdjustSearchFieldStyle(ComputedStyle& style) const {
   NSControlSize control_size = ControlSizeForFont(style);
 
   // Override padding size to match AppKit text positioning.
-  const int vertical_padding = 1 * style.EffectiveZoom();
+  const int vertical_padding = 1 * style.EffectiveZoomX();
   const int horizontal_padding =
-      SearchFieldHorizontalPaddings()[control_size] * style.EffectiveZoom();
+      SearchFieldHorizontalPaddings()[control_size] * style.EffectiveZoomX();
   style.SetPaddingLeft(Length::Fixed(horizontal_padding));
   style.SetPaddingRight(Length::Fixed(horizontal_padding));
   style.SetPaddingTop(Length::Fixed(vertical_padding));
@@ -908,7 +908,7 @@ int LayoutThemeMac::SliderTickOffsetFromTrackCenter() const {
 }
 
 void LayoutThemeMac::AdjustProgressBarBounds(ComputedStyle& style) const {
-  float zoom_level = style.EffectiveZoom();
+  float zoom_level = style.EffectiveZoomY();
   NSControlSize control_size = ControlSizeForFont(style);
   int height = ProgressBarHeights()[control_size] * zoom_level;
 
@@ -917,13 +917,14 @@ void LayoutThemeMac::AdjustProgressBarBounds(ComputedStyle& style) const {
 }
 
 void LayoutThemeMac::AdjustSliderThumbSize(ComputedStyle& style) const {
-  float zoom_level = style.EffectiveZoom();
+  float zoom_level = style.EffectiveZoomX();
+  float zoom_levely = style.EffectiveZoomY();
   if (style.Appearance() == kSliderThumbHorizontalPart ||
       style.Appearance() == kSliderThumbVerticalPart) {
     style.SetWidth(
         Length::Fixed(static_cast<int>(kSliderThumbWidth * zoom_level)));
     style.SetHeight(
-        Length::Fixed(static_cast<int>(kSliderThumbHeight * zoom_level)));
+        Length::Fixed(static_cast<int>(kSliderThumbHeight * zoom_levely)));
   }
 }
 
@@ -1102,7 +1103,7 @@ bool LayoutThemeMac::ThemeDrawsFocusRing(const ComputedStyle& style) const {
 bool LayoutThemeMac::ShouldUseFallbackTheme(const ComputedStyle& style) const {
   ControlPart part = style.Appearance();
   if (part == kCheckboxPart || part == kRadioPart)
-    return style.EffectiveZoom() != 1;
+    return style.EffectiveZoomX() != 1;
   return false;
 }
 
@@ -1188,7 +1189,7 @@ LayoutUnit LayoutThemeMac::BaselinePositionAdjustment(
     const ComputedStyle& style) const {
   ControlPart part = style.Appearance();
   if (part == kCheckboxPart || part == kRadioPart)
-    return LayoutUnit(style.EffectiveZoom() * -2);
+    return LayoutUnit(style.EffectiveZoomX() * -2);
   return LayoutTheme::BaselinePositionAdjustment(style);
 }
 
@@ -1383,7 +1384,7 @@ void LayoutThemeMac::AdjustControlPartStyle(ComputedStyle& style) {
       LengthBox border_box(style.BorderTopWidth(), style.BorderRightWidth(),
                            style.BorderBottomWidth(), style.BorderLeftWidth());
       border_box = ControlBorder(part, style.GetFont().GetFontDescription(),
-                                 border_box, style.EffectiveZoom());
+                                 border_box, style.EffectiveZoomX());
       if (border_box.Top().Value() !=
           static_cast<int>(style.BorderTopWidth())) {
         if (border_box.Top().Value())
@@ -1419,7 +1420,7 @@ void LayoutThemeMac::AdjustControlPartStyle(ComputedStyle& style) {
       LengthBox padding_box = ControlPadding(
           part, style.GetFont().GetFontDescription(), style.PaddingTop(),
           style.PaddingRight(), style.PaddingBottom(), style.PaddingLeft(),
-          style.EffectiveZoom());
+          style.EffectiveZoomX());
       if (!style.PaddingEqual(padding_box))
         style.SetPadding(padding_box);
 
@@ -1431,11 +1432,11 @@ void LayoutThemeMac::AdjustControlPartStyle(ComputedStyle& style) {
       // The width and height here are affected by the zoom.
       LengthSize control_size = GetControlSize(
           part, style.GetFont().GetFontDescription(),
-          LengthSize(style.Width(), style.Height()), style.EffectiveZoom());
+          LengthSize(style.Width(), style.Height()), style.EffectiveZoomY());
 
       LengthSize min_control_size =
           MinimumControlSize(part, style.GetFont().GetFontDescription(),
-                             style.EffectiveZoom(), style);
+                             style.EffectiveZoomX(), style);
 
       // Only potentially set min-size to |control_size| for these parts.
       if (part == kCheckboxPart || part == kRadioPart)
@@ -1450,7 +1451,7 @@ void LayoutThemeMac::AdjustControlPartStyle(ComputedStyle& style) {
 
       // Font
       FontDescription control_font = ControlFont(
-          part, style.GetFont().GetFontDescription(), style.EffectiveZoom());
+          part, style.GetFont().GetFontDescription(), style.EffectiveZoomX());
       if (control_font != style.GetFont().GetFontDescription()) {
         // Reset our line-height
         style.SetLineHeight(ComputedStyleInitialValues::InitialLineHeight());

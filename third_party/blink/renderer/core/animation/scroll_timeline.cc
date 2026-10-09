@@ -299,7 +299,7 @@ void ScrollTimeline::ResolveScrollStartAndEnd(
           : document.GetComputedStyle();
   CSSToLengthConversionData conversion_data = CSSToLengthConversionData(
       &computed_style, root_style, document.GetLayoutView(),
-      computed_style.EffectiveZoom());
+      computed_style.EffectiveZoomX(),computed_style.EffectiveZoomY());
   if (start_scroll_offset_) {
     resolved_start_scroll_offset = FloatValueForLength(
         start_scroll_offset_->ConvertToLength(conversion_data), max_offset);

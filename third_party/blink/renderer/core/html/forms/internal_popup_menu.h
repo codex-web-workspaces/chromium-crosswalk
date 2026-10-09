@@ -52,7 +52,8 @@ class CORE_EXPORT InternalPopupMenu final : public PopupMenu,
   void SetValue(const String&) override;
   void CancelPopup() override;
   Element& OwnerElement() override;
-  float ZoomFactor() override { return 1.0; }
+  float ZoomFactorX() override { return 1.0; }
+  float ZoomFactorY() override { return 1.0; }
   Locale& GetLocale() override;
   void DidClosePopup() override;
 

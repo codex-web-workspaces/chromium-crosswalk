@@ -333,9 +333,10 @@ FloatRect ComputeSVGTransformReferenceBox(const LayoutObject& layout_object) {
     length_context.DetermineViewport(viewport_size);
     reference_box.SetSize(viewport_size);
   }
-  const float zoom = style.EffectiveZoom();
-  if (zoom != 1)
-    reference_box.Scale(zoom);
+  const float zoom = style.EffectiveZoomX();
+  const float zoomy = style.EffectiveZoomY();
+  if (zoom != 1 || zoomy != 1)
+    reference_box.Scale(zoom,zoomy);
   return reference_box;
 }
 
@@ -369,7 +370,7 @@ AffineTransform SVGElement::CalculateTransform(
         transform, reference_box, ComputedStyle::kIncludeTransformOrigin,
         ComputedStyle::kIncludeMotionPath,
         ComputedStyle::kIncludeIndependentTransformProperties);
-    const float zoom = style->EffectiveZoom();
+    const float zoom = style->EffectiveZoomX();
     if (zoom != 1)
       transform.Zoom(1 / zoom);
     // Flatten any 3D transform.

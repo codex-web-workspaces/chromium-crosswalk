@@ -40,7 +40,7 @@ class CORE_EXPORT HTMLFrameElement final : public HTMLFrameElementBase {
   // Returns attributes that should be checked against Trusted Types
   const AttrNameToTrustedType& GetCheckedAttributeTypes() const override;
 
-  bool HasFrameBorder() const { return frame_border_; }
+  bool HasFrameBorder() const { return false; }
 
   bool NoResize() const;
 

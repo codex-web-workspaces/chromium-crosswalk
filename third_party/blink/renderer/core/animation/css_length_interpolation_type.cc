@@ -24,10 +24,16 @@ CSSLengthInterpolationType::CSSLengthInterpolationType(
     : CSSInterpolationType(property, registration),
       value_range_(LengthPropertyFunctions::GetValueRange(CssProperty())) {}
 
-float CSSLengthInterpolationType::EffectiveZoom(
+float CSSLengthInterpolationType::EffectiveZoomX(
     const ComputedStyle& style) const {
   return LengthPropertyFunctions::IsZoomedLength(CssProperty())
-             ? style.EffectiveZoom()
+             ? style.EffectiveZoomX()
+             : 1;
+}
+float CSSLengthInterpolationType::EffectiveZoomY(
+    const ComputedStyle& style) const {
+  return LengthPropertyFunctions::IsZoomedLength(CssProperty())
+             ? style.EffectiveZoomY()
              : 1;
 }
 
@@ -82,7 +88,7 @@ InterpolationValue CSSLengthInterpolationType::MaybeConvertInherit(
     return nullptr;
   }
   return LengthInterpolationFunctions::MaybeConvertLength(
-      inherited_length, EffectiveZoom(*state.ParentStyle()));
+      inherited_length, EffectiveZoomX(*state.ParentStyle()));
 }
 
 InterpolationValue CSSLengthInterpolationType::MaybeConvertValue(
@@ -117,7 +123,7 @@ CSSLengthInterpolationType::MaybeConvertStandardPropertyUnderlyingValue(
                                           underlying_length))
     return nullptr;
   return LengthInterpolationFunctions::MaybeConvertLength(underlying_length,
-                                                          EffectiveZoom(style));
+                                                          EffectiveZoomX(style));
 }
 
 const CSSValue* CSSLengthInterpolationType::CreateCSSValue(
@@ -145,9 +151,11 @@ void CSSLengthInterpolationType::ApplyStandardPropertyValue(
     const NonInterpolableValue* non_interpolable_value,
     StyleResolverState& state) const {
   ComputedStyle& style = *state.Style();
-  float zoom = EffectiveZoom(style);
+  float zoom = EffectiveZoomX(style);
+  float zoomy = EffectiveZoomY(style);
   CSSToLengthConversionData conversion_data = state.CssToLengthConversionData();
-  conversion_data.SetZoom(zoom);
+  conversion_data.SetZoomX(zoom);
+  conversion_data.SetZoomY(zoomy);
   Length length = LengthInterpolationFunctions::CreateLength(
       interpolable_value, non_interpolable_value, conversion_data,
       value_range_);

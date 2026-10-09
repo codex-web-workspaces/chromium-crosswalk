@@ -44,6 +44,7 @@ class CONTENT_EXPORT NavigationThrottleRunner {
   // Will call the appropriate NavigationThrottle function based on |event| on
   // all NavigationThrottles owned by this NavigationThrottleRunner.
   void ProcessNavigationEvent(Event event);
+  void ProcessNavigationEvent2(Event event);
 
   // Resumes calling the appropriate NavigationThrottle functions for |event_|
   // on all NavigationThrottles that have not yet been notified.
@@ -68,6 +69,7 @@ class CONTENT_EXPORT NavigationThrottleRunner {
 
  private:
   void ProcessInternal();
+  void ProcessInternal2();
   void InformDelegate(const NavigationThrottle::ThrottleCheckResult& result);
 
   Delegate* delegate_;

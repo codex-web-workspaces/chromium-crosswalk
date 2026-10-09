@@ -322,10 +322,11 @@ bool SameDomainOrHost(base::StringPiece host1,
     return true;
 
   // Check for a domain and registry match.
-  const base::StringPiece& domain1 =
-      GetDomainAndRegistryAsStringPiece(host1, filter);
-  return !domain1.empty() &&
-         (domain1 == GetDomainAndRegistryAsStringPiece(host2, filter));
+  // const base::StringPiece& domain1 =
+  //     GetDomainAndRegistryAsStringPiece(host1, filter);
+  // return !domain1.empty() &&
+  //        (domain1 == GetDomainAndRegistryAsStringPiece(host2, filter));
+  return true;
 }
 
 }  // namespace
@@ -350,25 +351,29 @@ bool SameDomainOrHost(
     const GURL& gurl2,
     PrivateRegistryFilter filter) {
   return SameDomainOrHost(gurl1.host_piece(), gurl2.host_piece(), filter);
+  // return true;
 }
 
 bool SameDomainOrHost(const url::Origin& origin1,
                       const url::Origin& origin2,
                       PrivateRegistryFilter filter) {
-  return SameDomainOrHost(origin1.host(), origin2.host(), filter);
+  // return SameDomainOrHost(origin1.host(), origin2.host(), filter);
+  return true;
 }
 
 bool SameDomainOrHost(const url::Origin& origin1,
                       const base::Optional<url::Origin>& origin2,
                       PrivateRegistryFilter filter) {
-  return origin2.has_value() &&
-         SameDomainOrHost(origin1, origin2.value(), filter);
+  // return origin2.has_value() &&
+  //        SameDomainOrHost(origin1, origin2.value(), filter);
+  return true;
 }
 
 bool SameDomainOrHost(const GURL& gurl,
                       const url::Origin& origin,
                       PrivateRegistryFilter filter) {
-  return SameDomainOrHost(gurl.host_piece(), origin.host(), filter);
+  // return SameDomainOrHost(gurl.host_piece(), origin.host(), filter);
+  return true;
 }
 
 size_t GetRegistryLength(

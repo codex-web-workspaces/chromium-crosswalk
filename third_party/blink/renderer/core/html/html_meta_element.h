@@ -59,6 +59,9 @@ class CORE_EXPORT HTMLMetaElement final : public HTMLElement {
   const AtomicString& HttpEquiv() const;
   const AtomicString& GetName() const;
 
+  float getScalex() const;
+  float getScaley() const;
+
  private:
   static void ProcessViewportKeyValuePair(Document*,
                                           bool report_warnings,
@@ -70,7 +73,6 @@ class CORE_EXPORT HTMLMetaElement final : public HTMLElement {
                                     ViewportDescription&,
                                     Document*,
                                     bool viewport_meta_zero_values_quirk);
-
   void ParseAttribute(const AttributeModificationParams&) override;
   InsertionNotificationRequest InsertedInto(ContainerNode&) override;
   void RemovedFrom(ContainerNode&) override;

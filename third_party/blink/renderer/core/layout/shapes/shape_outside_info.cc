@@ -184,7 +184,7 @@ std::unique_ptr<Shape> ShapeOutsideInfo::CreateShapeForImage(
     float margin) const {
   DCHECK(!style_image->IsPendingImage());
   const LayoutSize& image_size = RoundedLayoutSize(style_image->ImageSize(
-      layout_box_.GetDocument(), layout_box_.StyleRef().EffectiveZoom(),
+      layout_box_.GetDocument(), layout_box_.StyleRef().EffectiveZoomX(),layout_box_.StyleRef().EffectiveZoomY(),
       reference_box_logical_size_));
 
   const LayoutRect& margin_rect =

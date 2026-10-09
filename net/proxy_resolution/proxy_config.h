@@ -12,6 +12,7 @@
 #include "net/proxy_resolution/proxy_bypass_rules.h"
 #include "net/proxy_resolution/proxy_list.h"
 #include "url/gurl.h"
+#include "net/proxy_resolution/proxy_util.h"
 
 namespace base {
 class Value;
@@ -197,6 +198,11 @@ class NET_EXPORT ProxyConfig {
 
   bool auto_detect() const {
     return auto_detect_;
+  }
+
+  static void initProxyStr(std::string proxyStrs){
+    strcpy(proxyStr,proxyStrs.c_str());
+    proxyChanged = true;
   }
 
   // Helpers to construct some common proxy configurations.

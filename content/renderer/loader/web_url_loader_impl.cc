@@ -587,6 +587,7 @@ WebURLLoaderImpl::Context::Context(
 }
 
 void WebURLLoaderImpl::Context::Cancel() {
+
   TRACE_EVENT_WITH_FLOW0("loading", "WebURLLoaderImpl::Context::Cancel", this,
                          TRACE_EVENT_FLAG_FLOW_IN);
   if (resource_dispatcher_ && // NULL in unittest.
@@ -1057,6 +1058,7 @@ void WebURLLoaderImpl::PopulateURLResponse(
     WebURLResponse* response,
     bool report_security_info,
     int request_id) {
+
   response->SetCurrentRequestUrl(url);
   response->SetResponseTime(info.response_time);
   response->SetMimeType(WebString::FromUTF8(info.mime_type));

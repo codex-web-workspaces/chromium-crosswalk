@@ -53,7 +53,13 @@ class AdjustForAbsoluteZoom {
     return RoundForImpreciseConversion<int>(fvalue / zoom_factor);
   }
   inline static int AdjustInt(int value, const ComputedStyle& style) {
-    float zoom_factor = style.EffectiveZoom();
+    float zoom_factor = style.EffectiveZoomX();
+    if (zoom_factor == 1)
+      return value;
+    return AdjustInt(value, zoom_factor);
+  }
+  inline static int AdjustIntY(int value, const ComputedStyle& style) {
+    float zoom_factor = style.EffectiveZoomY();
     if (zoom_factor == 1)
       return value;
     return AdjustInt(value, zoom_factor);
@@ -62,35 +68,55 @@ class AdjustForAbsoluteZoom {
     DCHECK(layout_object);
     return AdjustInt(value, layout_object->StyleRef());
   }
+  inline static int AdjustIntY(int value, LayoutObject* layout_object) {
+    DCHECK(layout_object);
+    return AdjustIntY(value, layout_object->StyleRef());
+  }
 
   inline static float AdjustFloat(float value, const ComputedStyle& style) {
-    return value / style.EffectiveZoom();
+    return value / style.EffectiveZoomX();
+  }
+  inline static float AdjustFloatY(float value, const ComputedStyle& style) {
+    return value / style.EffectiveZoomY();
   }
 
   inline static double AdjustDouble(double value, const ComputedStyle& style) {
-    return value / style.EffectiveZoom();
+    return value / style.EffectiveZoomX();
+  }
+  inline static double AdjustDoubleY(double value, const ComputedStyle& style) {
+    return value / style.EffectiveZoomY();
   }
 
   inline static LayoutUnit AdjustLayoutUnit(LayoutUnit value,
                                             const ComputedStyle& style) {
-    return LayoutUnit(value / style.EffectiveZoom());
+    return LayoutUnit(value / style.EffectiveZoomX());
+  }
+  inline static LayoutUnit AdjustLayoutUnitY(LayoutUnit value,
+                                            const ComputedStyle& style) {
+    return LayoutUnit(value / style.EffectiveZoomY());
   }
   inline static LayoutUnit AdjustLayoutUnit(LayoutUnit value,
                                             LayoutObject& layout_object) {
     return AdjustLayoutUnit(value, layout_object.StyleRef());
   }
+  inline static LayoutUnit AdjustLayoutUnitY(LayoutUnit value,
+                                            LayoutObject& layout_object) {
+    return AdjustLayoutUnitY(value, layout_object.StyleRef());
+  }
 
   inline static void AdjustFloatQuad(FloatQuad& quad,
                                      const LayoutObject& layout_object) {
-    float zoom = layout_object.StyleRef().EffectiveZoom();
-    if (zoom != 1)
-      quad.Scale(1 / zoom, 1 / zoom);
+    float zoom = layout_object.StyleRef().EffectiveZoomX();
+    float zoomy = layout_object.StyleRef().EffectiveZoomY();
+    if (zoom != 1 || zoomy != 1)
+      quad.Scale(1 / zoom, 1 / zoomy);
   }
   inline static void AdjustFloatRect(FloatRect& rect,
                                      const LayoutObject& layout_object) {
-    float zoom = layout_object.StyleRef().EffectiveZoom();
-    if (zoom != 1)
-      rect.Scale(1 / zoom, 1 / zoom);
+    float zoom = layout_object.StyleRef().EffectiveZoomX();
+    float zoomy = layout_object.StyleRef().EffectiveZoomY();
+    if (zoom != 1 || zoomy != 1)
+      rect.Scale(1 / zoom, 1 / zoomy);
   }
 
   inline static float AdjustScroll(float scroll_offset, float zoom_factor) {
@@ -98,9 +124,16 @@ class AdjustForAbsoluteZoom {
   }
   inline static float AdjustScroll(float scroll_offset,
                                    const ComputedStyle& style) {
-    return AdjustScroll(scroll_offset, style.EffectiveZoom());
+    return AdjustScroll(scroll_offset, style.EffectiveZoomX());
+  }
+  inline static float AdjustScrollY(float scroll_offset,
+                                   const ComputedStyle& style) {
+    return AdjustScroll(scroll_offset, style.EffectiveZoomY());
   }
   inline static double AdjustScroll(double value, LayoutObject& layout_object) {
+    return AdjustScroll(value, layout_object.StyleRef());
+  }
+  inline static double AdjustScrollY(double value, LayoutObject& layout_object) {
     return AdjustScroll(value, layout_object.StyleRef());
   }
 };

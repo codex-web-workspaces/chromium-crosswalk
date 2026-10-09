@@ -82,7 +82,10 @@
       name: "width",
     },
     {
-      name: "zoom",
+      name: "zoomX",
+    },
+    {
+      name: "zoomY",
     },
   ],
 }

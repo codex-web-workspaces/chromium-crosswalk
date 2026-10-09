@@ -462,7 +462,7 @@ int ImageDocument::CalculateDivWidth() {
   // * Images smaller in either dimension are centered along that axis.
   int viewport_width =
       GetFrame()->GetPage()->GetVisualViewport().Size().Width() /
-      GetFrame()->PageZoomFactor();
+      GetFrame()->PageZoomFactorX();
 
   // For huge images, minimum-scale=0.1 is still too big on small screens.
   // Set the <div> width so that the image will shrink to fit the width of the

@@ -521,6 +521,13 @@ void StyleAdjuster::AdjustComputedStyle(StyleResolverState& state,
   if (style.Display() != EDisplay::kNone) {
     bool is_document_element =
         element && element->GetDocument().documentElement() == element;
+
+    //当element是Span且position不为static且display不是默认的，则强制设置成inlineBlock
+    if (element && element->localName() == html_names::kSpanTag.LocalName() &&
+        style.GetPosition() != EPosition::kStatic &&
+        style.Display() == EDisplay::kInline) {
+      style.SetDisplay(EDisplay::kInlineBlock);
+    }
     // Per the spec, position 'static' and 'relative' in the top layer compute
     // to 'absolute'. Root elements that are in the top layer should just
     // be left alone because the fullscreen.css doesn't apply any style to

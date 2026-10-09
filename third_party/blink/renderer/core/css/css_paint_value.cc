@@ -96,7 +96,8 @@ scoped_refptr<Image> CSSPaintValue::GetImage(
           generator_->NativeInvalidationProperties();
       Vector<AtomicString> custom_properties =
           generator_->CustomInvalidationProperties();
-      float zoom = layout_object.StyleRef().EffectiveZoom();
+      float zoom = layout_object.StyleRef().EffectiveZoomX();
+      float zoomy = layout_object.StyleRef().EffectiveZoomY();
       auto style_data = PaintWorkletStylePropertyMap::BuildCrossThreadData(
           document, style, layout_object.GetNode(), native_properties,
           custom_properties);
@@ -107,7 +108,7 @@ scoped_refptr<Image> CSSPaintValue::GetImage(
         BuildInputArgumentValues(cross_thread_input_arguments);
         scoped_refptr<PaintWorkletInput> input =
             base::MakeRefCounted<PaintWorkletInput>(
-                GetName(), target_size, zoom, generator_->WorkletId(),
+                GetName(), target_size, zoom,zoomy, generator_->WorkletId(),
                 std::move(style_data.value()),
                 std::move(cross_thread_input_arguments));
         return PaintWorkletDeferredImage::Create(std::move(input), target_size);

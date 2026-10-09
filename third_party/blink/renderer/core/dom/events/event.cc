@@ -261,6 +261,10 @@ void Event::preventDefault() {
     prevent_default_called_on_uncancelable_event_ = true;
 }
 
+void Event::calcelPreventDefault(){
+  default_prevented_ = false;
+}
+
 void Event::SetTarget(EventTarget* target) {
   if (target_ == target)
     return;

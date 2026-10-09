@@ -865,7 +865,18 @@
       priority: "High",
     },
     {
-      name: "zoom",
+      name: "zoomX",
+      property_methods: ["ParseSingleValue", "CSSValueFromComputedStyleInternal"],
+      is_descriptor: true,
+      field_group: "visual",
+      field_template: "primitive",
+      default_value: "1.0",
+      type_name: "float",
+      style_builder_custom_functions: ["initial", "inherit", "value"],
+      priority: "High",
+    },
+    {
+      name: "zoomY",
       property_methods: ["ParseSingleValue", "CSSValueFromComputedStyleInternal"],
       is_descriptor: true,
       field_group: "visual",
@@ -1361,7 +1372,7 @@
       keywords: ["auto"],
       default_value: "Length()",
       typedom_types: ["Keyword", "Length", "Percentage"],
-      converter: "ConvertLengthOrAuto",
+      converter: "ConvertLengthOrAutoY",
     },
     {
       name: "box-shadow",
@@ -1624,7 +1635,7 @@
       interpolable: true,
       svg: true,
       typedom_types: ["Length", "Percentage"],
-      converter: "ConvertLength",
+      converter: "ConvertLengthY",
     },
     {
       name: "d",
@@ -1928,7 +1939,7 @@
       keywords: ["auto", "fit-content", "min-content", "max-content"],
       default_value: "Length()",
       typedom_types: ["Keyword", "Length", "Percentage"],
-      converter: "ConvertLengthSizing",
+      converter: "ConvertLengthSizingY",
     },
     {
       name: "hyphens",
@@ -2222,7 +2233,7 @@
       field_group: "box",
       field_template: "<length>",
       default_value: "Length::MaxSizeNone()",
-      converter: "ConvertLengthMaxSizing",
+      converter: "ConvertLengthMaxSizingY",
       keywords: ["none"],
       typedom_types: ["Keyword", "Length", "Percentage"]
     },
@@ -2246,7 +2257,7 @@
       field_group: "box",
       field_template: "<length>",
       default_value: "Length()",
-      converter: "ConvertLengthSizing",
+      converter: "ConvertLengthSizingY",
       typedom_types: ["Length", "Percentage"]
     },
     {
@@ -2553,7 +2564,7 @@
       field_group: "surround",
       field_template: "<length>",
       default_value: "Length::Fixed()",
-      converter: "ConvertLength",
+      converter: "ConvertLengthY",
       computed_style_custom_functions: ["setter"],
       typedom_types: ["Keyword", "Length", "Percentage"]
     },
@@ -2589,7 +2600,7 @@
       field_group: "surround",
       field_template: "<length>",
       default_value: "Length::Fixed()",
-      converter: "ConvertLength",
+      converter: "ConvertLengthY",
       computed_style_custom_functions: ["setter"],
       typedom_types: ["Keyword", "Length", "Percentage"]
     },
@@ -2712,7 +2723,7 @@
       svg: true,
       keywords: ["auto"],
       typedom_types: ["Keyword", "Length", "Percentage"],
-      converter: "ConvertLengthOrAuto",
+      converter: "ConvertLengthOrAutoY",
     },
     {
       name: "scroll-behavior",
@@ -2844,7 +2855,7 @@
       field_template: "<length>",
       default_value: "Length()",
       typedom_types: ["Keyword", "Length", "Percentage"],
-      converter: "ConvertLength",
+      converter: "ConvertLengthY",
     },
     {
       name: "scroll-padding-inline-end",
@@ -2895,7 +2906,7 @@
       field_template: "<length>",
       default_value: "Length()",
       typedom_types: ["Keyword", "Length", "Percentage"],
-      converter: "ConvertLength",
+      converter: "ConvertLengthY",
     },
     {
       name: "scroll-snap-align",
@@ -3302,7 +3313,7 @@
       keywords: ["auto"],
       default_value: "Length()",
       typedom_types: ["Keyword", "Length", "Percentage"],
-      converter: "ConvertLengthOrAuto",
+      converter: "ConvertLengthOrAutoY",
     },
     {
       name: "touch-action",
@@ -3460,7 +3471,7 @@
       interpolable: true,
       svg: true,
       typedom_types: ["Length", "Percentage"],
-      converter: "ConvertLength",
+      converter: "ConvertLengthY",
     },
     {
       name: "-webkit-appearance",
@@ -3894,7 +3905,7 @@
       name: "-webkit-perspective-origin-y",
       property_methods: ["ParseSingleValue"],
       interpolable: true,
-      converter: "ConvertLength",
+      converter: "ConvertLengthY",
     },
     {
       name: "-webkit-print-color-adjust",
@@ -4029,7 +4040,7 @@
       name: "-webkit-transform-origin-y",
       property_methods: ["ParseSingleValue"],
       interpolable: true,
-      converter: "ConvertLength",
+      converter: "ConvertLengthY",
     },
     {
       name: "-webkit-transform-origin-z",
@@ -5414,7 +5425,18 @@
       },
     },
     {
-      name: "-internal-effective-zoom",
+      name: "-internal-effective-zoomX",
+      property_methods: ["ParseSingleValue"],
+      inherited: true,
+      field_template: "primitive",
+      type_name: "float",
+      default_value: "1.0f",
+      field_group: "*",
+      priority: "High",
+      style_builder_custom_functions: ["initial", "inherit", "value"],
+    },
+    {
+      name: "-internal-effective-zoomY",
       property_methods: ["ParseSingleValue"],
       inherited: true,
       field_template: "primitive",

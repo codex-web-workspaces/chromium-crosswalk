@@ -56,13 +56,14 @@ CSSValue* StyleGeneratedImage::ComputedCSSValue() const {
 FloatSize StyleGeneratedImage::ImageSize(
     const Document& document,
     float multiplier,
+    float multipliery,
     const LayoutSize& default_object_size) const {
   if (fixed_size_) {
     FloatSize unzoomed_default_object_size(default_object_size);
     unzoomed_default_object_size.Scale(1 / multiplier);
     return ApplyZoom(FloatSize(image_generator_value_->FixedSize(
                          document, unzoomed_default_object_size)),
-                     multiplier);
+                     multiplier,multipliery);
   }
 
   return FloatSize(default_object_size);

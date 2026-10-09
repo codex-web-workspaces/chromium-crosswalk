@@ -155,7 +155,7 @@ Color LayoutThemeDefault::PlatformActiveSelectionForegroundColor() const {
 
 Color LayoutThemeDefault::PlatformInactiveSelectionForegroundColor() const {
   if (UseMockTheme())
-    return Color::kWhite;
+    return Color::kBlack;
   return inactive_selection_foreground_color_;
 }
 
@@ -179,13 +179,14 @@ void LayoutThemeDefault::AdjustSliderThumbSize(ComputedStyle& style) const {
       WebThemeEngine::kPartSliderThumb);
 
   // FIXME: Mock theme doesn't handle zoomed sliders.
-  float zoom_level = UseMockTheme() ? 1 : style.EffectiveZoom();
+  float zoom_level = UseMockTheme() ? 1 : style.EffectiveZoomX();
+  float zoom_levely = UseMockTheme() ? 1 : style.EffectiveZoomY();
   if (style.Appearance() == kSliderThumbHorizontalPart) {
     style.SetWidth(Length::Fixed(size.Width() * zoom_level));
-    style.SetHeight(Length::Fixed(size.Height() * zoom_level));
+    style.SetHeight(Length::Fixed(size.Height() * zoom_levely));
   } else if (style.Appearance() == kSliderThumbVerticalPart) {
     style.SetWidth(Length::Fixed(size.Height() * zoom_level));
-    style.SetHeight(Length::Fixed(size.Width() * zoom_level));
+    style.SetHeight(Length::Fixed(size.Width() * zoom_levely));
   }
 }
 
@@ -208,9 +209,10 @@ void LayoutThemeDefault::SetCheckboxSize(ComputedStyle& style) const {
 
   IntSize size = Platform::Current()->ThemeEngine()->GetSize(
       WebThemeEngine::kPartCheckbox);
-  float zoom_level = style.EffectiveZoom();
+  float zoom_level = style.EffectiveZoomX();
+  float zoom_levely = style.EffectiveZoomY();
   size.SetWidth(size.Width() * zoom_level);
-  size.SetHeight(size.Height() * zoom_level);
+  size.SetHeight(size.Height() * zoom_levely);
   SetMinimumSizeIfAuto(style, size);
   SetSizeIfAuto(style, size);
 }
@@ -222,9 +224,10 @@ void LayoutThemeDefault::SetRadioSize(ComputedStyle& style) const {
 
   IntSize size =
       Platform::Current()->ThemeEngine()->GetSize(WebThemeEngine::kPartRadio);
-  float zoom_level = style.EffectiveZoom();
+  float zoom_level = style.EffectiveZoomX();
+  float zoom_levely = style.EffectiveZoomY();
   size.SetWidth(size.Width() * zoom_level);
-  size.SetHeight(size.Height() * zoom_level);
+  size.SetHeight(size.Height() * zoom_levely);
   SetMinimumSizeIfAuto(style, size);
   SetSizeIfAuto(style, size);
 }
@@ -234,7 +237,7 @@ void LayoutThemeDefault::AdjustInnerSpinButtonStyle(
   IntSize size = Platform::Current()->ThemeEngine()->GetSize(
       WebThemeEngine::kPartInnerSpinButton);
 
-  float zoom_level = style.EffectiveZoom();
+  float zoom_level = style.EffectiveZoomX();
   style.SetWidth(Length::Fixed(size.Width() * zoom_level));
   style.SetMinWidth(Length::Fixed(size.Width() * zoom_level));
 }
@@ -250,7 +253,7 @@ bool LayoutThemeDefault::ShouldUseFallbackTheme(
     // "fallback" theme.
     ControlPart part = style.Appearance();
     if (part == kCheckboxPart || part == kRadioPart)
-      return style.EffectiveZoom() != 1;
+      return style.EffectiveZoomX() != 1;
   }
   return LayoutTheme::ShouldUseFallbackTheme(style);
 }
@@ -335,7 +338,7 @@ int LayoutThemeDefault::PopupInternalPaddingEnd(
     const ComputedStyle& style) const {
   if (style.Appearance() == kNoControlPart)
     return 0;
-  return 1 * style.EffectiveZoom() +
+  return 1 * style.EffectiveZoomX() +
          ClampedMenuListArrowPaddingSize(client, style);
 }
 
@@ -361,9 +364,9 @@ float LayoutThemeDefault::ClampedMenuListArrowPaddingSize(
     const ChromeClient* client,
     const ComputedStyle& style) const {
   if (cached_menu_list_arrow_padding_size_ > 0 &&
-      style.EffectiveZoom() == cached_menu_list_arrow_zoom_level_)
+      style.EffectiveZoomX() == cached_menu_list_arrow_zoom_level_)
     return cached_menu_list_arrow_padding_size_;
-  cached_menu_list_arrow_zoom_level_ = style.EffectiveZoom();
+  cached_menu_list_arrow_zoom_level_ = style.EffectiveZoomX();
   int original_size = MenuListArrowWidthInDIP();
   int scaled_size =
       client ? client->WindowToViewportScalar(original_size) : original_size;
@@ -391,7 +394,7 @@ int LayoutThemeDefault::MenuListInternalPadding(const ComputedStyle& style,
                                                 int padding) const {
   if (style.Appearance() == kNoControlPart)
     return 0;
-  return padding * style.EffectiveZoom();
+  return padding * style.EffectiveZoomX();
 }
 
 //

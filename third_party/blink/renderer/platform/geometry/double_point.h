@@ -67,6 +67,10 @@ class PLATFORM_EXPORT DoublePoint {
     return DoublePoint(x_ * scale, y_ * scale);
   }
 
+  DoublePoint ScaledBy(float scale,float scaley) const {
+    return DoublePoint(x_ * scale, y_ * scaley);
+  }
+
   String ToString() const;
 
  private:

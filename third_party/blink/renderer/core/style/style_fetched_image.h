@@ -56,6 +56,7 @@ class StyleFetchedImage final : public StyleImage,
   bool ErrorOccurred() const override;
   FloatSize ImageSize(const Document&,
                       float multiplier,
+                      float multipliery,
                       const LayoutSize& default_object_size) const override;
   bool HasIntrinsicSize() const override;
   void AddClient(ImageResourceObserver*) override;

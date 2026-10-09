@@ -51,6 +51,11 @@ class StyleFetchedImageSet final : public StyleImage,
                        float image_scale_factor,
                        CSSImageSetValue*,
                        const KURL&);
+  StyleFetchedImageSet(ImageResourceContent*,
+                       float image_scale_factor,
+                       float image_scale_factory,
+                       CSSImageSetValue*,
+                       const KURL&);
   ~StyleFetchedImageSet() override;
 
   CSSValue* CssValue() const override;
@@ -66,6 +71,7 @@ class StyleFetchedImageSet final : public StyleImage,
   bool ErrorOccurred() const override;
   FloatSize ImageSize(const Document&,
                       float multiplier,
+                      float multipliery,
                       const LayoutSize& default_object_size) const override;
   bool HasIntrinsicSize() const override;
   void AddClient(ImageResourceObserver*) override;
@@ -75,6 +81,7 @@ class StyleFetchedImageSet final : public StyleImage,
                                 const ComputedStyle&,
                                 const FloatSize& target_size) const override;
   float ImageScaleFactor() const override { return image_scale_factor_; }
+  float ImageScaleFactorY() const override { return image_scale_factory_; }
   bool KnownToBeOpaque(const Document&, const ComputedStyle&) const override;
   ImageResourceContent* CachedImage() const override;
 
@@ -88,6 +95,7 @@ class StyleFetchedImageSet final : public StyleImage,
 
   Member<ImageResourceContent> best_fit_image_;
   float image_scale_factor_;
+  float image_scale_factory_;
 
   Member<CSSImageSetValue> image_set_value_;  // Not retained; it owns us.
   const KURL url_;

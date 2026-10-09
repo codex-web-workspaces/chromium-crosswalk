@@ -286,7 +286,7 @@ void WebSettingsImpl::SetShrinksViewportContentToFit(
 }
 
 void WebSettingsImpl::SetSpatialNavigationEnabled(bool enabled) {
-  settings_->SetSpatialNavigationEnabled(enabled);
+  settings_->SetSpatialNavigationEnabled(true);
 }
 
 void WebSettingsImpl::SetSpellCheckEnabledByDefault(bool enabled) {

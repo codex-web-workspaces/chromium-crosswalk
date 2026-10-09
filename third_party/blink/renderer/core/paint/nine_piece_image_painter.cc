@@ -92,7 +92,7 @@ void PaintPieces(GraphicsContext& context,
 
   for (NinePiece piece = kMinPiece; piece < kMaxPiece; ++piece) {
     NinePieceImageGrid::NinePieceDrawInfo draw_info = grid.GetNinePieceDrawInfo(
-        piece, nine_piece_image.GetImage()->ImageScaleFactor());
+        piece, nine_piece_image.GetImage()->ImageScaleFactor(),nine_piece_image.GetImage()->ImageScaleFactorY());
 
     if (draw_info.is_drawable) {
       if (draw_info.is_corner_piece) {
@@ -178,7 +178,7 @@ bool NinePieceImagePainter::Paint(GraphicsContext& graphics_context,
   // are scaled to effective zoom instead so we must take care not to cause
   // scale of them again.
   IntSize image_size = RoundedIntSize(style_image->ImageSize(
-      document, 1, border_image_rect.size.ToLayoutSize()));
+      document, 1,1, border_image_rect.size.ToLayoutSize()));
   scoped_refptr<Image> image =
       style_image->GetImage(observer, document, style, FloatSize(image_size));
 

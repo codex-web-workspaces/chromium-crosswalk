@@ -134,7 +134,7 @@ void MediaControlTimelineElement::DefaultEventHandler(Event& event) {
 
     const Touch* touch = touch_event.touches()->item(0);
     double position =
-        max(0.0, fmin(1.0, touch->clientX() / TrackWidth() * ZoomFactor()));
+        max(0.0, fmin(1.0, touch->clientX() / TrackWidth() * ZoomFactorX()));
     SetPosition(position * MediaElement().duration());
   } else if (event.type() != event_type_names::kInput) {
     return;
@@ -190,7 +190,7 @@ void MediaControlTimelineElement::RenderBarSegments() {
   // At the end of video, thumb's center is -6px away from end of progress bar
   // Convert 6px into ratio respect to progress bar width since
   // current_position is range from 0 to 1
-  double width = TrackWidth() / ZoomFactor();
+  double width = TrackWidth() / ZoomFactorX();
   if (width != 0 && current_position != 0 && !MediaElement().ended()) {
     double offset = kThumbRadius / width;
     current_position += offset - (2 * offset * current_position);

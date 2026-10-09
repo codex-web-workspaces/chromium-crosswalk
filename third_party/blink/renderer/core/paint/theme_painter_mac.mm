@@ -177,9 +177,10 @@ bool ThemePainterMac::PaintMenuList(const Node* node,
 
   NSPopUpButtonCell* popup_button = layout_theme_.PopupButton();
 
-  float zoom_level = style.EffectiveZoom();
+  float zoom_level = style.EffectiveZoomX();
+  float zoom_levely = style.EffectiveZoomY();
   IntSize size = layout_theme_.PopupButtonSizes()[[popup_button controlSize]];
-  size.SetHeight(size.Height() * zoom_level);
+  size.SetHeight(size.Height() * zoom_levely);
   size.SetWidth(r.Width());
 
   // Now inflate it to account for the shadow.
@@ -192,11 +193,11 @@ bool ThemePainterMac::PaintMenuList(const Node* node,
       paint_info.context,
       LayoutThemeMac::InflateRectForFocusRing(inflated_rect));
 
-  if (zoom_level != 1.0f) {
+  if (zoom_level != 1.0f || zoom_levely != 1.0f) {
     inflated_rect.SetWidth(inflated_rect.Width() / zoom_level);
-    inflated_rect.SetHeight(inflated_rect.Height() / zoom_level);
+    inflated_rect.SetHeight(inflated_rect.Height() / zoom_levely);
     paint_info.context.Translate(inflated_rect.X(), inflated_rect.Y());
-    paint_info.context.Scale(zoom_level, zoom_level);
+    paint_info.context.Scale(zoom_level, zoom_levely);
     paint_info.context.Translate(-inflated_rect.X(), -inflated_rect.Y());
   }
 
@@ -282,7 +283,7 @@ bool ThemePainterMac::PaintMenuListButton(const Node* node,
   float space_between_arrows =
       LayoutThemeMac::kMenuListBaseSpaceBetweenArrows * font_scale;
   float scaled_padding_end =
-      LayoutThemeMac::kMenuListArrowPaddingEnd * style.EffectiveZoom();
+      LayoutThemeMac::kMenuListArrowPaddingEnd * style.EffectiveZoomX();
   float left_edge;
   if (style.Direction() == TextDirection::kLtr) {
     left_edge = bounds.MaxX() - scaled_padding_end - arrow_width;
@@ -324,7 +325,8 @@ bool ThemePainterMac::PaintSliderTrack(const LayoutObject& o,
                                        const IntRect& r) {
   PaintSliderTicks(o, paint_info, r);
 
-  float zoom_level = o.StyleRef().EffectiveZoom();
+  float zoom_level = o.StyleRef().EffectiveZoomX();
+  float zoom_levely = o.StyleRef().EffectiveZoomY();
   FloatRect unzoomed_rect(r);
 
   if (o.StyleRef().Appearance() == kSliderHorizontalPart ||
@@ -332,7 +334,7 @@ bool ThemePainterMac::PaintSliderTrack(const LayoutObject& o,
     unzoomed_rect.SetY(
         ceilf(unzoomed_rect.Y() + unzoomed_rect.Height() / 2 -
               zoom_level * LayoutThemeMac::kSliderTrackWidth / 2));
-    unzoomed_rect.SetHeight(zoom_level * LayoutThemeMac::kSliderTrackWidth);
+    unzoomed_rect.SetHeight(zoom_levely * LayoutThemeMac::kSliderTrackWidth);
   } else if (o.StyleRef().Appearance() == kSliderVerticalPart) {
     unzoomed_rect.SetX(
         ceilf(unzoomed_rect.X() + unzoomed_rect.Width() / 2 -
@@ -340,15 +342,15 @@ bool ThemePainterMac::PaintSliderTrack(const LayoutObject& o,
     unzoomed_rect.SetWidth(zoom_level * LayoutThemeMac::kSliderTrackWidth);
   }
 
-  if (zoom_level != 1) {
+  if (zoom_level != 1 || zoom_levely != 1) {
     unzoomed_rect.SetWidth(unzoomed_rect.Width() / zoom_level);
-    unzoomed_rect.SetHeight(unzoomed_rect.Height() / zoom_level);
+    unzoomed_rect.SetHeight(unzoomed_rect.Height() / zoom_levely);
   }
 
   GraphicsContextStateSaver state_saver(paint_info.context);
-  if (zoom_level != 1) {
+  if (zoom_level != 1 || zoom_levely != 1) {
     paint_info.context.Translate(unzoomed_rect.X(), unzoomed_rect.Y());
-    paint_info.context.Scale(zoom_level, zoom_level);
+    paint_info.context.Scale(zoom_level, zoom_levely);
     paint_info.context.Translate(-unzoomed_rect.X(), -unzoomed_rect.Y());
   }
 
@@ -418,13 +420,14 @@ bool ThemePainterMac::PaintSliderThumb(const Node* node,
                                        const PaintInfo& paint_info,
                                        const IntRect& r) {
   GraphicsContextStateSaver state_saver(paint_info.context);
-  float zoom_level = style.EffectiveZoom();
+  float zoom_level = style.EffectiveZoomX();
+  float zoom_levely = style.EffectiveZoomY();
 
   FloatRect unzoomed_rect(r.X(), r.Y(), LayoutThemeMac::kSliderThumbWidth,
                           LayoutThemeMac::kSliderThumbHeight);
-  if (zoom_level != 1.0f) {
+  if (zoom_level != 1.0f || zoom_levely != 1.0f) {
     paint_info.context.Translate(unzoomed_rect.X(), unzoomed_rect.Y());
-    paint_info.context.Scale(zoom_level, zoom_level);
+    paint_info.context.Scale(zoom_level, zoom_levely);
     paint_info.context.Translate(-unzoomed_rect.X(), -unzoomed_rect.Y());
   }
 
@@ -528,14 +531,15 @@ bool ThemePainterMac::PaintSearchField(const Node* node,
 
   GraphicsContextStateSaver state_saver(paint_info.context);
 
-  float zoom_level = style.EffectiveZoom();
+  float zoom_level = style.EffectiveZoomX();
+  float zoom_levely = style.EffectiveZoomY();
 
   IntRect unzoomed_rect = r;
-  if (zoom_level != 1.0f) {
+  if (zoom_level != 1.0f || zoom_levely != 1.0f) {
     unzoomed_rect.SetWidth(unzoomed_rect.Width() / zoom_level);
-    unzoomed_rect.SetHeight(unzoomed_rect.Height() / zoom_level);
+    unzoomed_rect.SetHeight(unzoomed_rect.Height() / zoom_levely);
     paint_info.context.Translate(unzoomed_rect.X(), unzoomed_rect.Y());
-    paint_info.context.Scale(zoom_level, zoom_level);
+    paint_info.context.Scale(zoom_level, zoom_levely);
     paint_info.context.Translate(-unzoomed_rect.X(), -unzoomed_rect.Y());
   }
 
@@ -561,13 +565,14 @@ bool ThemePainterMac::PaintSearchFieldCancelButton(
 
   GraphicsContextStateSaver state_saver(paint_info.context);
 
-  float zoom_level = cancel_button.StyleRef().EffectiveZoom();
+  float zoom_level = cancel_button.StyleRef().EffectiveZoomX();
+  float zoom_levely = cancel_button.StyleRef().EffectiveZoomY();
   FloatRect unzoomed_rect(r);
-  if (zoom_level != 1.0f) {
+  if (zoom_level != 1.0f || zoom_levely != 1.0f) {
     unzoomed_rect.SetWidth(unzoomed_rect.Width() / zoom_level);
-    unzoomed_rect.SetHeight(unzoomed_rect.Height() / zoom_level);
+    unzoomed_rect.SetHeight(unzoomed_rect.Height() / zoom_levely);
     paint_info.context.Translate(unzoomed_rect.X(), unzoomed_rect.Y());
-    paint_info.context.Scale(zoom_level, zoom_level);
+    paint_info.context.Scale(zoom_level, zoom_levely);
     paint_info.context.Translate(-unzoomed_rect.X(), -unzoomed_rect.Y());
   }
 
@@ -616,7 +621,8 @@ bool ThemePainterMac::PaintCheckbox(const Node* node,
   BEGIN_BLOCK_OBJC_EXCEPTIONS
 
   ControlStates states = LayoutTheme::ControlStatesForNode(node, style);
-  float zoom_factor = style.EffectiveZoom();
+  float zoom_factor = style.EffectiveZoomX();
+  float zoom_factory = style.EffectiveZoomY();
 
   // Determine the width and height needed for the control and prepare the cell
   // for painting.
@@ -627,16 +633,16 @@ bool ThemePainterMac::PaintCheckbox(const Node* node,
   NSControlSize control_size = [checkbox_cell controlSize];
   IntSize zoomed_size = LayoutThemeMac::CheckboxSizes()[control_size];
   zoomed_size.SetWidth(zoomed_size.Width() * zoom_factor);
-  zoomed_size.SetHeight(zoomed_size.Height() * zoom_factor);
+  zoomed_size.SetHeight(zoomed_size.Height() * zoom_factory);
   IntRect inflated_rect = LayoutThemeMac::InflateRect(
       zoomed_rect, zoomed_size, LayoutThemeMac::CheckboxMargins(control_size),
       zoom_factor);
 
-  if (zoom_factor != 1.0f) {
+  if (zoom_factor != 1.0f || zoom_factory != 1.0f) {
     inflated_rect.SetWidth(inflated_rect.Width() / zoom_factor);
-    inflated_rect.SetHeight(inflated_rect.Height() / zoom_factor);
+    inflated_rect.SetHeight(inflated_rect.Height() / zoom_factory);
     paint_info.context.Translate(inflated_rect.X(), inflated_rect.Y());
-    paint_info.context.Scale(zoom_factor, zoom_factor);
+    paint_info.context.Scale(zoom_factor, zoom_factory);
     paint_info.context.Translate(-inflated_rect.X(), -inflated_rect.Y());
   }
 
@@ -659,7 +665,8 @@ bool ThemePainterMac::PaintRadio(const Node* node,
                                  const PaintInfo& paint_info,
                                  const IntRect& zoomed_rect) {
   ControlStates states = LayoutTheme::ControlStatesForNode(node, style);
-  float zoom_factor = style.EffectiveZoom();
+  float zoom_factor = style.EffectiveZoomX();
+  float zoom_factory = style.EffectiveZoomY();
 
   // Determine the width and height needed for the control and prepare the cell
   // for painting.
@@ -670,16 +677,16 @@ bool ThemePainterMac::PaintRadio(const Node* node,
   NSControlSize control_size = [radio_cell controlSize];
   IntSize zoomed_size = LayoutThemeMac::RadioSizes()[control_size];
   zoomed_size.SetWidth(zoomed_size.Width() * zoom_factor);
-  zoomed_size.SetHeight(zoomed_size.Height() * zoom_factor);
+  zoomed_size.SetHeight(zoomed_size.Height() * zoom_factory);
   IntRect inflated_rect = LayoutThemeMac::InflateRect(
       zoomed_rect, zoomed_size, LayoutThemeMac::RadioMargins(control_size),
       zoom_factor);
 
-  if (zoom_factor != 1.0f) {
+  if (zoom_factor != 1.0f || zoom_factory != 1.0f) {
     inflated_rect.SetWidth(inflated_rect.Width() / zoom_factor);
-    inflated_rect.SetHeight(inflated_rect.Height() / zoom_factor);
+    inflated_rect.SetHeight(inflated_rect.Height() / zoom_factory);
     paint_info.context.Translate(inflated_rect.X(), inflated_rect.Y());
-    paint_info.context.Scale(zoom_factor, zoom_factor);
+    paint_info.context.Scale(zoom_factor, zoom_factory);
     paint_info.context.Translate(-inflated_rect.X(), -inflated_rect.Y());
   }
 
@@ -705,7 +712,8 @@ bool ThemePainterMac::PaintButton(const Node* node,
   BEGIN_BLOCK_OBJC_EXCEPTIONS
 
   ControlStates states = LayoutTheme::ControlStatesForNode(node, style);
-  float zoom_factor = style.EffectiveZoom();
+  float zoom_factor = style.EffectiveZoomX();
+  float zoom_factory = style.EffectiveZoomY();
 
   // Determine the width and height needed for the control and prepare the cell
   // for painting.
@@ -718,7 +726,7 @@ bool ThemePainterMac::PaintButton(const Node* node,
   // Buttons don't ever constrain width, so the zoomed width can just be
   // honored.
   zoomed_size.SetWidth(zoomed_rect.Width());
-  zoomed_size.SetHeight(zoomed_size.Height() * zoom_factor);
+  zoomed_size.SetHeight(zoomed_size.Height() * zoom_factory);
   IntRect inflated_rect = zoomed_rect;
   if ([button_cell bezelStyle] == NSRoundedBezelStyle) {
     // Center the button within the available space.
@@ -733,11 +741,11 @@ bool ThemePainterMac::PaintButton(const Node* node,
         inflated_rect, zoomed_size, LayoutThemeMac::ButtonMargins(control_size),
         zoom_factor);
 
-    if (zoom_factor != 1.0f) {
+    if (zoom_factor != 1.0f || zoom_factory != 1.0f) {
       inflated_rect.SetWidth(inflated_rect.Width() / zoom_factor);
-      inflated_rect.SetHeight(inflated_rect.Height() / zoom_factor);
+      inflated_rect.SetHeight(inflated_rect.Height() / zoom_factory);
       paint_info.context.Translate(inflated_rect.X(), inflated_rect.Y());
-      paint_info.context.Scale(zoom_factor, zoom_factor);
+      paint_info.context.Scale(zoom_factor, zoom_factory);
       paint_info.context.Translate(-inflated_rect.X(), -inflated_rect.Y());
     }
   }
@@ -781,7 +789,8 @@ bool ThemePainterMac::PaintInnerSpinButton(const Node* node,
                                            const PaintInfo& paint_info,
                                            const IntRect& zoomed_rect) {
   ControlStates states = LayoutTheme::ControlStatesForNode(node, style);
-  float zoom_factor = style.EffectiveZoom();
+  float zoom_factor = style.EffectiveZoomX();
+  float zoom_factory = style.EffectiveZoomY();
 
   // We don't use NSStepperCell because there are no ways to draw an
   // NSStepperCell with the up button highlighted.
@@ -802,11 +811,11 @@ bool ThemePainterMac::PaintInnerSpinButton(const Node* node,
 
   IntRect rect(zoomed_rect);
   GraphicsContextStateSaver state_saver(paint_info.context);
-  if (zoom_factor != 1.0f) {
+  if (zoom_factor != 1.0f || zoom_factory != 1.0f) {
     rect.SetWidth(rect.Width() / zoom_factor);
-    rect.SetHeight(rect.Height() / zoom_factor);
+    rect.SetHeight(rect.Height() / zoom_factory);
     paint_info.context.Translate(rect.X(), rect.Y());
-    paint_info.context.Scale(zoom_factor, zoom_factor);
+    paint_info.context.Scale(zoom_factor, zoom_factory);
     paint_info.context.Translate(-rect.X(), -rect.Y());
   }
   CGRect bounds(rect);

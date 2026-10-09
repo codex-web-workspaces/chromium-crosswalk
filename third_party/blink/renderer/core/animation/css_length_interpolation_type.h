@@ -30,7 +30,8 @@ class CORE_EXPORT CSSLengthInterpolationType : public CSSInterpolationType {
                                   StyleResolverState&) const final;
 
  private:
-  float EffectiveZoom(const ComputedStyle&) const;
+  float EffectiveZoomX(const ComputedStyle&) const;
+  float EffectiveZoomY(const ComputedStyle&) const;
 
   InterpolationValue MaybeConvertNeutral(const InterpolationValue& underlying,
                                          ConversionCheckers&) const final;

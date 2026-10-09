@@ -134,7 +134,8 @@ TransformOperations TransformBuilder::CreateTransformOperations(
     return operations;
   }
 
-  float zoom_factor = conversion_data.Zoom();
+  float zoom_factor = conversion_data.ZoomX();
+  float zoom_factory = conversion_data.ZoomY();
   for (auto& value : *in_value_list) {
     const auto* transform_value = To<CSSFunctionValue>(value.Get());
     TransformOperation::OperationType transform_type =
@@ -297,7 +298,7 @@ TransformOperations TransformBuilder::CreateTransformOperations(
             zoom_factor *
             To<CSSPrimitiveValue>(transform_value->Item(4)).GetDoubleValue();
         double f =
-            zoom_factor *
+            zoom_factory *
             To<CSSPrimitiveValue>(transform_value->Item(5)).GetDoubleValue();
         operations.Operations().push_back(
             MatrixTransformOperation::Create(a, b, c, d, e, f));

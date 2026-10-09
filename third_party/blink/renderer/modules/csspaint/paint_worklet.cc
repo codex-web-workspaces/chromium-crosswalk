@@ -120,7 +120,7 @@ scoped_refptr<Image> PaintWorklet::Paint(const String& name,
   // TODO(crbug.com/946515): Break dependency on LayoutObject.
   const LayoutObject& layout_object =
       static_cast<const LayoutObject&>(observer);
-  float zoom = layout_object.StyleRef().EffectiveZoom();
+  float zoom = layout_object.StyleRef().EffectiveZoomX();
 
   StylePropertyMapReadOnly* style_map =
       MakeGarbageCollected<PrepopulatedComputedStylePropertyMap>(

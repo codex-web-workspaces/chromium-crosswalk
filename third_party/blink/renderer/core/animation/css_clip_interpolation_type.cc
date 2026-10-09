@@ -194,7 +194,7 @@ InterpolationValue CSSClipInterpolationType::MaybeConvertInherit(
   if (state.ParentStyle()->HasAutoClip())
     return nullptr;
   return CreateClipValue(state.ParentStyle()->Clip(),
-                         state.ParentStyle()->EffectiveZoom());
+                         state.ParentStyle()->EffectiveZoomX());
 }
 
 static bool IsCSSAuto(const CSSValue& value) {
@@ -234,7 +234,7 @@ CSSClipInterpolationType::MaybeConvertStandardPropertyUnderlyingValue(
     const ComputedStyle& style) const {
   if (style.HasAutoClip())
     return nullptr;
-  return CreateClipValue(style.Clip(), style.EffectiveZoom());
+  return CreateClipValue(style.Clip(), style.EffectiveZoomX());
 }
 
 PairwiseInterpolationValue CSSClipInterpolationType::MaybeMergeSingles(

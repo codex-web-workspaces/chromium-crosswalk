@@ -32,6 +32,7 @@ class CORE_EXPORT SpatialNavigationController
   bool HandleEnterKeyboardEvent(KeyboardEvent* event);
   bool HandleEscapeKeyboardEvent(KeyboardEvent* event);
   bool HandleImeSubmitKeyboardEvent(KeyboardEvent* event);
+  void HandleDefaultFocus();
 
   // Called when the enter key is released to clear local state because we don't
   // get a consistent event stream when the Enter key is partially handled.
@@ -53,7 +54,7 @@ class CORE_EXPORT SpatialNavigationController
   // Entry-point into SpatialNavigation advancement. Will return true if an
   // action (moving interest or scrolling), false otherwise.
   bool Advance(SpatialNavigationDirection direction);
-
+  bool Advance2(SpatialNavigationDirection direction);
   /*
    * Advances interest only within the specified container. Returns true if
    * interest was advanced or the container was scrolled, false if no
@@ -73,6 +74,10 @@ class CORE_EXPORT SpatialNavigationController
                               const PhysicalRect& starting_rect_in_root_frame,
                               SpatialNavigationDirection direction,
                               Node* interest_child_in_container);
+  bool AdvanceWithinContainer2(Node& container,
+                              const PhysicalRect& starting_rect_in_root_frame,
+                              SpatialNavigationDirection direction,
+                              Node* interest_child_in_container);
 
   // Parameters have same meanings as method above.
   FocusCandidate FindNextCandidateInContainer(
@@ -84,6 +89,7 @@ class CORE_EXPORT SpatialNavigationController
   // Returns which Node we're starting navigation from or nullptr if we should
   // abort navigation.
   Node* StartingNode();
+  Node* DefaultNode();
   void MoveInterestTo(Node* next_node);
 
   // Dispatches a fake mouse move event at the center of the given element to

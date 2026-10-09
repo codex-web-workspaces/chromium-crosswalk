@@ -36,7 +36,7 @@ void LayoutNGListMarkerImage::ComputeIntrinsicSizingInfoByDefaultSize(
       font_data->GetFontMetrics().Ascent() / LayoutUnit(2);
   LayoutSize default_object_size(bullet_width, bullet_width);
   FloatSize concrete_size = ImageResource()->ImageSizeWithDefaultSize(
-      Style()->EffectiveZoom(), default_object_size);
+      Style()->EffectiveZoomX(),Style()->EffectiveZoomY(), default_object_size);
   concrete_size.Scale(ImageDevicePixelRatio());
   LayoutSize image_size(RoundedLayoutSize(concrete_size));
 

@@ -176,7 +176,34 @@ void CSSMathExpressionNumericLiteral::AccumulatePixelsAndPercent(
       // in calcs to be able to accomodate border-image-width
       // https://drafts.csswg.org/css-backgrounds-3/#the-border-image-width
       value.pixels = clampTo<float>(value.pixels + value_->GetDoubleValue() *
-                                                       conversion_data.Zoom() *
+                                                       conversion_data.ZoomX() *
+                                                       multiplier);
+      break;
+    default:
+      NOTREACHED();
+  }
+}
+void CSSMathExpressionNumericLiteral::AccumulatePixelsAndPercentY(
+    const CSSToLengthConversionData& conversion_data,
+    PixelsAndPercent& value,
+    float multiplier) const {
+  switch (category_) {
+    case kCalcLength:
+      value.pixels = clampTo<float>(
+          value.pixels +
+          value_->ComputeLengthY<double>(conversion_data) * multiplier);
+      break;
+    case kCalcPercent:
+      DCHECK(value_->IsPercentage());
+      value.percent =
+          clampTo<float>(value.percent + value_->GetDoubleValue() * multiplier);
+      break;
+    case kCalcNumber:
+      // TODO(alancutter): Stop treating numbers like pixels unconditionally
+      // in calcs to be able to accomodate border-image-width
+      // https://drafts.csswg.org/css-backgrounds-3/#the-border-image-width
+      value.pixels = clampTo<float>(value.pixels + value_->GetDoubleValue() *
+                                                       conversion_data.ZoomY() *
                                                        multiplier);
       break;
     default:
@@ -217,6 +244,27 @@ double CSSMathExpressionNumericLiteral::ComputeLengthPx(
   switch (category_) {
     case kCalcLength:
       return value_->ComputeLength<double>(conversion_data);
+    case kCalcNumber:
+    case kCalcPercent:
+    case kCalcAngle:
+    case kCalcFrequency:
+    case kCalcPercentLength:
+    case kCalcPercentNumber:
+    case kCalcTime:
+    case kCalcLengthNumber:
+    case kCalcPercentLengthNumber:
+    case kCalcOther:
+      NOTREACHED();
+      break;
+  }
+  NOTREACHED();
+  return 0;
+}
+double CSSMathExpressionNumericLiteral::ComputeLengthPxY(
+    const CSSToLengthConversionData& conversion_data) const {
+  switch (category_) {
+    case kCalcLength:
+      return value_->ComputeLengthY<double>(conversion_data);
     case kCalcNumber:
     case kCalcPercent:
     case kCalcAngle:
@@ -501,6 +549,44 @@ void CSSMathExpressionBinaryOperation::AccumulatePixelsAndPercent(
   }
 }
 
+void CSSMathExpressionBinaryOperation::AccumulatePixelsAndPercentY(
+    const CSSToLengthConversionData& conversion_data,
+    PixelsAndPercent& value,
+    float multiplier) const {
+  switch (operator_) {
+    case CSSMathOperator::kAdd:
+      left_side_->AccumulatePixelsAndPercentY(conversion_data, value,
+                                             multiplier);
+      right_side_->AccumulatePixelsAndPercentY(conversion_data, value,
+                                              multiplier);
+      break;
+    case CSSMathOperator::kSubtract:
+      left_side_->AccumulatePixelsAndPercentY(conversion_data, value,
+                                             multiplier);
+      right_side_->AccumulatePixelsAndPercentY(conversion_data, value,
+                                              -multiplier);
+      break;
+    case CSSMathOperator::kMultiply:
+      DCHECK_NE((left_side_->Category() == kCalcNumber),
+                (right_side_->Category() == kCalcNumber));
+      if (left_side_->Category() == kCalcNumber) {
+        right_side_->AccumulatePixelsAndPercentY(
+            conversion_data, value, multiplier * left_side_->DoubleValue());
+      } else {
+        left_side_->AccumulatePixelsAndPercentY(
+            conversion_data, value, multiplier * right_side_->DoubleValue());
+      }
+      break;
+    case CSSMathOperator::kDivide:
+      DCHECK_EQ(right_side_->Category(), kCalcNumber);
+      left_side_->AccumulatePixelsAndPercentY(
+          conversion_data, value, multiplier / right_side_->DoubleValue());
+      break;
+    default:
+      NOTREACHED();
+  }
+}
+
 double CSSMathExpressionBinaryOperation::DoubleValue() const {
   DCHECK(HasDoubleValue(ResolvedUnitType())) << CustomCSSText();
   return Evaluate(left_side_->DoubleValue(), right_side_->DoubleValue());
@@ -549,6 +635,25 @@ double CSSMathExpressionBinaryOperation::ComputeLengthPx(
   return Evaluate(left_value, right_value);
 }
 
+double CSSMathExpressionBinaryOperation::ComputeLengthPxY(
+    const CSSToLengthConversionData& conversion_data) const {
+  DCHECK_EQ(kCalcLength, Category());
+  double left_value;
+  if (left_side_->Category() == kCalcLength) {
+    left_value = left_side_->ComputeLengthPxY(conversion_data);
+  } else {
+    DCHECK_EQ(kCalcNumber, left_side_->Category());
+    left_value = left_side_->DoubleValue();
+  }
+  double right_value;
+  if (right_side_->Category() == kCalcLength) {
+    right_value = right_side_->ComputeLengthPxY(conversion_data);
+  } else {
+    DCHECK_EQ(kCalcNumber, right_side_->Category());
+    right_value = right_side_->DoubleValue();
+  }
+  return Evaluate(left_value, right_value);
+}
 void CSSMathExpressionBinaryOperation::AccumulateLengthArray(
     CSSLengthArray& length_array,
     double multiplier) const {

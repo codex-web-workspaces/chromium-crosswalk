@@ -511,6 +511,7 @@ EventHandler::OptionalCursor EventHandler::SelectCursor(
       if (!cached_image)
         continue;
       float scale = style_image->ImageScaleFactor();
+      float scaley = style_image->ImageScaleFactorY();
       bool hot_spot_specified = (*cursors)[i].HotSpotSpecified();
       IntPoint hot_spot = (*cursors)[i].HotSpot();
       IntSize size = cached_image->GetImage()->Size();
@@ -518,7 +519,7 @@ EventHandler::OptionalCursor EventHandler::SelectCursor(
         continue;
       // Limit the size of cursors (in UI pixels) so that they cannot be
       // used to cover UI elements in chrome.
-      size.Scale(1 / scale);
+      size.Scale(1 / scale,1/scaley);
       if (size.Width() > kMaximumCursorSize ||
           size.Height() > kMaximumCursorSize)
         continue;
@@ -545,8 +546,8 @@ EventHandler::OptionalCursor EventHandler::SelectCursor(
         continue;
 
       // Convert from logical pixels to physical pixels.
-      hot_spot.Scale(scale, scale);
-      return Cursor(image, hot_spot_specified, hot_spot, scale);
+      hot_spot.Scale(scale, scaley);
+      return Cursor(image, hot_spot_specified, hot_spot, scale,scaley);
     }
   }
 
@@ -1465,7 +1466,7 @@ WebInputEventResult EventHandler::HandleGestureEvent(
     const WebGestureEvent& gesture_event) {
   // Propagation to inner frames is handled below this function.
   DCHECK_EQ(frame_, &frame_->LocalFrameRoot());
-  DCHECK_NE(0, gesture_event.FrameScale());
+  DCHECK_NE(0, gesture_event.FrameScaleX());
 
   // Scrolling-related gesture events invoke EventHandler recursively for each
   // frame down the chain, doing a single-frame hit-test per frame. This matches
@@ -2088,7 +2089,8 @@ WebInputEventResult EventHandler::ShowNonLocatedContextMenu(
 
   // TODO(dtapuska): Transition the mouseEvent to be created really in viewport
   // coordinates instead of root frame coordinates.
-  mouse_event.SetFrameScale(1);
+  mouse_event.SetFrameScaleX(1);
+  mouse_event.SetFrameScaleY(1);
 
   return SendContextMenuEvent(mouse_event, override_target_element);
 }

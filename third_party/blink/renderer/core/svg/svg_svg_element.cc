@@ -455,7 +455,7 @@ AffineTransform SVGSVGElement::LocalCoordinateSpaceTransform(
       TransformationMatrix matrix;
       // Adjust for the zoom level factored into CSS coordinates (WK bug
       // #96361).
-      matrix.Scale(1.0 / layout_object->StyleRef().EffectiveZoom());
+      matrix.Scale(1.0 / layout_object->StyleRef().EffectiveZoomX(),1.0 / layout_object->StyleRef().EffectiveZoomY());
 
       // Apply transforms from our ancestor coordinate space, including any
       // non-SVG ancestor transforms.
@@ -619,8 +619,9 @@ FloatSize SVGSVGElement::CurrentViewportSize() const {
 
   if (layout_object->IsSVGRoot()) {
     LayoutSize content_size = ToLayoutSVGRoot(layout_object)->ContentSize();
-    float zoom = layout_object->StyleRef().EffectiveZoom();
-    return FloatSize(content_size.Width() / zoom, content_size.Height() / zoom);
+    float zoom = layout_object->StyleRef().EffectiveZoomX();
+    float zoomy = layout_object->StyleRef().EffectiveZoomY();
+    return FloatSize(content_size.Width() / zoom, content_size.Height() / zoomy);
   }
 
   FloatRect viewport_rect =

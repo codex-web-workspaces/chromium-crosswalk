@@ -33,10 +33,22 @@ namespace blink {
 
 class CORE_EXPORT UIEventWithKeyState : public UIEvent {
  public:
-  bool ctrlKey() const { return modifiers_ & WebInputEvent::kControlKey; }
-  bool shiftKey() const { return modifiers_ & WebInputEvent::kShiftKey; }
-  bool altKey() const { return modifiers_ & WebInputEvent::kAltKey; }
-  bool metaKey() const { return modifiers_ & WebInputEvent::kMetaKey; }
+  bool ctrlKey() const {
+   // return modifiers_ & WebInputEvent::kControlKey; 
+    return false;
+ }
+  bool shiftKey() const {
+   // return modifiers_ & WebInputEvent::kShiftKey; 
+    return false;
+ }
+  bool altKey() const {
+   // return modifiers_ & WebInputEvent::kAltKey; 
+    return false;
+ }
+  bool metaKey() const {
+   // return modifiers_ & WebInputEvent::kMetaKey; 
+    return false;
+ }
 
   // We ignore the new tab modifiers (ctrl or meta, depending on OS) set by
   // JavaScript when processing events.  However, scripts running in isolated

@@ -130,7 +130,7 @@ void LayoutImage::ImageChanged(WrappedImagePtr new_image,
   if (!did_increment_visually_non_empty_pixel_count_) {
     // At a zoom level of 1 the image is guaranteed to have an integer size.
     View()->GetFrameView()->IncrementVisuallyNonEmptyPixelCount(
-        FlooredIntSize(ImageSizeOverriddenByIntrinsicSize(1.0f)));
+        FlooredIntSize(ImageSizeOverriddenByIntrinsicSize(1.0f,1.0f)));
     did_increment_visually_non_empty_pixel_count_ = true;
   }
 
@@ -168,7 +168,7 @@ void LayoutImage::InvalidatePaintAndMarkForLayoutIfNeeded(
   LayoutSize old_intrinsic_size = IntrinsicSize();
 
   LayoutSize new_intrinsic_size = RoundedLayoutSize(
-      ImageSizeOverriddenByIntrinsicSize(StyleRef().EffectiveZoom()));
+      ImageSizeOverriddenByIntrinsicSize(StyleRef().EffectiveZoomX(),StyleRef().EffectiveZoomY()));
   UpdateIntrinsicSizeIfNeeded(new_intrinsic_size);
 
   // In the case of generated image content using :before/:after/content, we
@@ -314,13 +314,13 @@ IntSize LayoutImage::GetOverriddenIntrinsicSize() const {
 }
 
 FloatSize LayoutImage::ImageSizeOverriddenByIntrinsicSize(
-    float multiplier) const {
+    float multiplier,float multipliery) const {
   FloatSize overridden_intrinsic_size = FloatSize(GetOverriddenIntrinsicSize());
   if (overridden_intrinsic_size.IsEmpty())
-    return image_resource_->ImageSize(multiplier);
+    return image_resource_->ImageSize(multiplier,multipliery);
 
-  if (multiplier != 1) {
-    overridden_intrinsic_size.Scale(multiplier);
+  if (multiplier != 1 || multipliery != 1) {
+    overridden_intrinsic_size.Scale(multiplier,multipliery);
     if (overridden_intrinsic_size.Width() < 1.0f)
       overridden_intrinsic_size.SetWidth(1.0f);
     if (overridden_intrinsic_size.Height() < 1.0f)
@@ -353,7 +353,7 @@ void LayoutImage::ComputeIntrinsicSizingInfo(
 
       // Handle zoom & vertical writing modes here, as the embedded SVG document
       // doesn't know about them.
-      intrinsic_sizing_info.size.Scale(StyleRef().EffectiveZoom());
+      intrinsic_sizing_info.size.Scale(StyleRef().EffectiveZoomX(),StyleRef().EffectiveZoomY());
       if (StyleRef().GetObjectFit() != EObjectFit::kScaleDown)
         intrinsic_sizing_info.size.Scale(ImageDevicePixelRatio());
 

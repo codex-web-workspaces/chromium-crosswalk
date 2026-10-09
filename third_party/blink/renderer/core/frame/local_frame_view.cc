@@ -185,7 +185,7 @@ void LogCursorSizeCounter(LocalFrame* frame, const Cursor& cursor) {
   // Should not overflow, this calculation is done elsewhere when determining
   // whether the cursor exceeds its maximum size (see event_handler.cc).
   IntSize scaled_size = image->Size();
-  scaled_size.Scale(1 / cursor.ImageScaleFactor());
+  scaled_size.Scale(1 / cursor.ImageScaleFactor(),1 / cursor.ImageScaleFactorY());
   if (scaled_size.Width() > 64 || scaled_size.Height() > 64) {
     UseCounter::Count(frame->GetDocument(), WebFeature::kCursorImageGT64x64);
   } else if (scaled_size.Width() > 32 || scaled_size.Height() > 32) {
@@ -247,7 +247,7 @@ LocalFrameView::LocalFrameView(LocalFrame& frame, IntRect frame_rect)
                             this,
                             &LocalFrameView::UpdatePluginsTimerFired),
       first_layout_(true),
-      base_background_color_(Color::kWhite),
+      base_background_color_(Color::kBlack),
       last_zoom_factor_(1.0f),
       media_type_(media_type_names::kScreen),
       safe_to_propagate_scroll_to_parent_(true),
@@ -806,7 +806,7 @@ void LocalFrameView::UpdateLayout() {
       if (first_layout_) {
         first_layout_ = false;
         last_viewport_size_ = GetLayoutSize();
-        last_zoom_factor_ = GetLayoutView()->StyleRef().Zoom();
+        last_zoom_factor_ = GetLayoutView()->StyleRef().ZoomX();
 
         ScrollbarMode h_mode;
         ScrollbarMode v_mode;
@@ -955,8 +955,11 @@ void LocalFrameView::SetNeedsPaintPropertyUpdate() {
 
 FloatSize LocalFrameView::ViewportSizeForViewportUnits() const {
   float zoom = 1;
-  if (!frame_->GetDocument() || !frame_->GetDocument()->Printing())
-    zoom = GetFrame().PageZoomFactor();
+  float zoomy = 1;
+  if (!frame_->GetDocument() || !frame_->GetDocument()->Printing()){
+    zoom = GetFrame().PageZoomFactorX();
+    zoomy = GetFrame().PageZoomFactorY();
+  }
 
   auto* layout_view = GetLayoutView();
   if (!layout_view)
@@ -964,7 +967,7 @@ FloatSize LocalFrameView::ViewportSizeForViewportUnits() const {
 
   FloatSize layout_size;
   layout_size.SetWidth(layout_view->ViewWidth(kIncludeScrollbars) / zoom);
-  layout_size.SetHeight(layout_view->ViewHeight(kIncludeScrollbars) / zoom);
+  layout_size.SetHeight(layout_view->ViewHeight(kIncludeScrollbars) / zoomy);
 
   BrowserControls& browser_controls = frame_->GetPage()->GetBrowserControls();
   if (browser_controls.PermittedState() != cc::BrowserControlsState::kHidden) {
@@ -992,11 +995,12 @@ FloatSize LocalFrameView::ViewportSizeForViewportUnits() const {
 FloatSize LocalFrameView::ViewportSizeForMediaQueries() const {
   FloatSize viewport_size(layout_size_);
   if (!frame_->GetDocument()->Printing()) {
-    float zoom = GetFrame().PageZoomFactor();
+    float zoom = GetFrame().PageZoomFactorX();
+    float zoomy = GetFrame().PageZoomFactorY();
     viewport_size.SetWidth(
         AdjustForAbsoluteZoom::AdjustInt(layout_size_.Width(), zoom));
     viewport_size.SetHeight(
-        AdjustForAbsoluteZoom::AdjustInt(layout_size_.Height(), zoom));
+        AdjustForAbsoluteZoom::AdjustInt(layout_size_.Height(), zoomy));
   }
   return viewport_size;
 }
@@ -1853,7 +1857,7 @@ bool LocalFrameView::WasViewportResized() {
   if (!layout_view)
     return false;
   return (GetLayoutSize() != last_viewport_size_ ||
-          layout_view->StyleRef().Zoom() != last_zoom_factor_);
+          layout_view->StyleRef().ZoomX() != last_zoom_factor_);
 }
 
 void LocalFrameView::SendResizeEventIfNeeded() {
@@ -1867,7 +1871,7 @@ void LocalFrameView::SendResizeEventIfNeeded() {
     return;
 
   last_viewport_size_ = GetLayoutSize();
-  last_zoom_factor_ = layout_view->StyleRef().Zoom();
+  last_zoom_factor_ = layout_view->StyleRef().ZoomX();
 
   frame_->GetDocument()->EnqueueVisualViewportResizeEvent();
 

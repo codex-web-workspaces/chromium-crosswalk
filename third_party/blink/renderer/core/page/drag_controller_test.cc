@@ -454,7 +454,8 @@ TEST_F(DragControllerTest, DragLinkWithPageScaleFactor) {
                             WebInputEvent::kNoModifiers,
                             WebInputEvent::GetStaticTimeStampForTests());
   mouse_event.button = WebMouseEvent::Button::kRight;
-  mouse_event.SetFrameScale(1);
+  mouse_event.SetFrameScaleX(1);
+  mouse_event.SetFrameScaleY(1);
   mouse_event.SetPositionInWidget(5, 10);
 
   auto& drag_state = GetFrame().GetPage()->GetDragController().GetDragState();

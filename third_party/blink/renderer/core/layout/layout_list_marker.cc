@@ -76,7 +76,7 @@ LayoutSize LayoutListMarker::ImageBulletSize() const {
   LayoutUnit bullet_width =
       font_data->GetFontMetrics().Ascent() / LayoutUnit(2);
   return RoundedLayoutSize(
-      image_->ImageSize(GetDocument(), StyleRef().EffectiveZoom(),
+      image_->ImageSize(GetDocument(), StyleRef().EffectiveZoomX(), StyleRef().EffectiveZoomY(),
                         LayoutSize(bullet_width, bullet_width)));
 }
 

@@ -73,6 +73,7 @@ class URLRequestContextBuilderTest : public PlatformTest,
     test_server_.AddDefaultHandlers(
         base::FilePath(FILE_PATH_LITERAL("net/data/url_request_unittest")));
 #if defined(OS_LINUX) || defined(OS_ANDROID)
+    LOG(INFO)<<"getProxy----url-request-context-builder-unittest";
     builder_.set_proxy_config_service(std::make_unique<ProxyConfigServiceFixed>(
         ProxyConfigWithAnnotation::CreateDirect()));
 #endif  // defined(OS_LINUX) || defined(OS_ANDROID)

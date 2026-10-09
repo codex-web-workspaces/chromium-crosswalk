@@ -141,7 +141,7 @@ void HTMLButtonElement::DefaultEventHandler(Event& event) {
       }
     }
     if (event.type() == event_type_names::kKeyup &&
-        ToKeyboardEvent(event).key() == " ") {
+        (ToKeyboardEvent(event).key() == " " || ToKeyboardEvent(event).key() == "Enter")) {
       if (IsActive())
         DispatchSimulatedClick(&event);
       event.SetDefaultHandled();

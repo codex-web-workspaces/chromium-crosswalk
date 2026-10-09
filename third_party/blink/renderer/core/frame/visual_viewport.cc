@@ -448,7 +448,7 @@ double VisualViewport::OffsetLeft() const {
 
   UpdateStyleAndLayout();
 
-  return VisibleRect().X() / MainFrame()->PageZoomFactor();
+  return VisibleRect().X() / MainFrame()->PageZoomFactorX();
 }
 
 double VisualViewport::OffsetTop() const {
@@ -457,7 +457,7 @@ double VisualViewport::OffsetTop() const {
 
   UpdateStyleAndLayout();
 
-  return VisibleRect().Y() / MainFrame()->PageZoomFactor();
+  return VisibleRect().Y() / MainFrame()->PageZoomFactorY();
 }
 
 double VisualViewport::Width() const {
@@ -490,7 +490,7 @@ double VisualViewport::VisibleWidthCSSPx() const {
   if (!MainFrame())
     return 0;
 
-  float zoom = MainFrame()->PageZoomFactor();
+  float zoom = MainFrame()->PageZoomFactorX();
   float width_css_px = VisibleRect().Width() / zoom;
   return width_css_px;
 }
@@ -499,7 +499,7 @@ double VisualViewport::VisibleHeightCSSPx() const {
   if (!MainFrame())
     return 0;
 
-  float zoom = MainFrame()->PageZoomFactor();
+  float zoom = MainFrame()->PageZoomFactorY();
   float height_css_px = VisibleRect().Height() / zoom;
   return height_css_px;
 }

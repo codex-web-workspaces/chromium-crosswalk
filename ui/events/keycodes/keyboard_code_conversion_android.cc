@@ -8,6 +8,7 @@
 
 #include "build/build_config.h"
 
+
 namespace ui {
 namespace {
 
@@ -80,10 +81,10 @@ DomKey GetDomKeyFromAndroidKeycode(int keycode) {
 #include "ui/events/keycodes/dom/keycode_conversion_data_android_generated.inc"
 #undef ANDROID_KEYCODE_TO_DOM_KEY
 #endif
-    case AKEYCODE_HOME:
-      return DomKey::GO_HOME;
-    case AKEYCODE_BACK:
-      return DomKey::GO_BACK;
+    // case AKEYCODE_HOME:
+    //   return DomKey::GO_HOME;
+    // case AKEYCODE_BACK:
+    //   return DomKey::GO_BACK;
     case AKEYCODE_CALL:
       return DomKey::CALL;
     case AKEYCODE_ENDCALL:
@@ -783,6 +784,54 @@ KeyboardCode KeyboardCodeFromAndroidKeyCode(int keycode) {
       return VKEY_PRIOR;
     case AKEYCODE_CHANNEL_DOWN:
       return VKEY_NEXT;
+    case 768:
+      return ITV_XUNI;
+    case 700:
+      return ITV_REFRESH;
+    case 701:
+      return ITV_PAGE_UP;
+    case 702:
+      return ITV_PAGE_DOWN;
+    case 703:
+      return ITV_SRF;
+    case 704:
+      return ITV_VOLUMEUP;
+    case 705:
+      return ITV_VOLUMEDOWN;
+    case 706:
+      return ITV_MUTE;
+    case 707:
+      return ITV_CHANNEL_UP;
+    case 708:
+      return ITV_CHANNEL_DOWN;  
+    case 709:
+      return ITV_PAUSE;
+    case 710:
+      return ITV_FASTFORWARD;
+    case 711:
+      return ITV_FASTREWIND;
+    case 712:
+      return ITV_HOME;
+    case 713:
+      return ITV_RELOAD;
+    case 714:
+      return ITV_STAR;
+    case 715:
+      return ITV_MENU;
+    case 716:
+      return ITV_LIVE;
+    case 717:
+      return ITV_TV_BACK;
+    case 718:
+      return ITV_INFO;
+    case 719:
+      return ITV_APP;
+    case 720:
+      return ITV_SEARCH;
+    case 721:
+      return ITV_YN_HOME;
+    case 722:
+      return ITV_BACK;
     default:
       return VKEY_UNKNOWN;
   }

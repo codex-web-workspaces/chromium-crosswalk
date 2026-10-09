@@ -300,6 +300,7 @@ class PLATFORM_EXPORT TransformationMatrix {
   TransformationMatrix& Multiply(const TransformationMatrix&);
 
   TransformationMatrix& Scale(double);
+  TransformationMatrix& Scale(double,double);
   TransformationMatrix& ScaleNonUniform(double sx, double sy);
   TransformationMatrix& Scale3d(double sx, double sy, double sz);
 

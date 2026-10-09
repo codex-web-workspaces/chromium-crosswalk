@@ -76,7 +76,7 @@ void LayoutSliderContainer::ComputeLogicalHeight(
       int tick_length = LayoutTheme::GetTheme().SliderTickSize().Height();
       track_height = LayoutUnit(2 * (offset_from_center + tick_length));
     }
-    float zoom_factor = StyleRef().EffectiveZoom();
+    float zoom_factor = StyleRef().EffectiveZoomY();
     if (zoom_factor != 1.0)
       track_height *= zoom_factor;
 

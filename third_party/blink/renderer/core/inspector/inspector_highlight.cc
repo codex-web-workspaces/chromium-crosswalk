@@ -752,7 +752,7 @@ bool InspectorHighlight::GetBoxModel(
                                            model_object->OffsetParent()),
                                        model_object)
                                  : bounding_box.Width())
-          .setHeight(model_object ? AdjustForAbsoluteZoom::AdjustInt(
+          .setHeight(model_object ? AdjustForAbsoluteZoom::AdjustIntY(
                                         model_object->PixelSnappedOffsetHeight(
                                             model_object->OffsetParent()),
                                         model_object)

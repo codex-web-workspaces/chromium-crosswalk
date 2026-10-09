@@ -119,7 +119,8 @@ void SetWebTouchEventAttributesFromWebPointerEvent(
       web_pointer_event.touch_start_or_first_touch_move;
   web_touch_event->moved_beyond_slop_region =
       web_pointer_event.moved_beyond_slop_region;
-  web_touch_event->SetFrameScale(web_pointer_event.FrameScale());
+  web_touch_event->SetFrameScaleX(web_pointer_event.FrameScaleX());
+  web_touch_event->SetFrameScaleY(web_pointer_event.FrameScaleY());
   web_touch_event->SetFrameTranslate(web_pointer_event.FrameTranslate());
   web_touch_event->SetTimeStamp(web_pointer_event.TimeStamp());
   web_touch_event->SetModifiers(web_pointer_event.GetModifiers());
@@ -205,15 +206,16 @@ Touch* TouchEventManager::CreateDomTouch(
 
   WebPointerEvent transformed_event =
       point_attr->event_.WebPointerEventInRootFrame();
-  float scale_factor = 1.0f / target_frame->PageZoomFactor();
+  float scale_factor = 1.0f / target_frame->PageZoomFactorX();
+  float scale_factory = 1.0f / target_frame->PageZoomFactorY();
 
   FloatPoint document_point =
       target_frame->View()
           ->RootFrameToDocument(transformed_event.PositionInWidget())
-          .ScaledBy(scale_factor);
+          .ScaledBy(scale_factor,scale_factory);
   FloatSize adjusted_radius =
       FloatSize(transformed_event.width / 2.f, transformed_event.height / 2.f)
-          .ScaledBy(scale_factor);
+          .ScaledBy(scale_factor,scale_factory);
 
   return MakeGarbageCollected<Touch>(
       target_frame, touch_node, point_attr->event_.id,

@@ -252,7 +252,7 @@ FilterOperations FilterOperationResolver::CreateOffscreenFilterOperations(
   CSSToLengthConversionData::ViewportSize viewport_size(0, 0);
   CSSToLengthConversionData conversion_data(nullptr,  // ComputedStyle
                                             font_sizes, viewport_size,
-                                            1);  // zoom
+                                            1,1);  // zoom
 
   for (auto& curr_value : To<CSSValueList>(in_value)) {
     if (curr_value->IsURIValue())

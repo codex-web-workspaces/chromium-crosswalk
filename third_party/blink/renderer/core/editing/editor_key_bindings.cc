@@ -35,6 +35,8 @@
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/local_frame_client.h"
 
+#include "base/android/jni_android.h"
+#include "v8/src/objects/objectsutil.h"
 namespace blink {
 
 bool Editor::HandleEditingKeyboardEvent(KeyboardEvent* evt) {
@@ -42,11 +44,11 @@ bool Editor::HandleEditingKeyboardEvent(KeyboardEvent* evt) {
   // do not treat this as text input if it's a system key event
   if (!key_event || key_event->is_system_key)
     return false;
-
+  
   String command_name = Behavior().InterpretKeyEvent(*evt);
   const EditorCommand command = this->CreateCommand(command_name);
-
-  if (key_event->GetType() == WebInputEvent::kRawKeyDown) {
+  // if (key_event->GetType() == WebInputEvent::kRawKeyDown || evt->key() == "ArrowUp"  || evt->key() == "ArrowDown"  || evt->key() == "ArrowLeft"  || evt->key() == "ArrowRight" || evt->key() == "Backspace" || evt->key() == "Enter") {
+  if (evt->key() == "ArrowUp"  || evt->key() == "ArrowDown"  || evt->key() == "ArrowLeft"  || evt->key() == "ArrowRight" || evt->key() == "Backspace" || evt->key() == "Enter") {
     // WebKit doesn't have enough information about mode to decide how
     // commands that just insert text if executed via Editor should be treated,
     // so we leave it upon WebCore to either handle them immediately
@@ -56,7 +58,6 @@ bool Editor::HandleEditingKeyboardEvent(KeyboardEvent* evt) {
       return false;
     return command.Execute(evt);
   }
-
   if (command.Execute(evt))
     return true;
 

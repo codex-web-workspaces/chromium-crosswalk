@@ -99,7 +99,7 @@ base::Optional<FloatRect> ClipPathClipper::LocalClipPathBoundingBox(
   FloatRect bounding_box = clipper->ResourceBoundingBox(reference_box);
   if (!object.IsSVGChild() &&
       clipper->ClipPathUnits() == SVGUnitTypes::kSvgUnitTypeUserspaceonuse) {
-    bounding_box.Scale(clipper->StyleRef().EffectiveZoom());
+    bounding_box.Scale(clipper->StyleRef().EffectiveZoomX(),clipper->StyleRef().EffectiveZoomY());
     // With kSvgUnitTypeUserspaceonuse, the clip path layout is relative to
     // the current transform space, and the reference box is unused.
     // While SVG object has no concept of paint offset, HTML object's
@@ -151,7 +151,7 @@ static AffineTransform MaskToContentTransform(
       SVGUnitTypes::kSvgUnitTypeUserspaceonuse) {
     if (!is_svg_child) {
       mask_to_content.Translate(reference_box.X(), reference_box.Y());
-      mask_to_content.Scale(resource_clipper.StyleRef().EffectiveZoom());
+      mask_to_content.Scale(resource_clipper.StyleRef().EffectiveZoomX(),resource_clipper.StyleRef().EffectiveZoomY());
     }
   }
 

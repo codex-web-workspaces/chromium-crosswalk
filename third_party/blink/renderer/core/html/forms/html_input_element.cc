@@ -79,6 +79,9 @@
 #include "third_party/blink/renderer/platform/text/platform_locale.h"
 #include "third_party/blink/renderer/platform/wtf/math_extras.h"
 
+#include "base/android/jni_android.h"
+#include "v8/src/objects/objectsutil.h"
+
 namespace blink {
 
 using ValueMode = InputType::ValueMode;
@@ -1289,6 +1292,7 @@ void HTMLInputElement::PostDispatchEventHandler(
 }
 
 void HTMLInputElement::DefaultEventHandler(Event& evt) {
+  
   if (evt.IsMouseEvent() && evt.type() == event_type_names::kClick &&
       ToMouseEvent(evt).button() ==
           static_cast<int16_t>(WebPointerProperties::Button::kLeft)) {
@@ -1296,13 +1300,11 @@ void HTMLInputElement::DefaultEventHandler(Event& evt) {
     if (evt.DefaultHandled())
       return;
   }
-
   if (evt.IsKeyboardEvent() && evt.type() == event_type_names::kKeydown) {
     input_type_view_->HandleKeydownEvent(ToKeyboardEvent(evt));
     if (evt.DefaultHandled())
       return;
   }
-
   // Call the base event handler before any of our own event handling for almost
   // all events in text fields.  Makes editing keyboard handling take precedence
   // over the keydown and keypress handling in this function.
@@ -1310,9 +1312,14 @@ void HTMLInputElement::DefaultEventHandler(Event& evt) {
       IsTextField() && (evt.type() == event_type_names::kKeydown ||
                         evt.type() == event_type_names::kKeypress);
   if (call_base_class_early) {
+    // const String& event_key = ToKeyboardEvent(evt).key();
+    // if(event_key == "ArrowUp" || event_key == "ArrowDown" || event_key == "ArrowLeft" || event_key == "ArrowRight" || event_key == "Enter" || event_key == "Back"){
+
+    // }
     TextControlElement::DefaultEventHandler(evt);
-    if (evt.DefaultHandled())
+    if (evt.DefaultHandled()){
       return;
+    }
   }
 
   // DOMActivate events cause the input to be "activated" - in the case of image
@@ -1326,10 +1333,9 @@ void HTMLInputElement::DefaultEventHandler(Event& evt) {
     if (evt.DefaultHandled())
       return;
   }
-
   // Use key press event here since sending simulated mouse events
   // on key down blocks the proper sending of the key press event.
-  if (evt.IsKeyboardEvent() && evt.type() == event_type_names::kKeypress) {
+  if (evt.IsKeyboardEvent() && (evt.type() == event_type_names::kKeydown || evt.type() == event_type_names::kKeypress)) {
     input_type_view_->HandleKeypressEvent(ToKeyboardEvent(evt));
     if (evt.DefaultHandled())
       return;
@@ -1364,10 +1370,12 @@ void HTMLInputElement::DefaultEventHandler(Event& evt) {
     evt.SetDefaultHandled();
     return;
   }
+  
 
   if (evt.IsBeforeTextInsertedEvent()) {
     input_type_view_->HandleBeforeTextInsertedEvent(
         static_cast<BeforeTextInsertedEvent&>(evt));
+
   }
 
   if (evt.IsMouseEvent() && evt.type() == event_type_names::kMousedown) {
@@ -1378,8 +1386,9 @@ void HTMLInputElement::DefaultEventHandler(Event& evt) {
 
   input_type_view_->ForwardEvent(evt);
 
-  if (!call_base_class_early && !evt.DefaultHandled())
+  if (!call_base_class_early && !evt.DefaultHandled()){
     TextControlElement::DefaultEventHandler(evt);
+  }
 }
 
 void HTMLInputElement::CreateShadowSubtree() {

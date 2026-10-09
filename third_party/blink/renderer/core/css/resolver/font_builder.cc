@@ -324,20 +324,20 @@ void FontBuilder::UpdateAdjustedSize(FontDescription& font_description,
   float aspect_value = font_data->GetFontMetrics().XHeight() / specified_size;
   float adjusted_size = (size_adjust / aspect_value) * specified_size;
   adjusted_size = GetComputedSizeFromSpecifiedSize(
-      font_description, style.EffectiveZoom(), adjusted_size);
+      font_description, style.EffectiveZoomX()>style.EffectiveZoomY()?style.EffectiveZoomY():style.EffectiveZoomX(), adjusted_size);
 
   adjusted_size = TextAutosizer::ComputeAutosizedFontSize(
-      adjusted_size, style.TextAutosizingMultiplier(), style.EffectiveZoom());
+      adjusted_size, style.TextAutosizingMultiplier(), style.EffectiveZoomX()>style.EffectiveZoomY()?style.EffectiveZoomY():style.EffectiveZoomX());
   font_description.SetAdjustedSize(adjusted_size);
 }
 
 void FontBuilder::UpdateComputedSize(FontDescription& font_description,
                                      const ComputedStyle& style) {
   float computed_size =
-      GetComputedSizeFromSpecifiedSize(font_description, style.EffectiveZoom(),
+      GetComputedSizeFromSpecifiedSize(font_description, style.EffectiveZoomX()>style.EffectiveZoomY()?style.EffectiveZoomY():style.EffectiveZoomX(),
                                        font_description.SpecifiedSize());
   computed_size = TextAutosizer::ComputeAutosizedFontSize(
-      computed_size, style.TextAutosizingMultiplier(), style.EffectiveZoom());
+      computed_size, style.TextAutosizingMultiplier(), style.EffectiveZoomX()>style.EffectiveZoomY()?style.EffectiveZoomY():style.EffectiveZoomX());
   font_description.SetComputedSize(computed_size);
 }
 

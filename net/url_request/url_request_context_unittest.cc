@@ -32,6 +32,7 @@ TEST_P(URLRequestContextMemoryDumpTest, MemoryDumpProvider) {
       new base::trace_event::ProcessMemoryDump(dump_args));
   URLRequestContextBuilder builder;
 #if defined(OS_LINUX) || defined(OS_ANDROID)
+  LOG(INFO)<<"getProxy----url-request-context-unittest";
   builder.set_proxy_config_service(std::make_unique<ProxyConfigServiceFixed>(
       ProxyConfigWithAnnotation::CreateDirect()));
 #endif  // defined(OS_LINUX) || defined(OS_ANDROID)

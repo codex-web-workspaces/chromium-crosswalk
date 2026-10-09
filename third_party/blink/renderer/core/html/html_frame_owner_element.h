@@ -130,6 +130,8 @@ class CORE_EXPORT HTMLFrameOwnerElement : public HTMLElement,
 
   void Trace(Visitor*) override;
 
+  void FirePendingLoad();
+
  protected:
   HTMLFrameOwnerElement(const QualifiedName& tag_name, Document&);
 
@@ -185,6 +187,9 @@ class CORE_EXPORT HTMLFrameOwnerElement : public HTMLElement,
 
   Member<LazyLoadFrameObserver> lazy_load_frame_observer_;
   bool should_lazy_load_children_;
+  // 新增成员变量
+  bool load_event_fired_ = false;
+  bool load_event_suc_ = false;
 };
 
 class SubframeLoadingDisabler {
@@ -219,7 +224,6 @@ class SubframeLoadingDisabler {
   // TODO(sof): go back to HeapHashSet<> once crbug.com/684551 has been
   // resolved.
   using SubtreeRootSet = HashCountedSet<UntracedMember<Node>>;
-
   CORE_EXPORT static SubtreeRootSet& DisabledSubtreeRoots();
 
   Member<Node> root_;

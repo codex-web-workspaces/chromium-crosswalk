@@ -98,7 +98,7 @@ InterpolationValue CSSLengthListInterpolationType::MaybeConvertInherit(
   if (!success)
     return nullptr;
   return MaybeConvertLengthList(inherited_length_list,
-                                state.ParentStyle()->EffectiveZoom());
+                                state.ParentStyle()->EffectiveZoomX());
 }
 
 InterpolationValue CSSLengthListInterpolationType::MaybeConvertValue(
@@ -132,7 +132,7 @@ CSSLengthListInterpolationType::MaybeConvertStandardPropertyUnderlyingValue(
   if (!LengthListPropertyFunctions::GetLengthList(CssProperty(), style,
                                                   underlying_length_list))
     return nullptr;
-  return MaybeConvertLengthList(underlying_length_list, style.EffectiveZoom());
+  return MaybeConvertLengthList(underlying_length_list, style.EffectiveZoomX());
 }
 
 void CSSLengthListInterpolationType::Composite(

@@ -84,44 +84,44 @@ void DevToolsDownloadManagerDelegate::Shutdown() {
 bool DevToolsDownloadManagerDelegate::DetermineDownloadTarget(
     download::DownloadItem* item,
     const content::DownloadTargetCallback& callback) {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  // DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
-  DevToolsDownloadManagerHelper* download_helper =
-      DevToolsDownloadManagerHelper::FromWebContents(
-          DownloadItemUtils::GetWebContents(item));
+  // DevToolsDownloadManagerHelper* download_helper =
+  //     DevToolsDownloadManagerHelper::FromWebContents(
+  //         DownloadItemUtils::GetWebContents(item));
 
-  // Check if we should failback to delegate.
-  if (proxy_download_delegate_ && !download_helper)
-    return proxy_download_delegate_->DetermineDownloadTarget(item, callback);
+  // // Check if we should failback to delegate.
+  // if (proxy_download_delegate_ && !download_helper)
+  //   return proxy_download_delegate_->DetermineDownloadTarget(item, callback);
 
-  // In headless mode there's no no proxy delegate set, so if there's no
-  // information associated to the download, we deny it by default.
-  if (!download_helper ||
-      download_helper->GetDownloadBehavior() !=
-          DevToolsDownloadManagerHelper::DownloadBehavior::ALLOW) {
-    base::FilePath empty_path = base::FilePath();
-    callback.Run(empty_path,
-                 download::DownloadItem::TARGET_DISPOSITION_OVERWRITE,
-                 download::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS, empty_path,
-                 download::DOWNLOAD_INTERRUPT_REASON_FILE_BLOCKED);
-    return true;
-  }
+  // // In headless mode there's no no proxy delegate set, so if there's no
+  // // information associated to the download, we deny it by default.
+  // if (!download_helper ||
+  //     download_helper->GetDownloadBehavior() !=
+  //         DevToolsDownloadManagerHelper::DownloadBehavior::ALLOW) {
+  //   base::FilePath empty_path = base::FilePath();
+  //   callback.Run(empty_path,
+  //                download::DownloadItem::TARGET_DISPOSITION_OVERWRITE,
+  //                download::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS, empty_path,
+  //                download::DOWNLOAD_INTERRUPT_REASON_FILE_BLOCKED);
+  //   return true;
+  // }
 
-  base::FilePath download_path =
-      base::FilePath::FromUTF8Unsafe(download_helper->GetDownloadPath());
+  // base::FilePath download_path =
+  //     base::FilePath::FromUTF8Unsafe(download_helper->GetDownloadPath());
 
-  FilenameDeterminedCallback filename_determined_callback =
-      base::Bind(&DevToolsDownloadManagerDelegate::OnDownloadPathGenerated,
-                 base::Unretained(this), item->GetId(), callback);
+  // FilenameDeterminedCallback filename_determined_callback =
+  //     base::Bind(&DevToolsDownloadManagerDelegate::OnDownloadPathGenerated,
+  //                base::Unretained(this), item->GetId(), callback);
 
-  PostTaskWithTraits(
-      FROM_HERE,
-      {base::MayBlock(), base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN,
-       base::TaskPriority::USER_VISIBLE},
-      base::BindOnce(&DevToolsDownloadManagerDelegate::GenerateFilename,
-                     item->GetURL(), item->GetContentDisposition(),
-                     item->GetSuggestedFilename(), item->GetMimeType(),
-                     download_path, std::move(filename_determined_callback)));
+  // PostTaskWithTraits(
+  //     FROM_HERE,
+  //     {base::MayBlock(), base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN,
+  //      base::TaskPriority::USER_VISIBLE},
+  //     base::BindOnce(&DevToolsDownloadManagerDelegate::GenerateFilename,
+  //                    item->GetURL(), item->GetContentDisposition(),
+  //                    item->GetSuggestedFilename(), item->GetMimeType(),
+  //                    download_path, std::move(filename_determined_callback)));
   return true;
 }
 

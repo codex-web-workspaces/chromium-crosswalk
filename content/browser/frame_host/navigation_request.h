@@ -176,6 +176,7 @@ class CONTENT_EXPORT NavigationRequest : public NavigationURLLoaderDelegate,
   // Called on the UI thread by the Navigator to start the navigation.
   // The NavigationRequest can be deleted while BeginNavigation() is called.
   void BeginNavigation();
+  void BeginNavigation2();
 
   const CommonNavigationParams& common_params() const { return common_params_; }
 
@@ -655,6 +656,7 @@ class CONTENT_EXPORT NavigationRequest : public NavigationURLLoaderDelegate,
   // be called when all throttle checks have completed. This will allow the
   // caller to cancel the navigation or let it proceed.
   void WillStartRequest(ThrottleChecksFinishedCallback callback);
+  void WillStartRequest2(ThrottleChecksFinishedCallback callback);
 
   // Called when the URLRequest will be redirected in the network stack.
   // |callback| will be called when all throttles check have completed. This

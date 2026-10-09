@@ -284,7 +284,7 @@ void CSSAnimations::CalculateCompositorAnimationUpdate(
 
   bool transform_zoom_changed =
       old_style->HasCurrentTransformAnimation() &&
-      old_style->EffectiveZoom() != style.EffectiveZoom();
+      old_style->EffectiveZoomX() != style.EffectiveZoomX();
 
   const auto& snapshot = [&](AnimationEffect* effect) {
     const KeyframeEffectModelBase* keyframe_effect =

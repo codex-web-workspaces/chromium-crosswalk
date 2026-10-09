@@ -33,7 +33,8 @@
 [
     NoInterfaceObject
 ] interface DevToolsHost {
-    float zoomFactor();
+    float zoomFactorX();
+    float zoomFactorY();
 
     void copyText(DOMString text);
 

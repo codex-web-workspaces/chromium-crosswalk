@@ -68,6 +68,12 @@ void NavigationThrottleRunner::ProcessNavigationEvent(Event event) {
   next_index_ = 0;
   ProcessInternal();
 }
+void NavigationThrottleRunner::ProcessNavigationEvent2(Event event) {
+  DCHECK_NE(Event::NoEvent, event);
+  current_event_ = event;
+  next_index_ = 0;
+  ProcessInternal2();
+}
 
 void NavigationThrottleRunner::ResumeProcessingNavigationEvent(
     NavigationThrottle* deferring_throttle) {
@@ -169,13 +175,55 @@ void NavigationThrottleRunner::ProcessInternal() {
       case NavigationThrottle::CANCEL:
       case NavigationThrottle::CANCEL_AND_IGNORE:
         next_index_ = 0;
-        InformDelegate(result);
+        // InformDelegate(result);
         return;
 
       case NavigationThrottle::DEFER:
         next_index_ = i + 1;
         return;
     }
+  }
+
+  next_index_ = 0;
+  InformDelegate(NavigationThrottle::PROCEED);
+}
+void NavigationThrottleRunner::ProcessInternal2() {
+  DCHECK_NE(Event::NoEvent, current_event_);
+  base::WeakPtr<NavigationThrottleRunner> weak_ref = weak_factory_.GetWeakPtr();
+  for (size_t i = next_index_; i < throttles_.size(); ++i) {
+    TRACE_EVENT1("navigation", GetEventName(current_event_), "throttle",
+                 throttles_[i]->GetNameForLogging());
+    
+      // LOG(INFO)<<"navigation---ProcessInternal2--"<<throttles_[i]->GetNameForLogging();
+    // NavigationThrottle::ThrottleCheckResult result =
+    //     ExecuteNavigationEvent(throttles_[i].get(), current_event_);
+  //   if (!weak_ref) {
+  //     // The NavigationThrottle execution has destroyed this
+  //     // NavigationThrottleRunner. Return immediately.
+  //     return;
+  //   }
+  //   TRACE_EVENT_ASYNC_STEP_INTO0(
+  //       "navigation", "NavigationHandle", handle_,
+  //       base::StringPrintf("%s: %s: %d", GetEventName(current_event_),
+  //                          throttles_[i]->GetNameForLogging(),
+  //                          result.action()));
+  //   switch (result.action()) {
+  //     case NavigationThrottle::PROCEED:
+  //       continue;
+
+  //     case NavigationThrottle::BLOCK_REQUEST_AND_COLLAPSE:
+  //     case NavigationThrottle::BLOCK_REQUEST:
+  //     case NavigationThrottle::BLOCK_RESPONSE:
+  //     case NavigationThrottle::CANCEL:
+  //     case NavigationThrottle::CANCEL_AND_IGNORE:
+  //       next_index_ = 0;
+  //       // InformDelegate(result);
+  //       return;
+
+  //     case NavigationThrottle::DEFER:
+  //       next_index_ = i + 1;
+  //       return;
+  //   }
   }
 
   next_index_ = 0;

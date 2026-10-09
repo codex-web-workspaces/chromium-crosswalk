@@ -1053,7 +1053,6 @@ ProxyResolutionService::CreateUsingSystemProxyResolver(
     std::unique_ptr<ProxyConfigService> proxy_config_service,
     NetLog* net_log) {
   DCHECK(proxy_config_service);
-
   if (!ProxyResolverFactoryForSystem::IsSupported()) {
     VLOG(1) << "PAC support disabled because there is no system implementation";
     return CreateWithoutProxyResolver(std::move(proxy_config_service), net_log);
@@ -1070,9 +1069,20 @@ std::unique_ptr<ProxyResolutionService>
 ProxyResolutionService::CreateWithoutProxyResolver(
     std::unique_ptr<ProxyConfigService> proxy_config_service,
     NetLog* net_log) {
-  return std::make_unique<ProxyResolutionService>(
-      std::move(proxy_config_service),
-      std::make_unique<ProxyResolverFactoryForNullResolver>(), net_log);
+    proxyChanged = false;
+   if(strlen(proxyStr)!=0 && proxyStr[0] != '\0'){
+    LOG(INFO)<<"getProxy-----CreateWithoutProxyResolver(),proxyStr_ not Empty：：：："<<proxyStr;
+    return std::make_unique<ProxyResolutionService>(
+        std::move(proxy_config_service),
+        std::make_unique<ProxyResolverFactoryForPacResult>(proxyStr), net_log);
+  }else{
+    LOG(INFO)<<"getProxy-----CreateWithoutProxyResolver(),proxyStr_ is NULL";
+    return std::make_unique<ProxyResolutionService>(
+        std::move(proxy_config_service),
+        std::make_unique<ProxyResolverFactoryForNullResolver>(), net_log);
+
+  }
+
 }
 
 // static

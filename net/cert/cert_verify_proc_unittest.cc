@@ -3318,6 +3318,7 @@ class CertVerifyProcInternalWithNetFetchingTest
       base::WaitableEvent* initialization_complete_event) {
     URLRequestContextBuilder url_request_context_builder;
     url_request_context_builder.set_user_agent("cert_verify_proc_unittest/0.1");
+    LOG(INFO)<<"getProxy----cert_verify_proc_unittest";
     url_request_context_builder.set_proxy_config_service(
         std::make_unique<ProxyConfigServiceFixed>(ProxyConfigWithAnnotation()));
     *context = url_request_context_builder.Build();

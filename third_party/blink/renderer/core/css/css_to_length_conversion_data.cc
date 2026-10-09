@@ -79,21 +79,22 @@ CSSToLengthConversionData::CSSToLengthConversionData(
     const ComputedStyle* style,
     const FontSizes& font_sizes,
     const ViewportSize& viewport_size,
-    float zoom)
+    float zoom,float zoomy)
     : style_(style),
       font_sizes_(font_sizes),
       viewport_size_(viewport_size),
-      zoom_(clampTo<float>(zoom, std::numeric_limits<float>::denorm_min())) {}
+      zoomx_(clampTo<float>(zoom, std::numeric_limits<float>::denorm_min())),
+      zoomy_(clampTo<float>(zoomy, std::numeric_limits<float>::denorm_min())) {}
 
 CSSToLengthConversionData::CSSToLengthConversionData(
     const ComputedStyle* style,
     const ComputedStyle* root_style,
     const LayoutView* layout_view,
-    float zoom)
+    float zoom,float zoomy)
     : CSSToLengthConversionData(style,
                                 FontSizes(style, root_style),
                                 ViewportSize(layout_view),
-                                zoom) {}
+                                zoom,zoomy) {}
 
 double CSSToLengthConversionData::ViewportWidthPercent() const {
   // FIXME: Remove style_ from this class. Plumb viewport and rem unit
@@ -135,37 +136,101 @@ double CSSToLengthConversionData::ZoomedComputedPixels(
   switch (type) {
     case CSSPrimitiveValue::UnitType::kPixels:
     case CSSPrimitiveValue::UnitType::kUserUnits:
-      return value * Zoom();
+      return value * ZoomX();
 
     case CSSPrimitiveValue::UnitType::kCentimeters:
-      return value * kCssPixelsPerCentimeter * Zoom();
+      return value * kCssPixelsPerCentimeter * ZoomX();
 
     case CSSPrimitiveValue::UnitType::kMillimeters:
-      return value * kCssPixelsPerMillimeter * Zoom();
+      return value * kCssPixelsPerMillimeter * ZoomX();
 
     case CSSPrimitiveValue::UnitType::kQuarterMillimeters:
-      return value * kCssPixelsPerQuarterMillimeter * Zoom();
+      return value * kCssPixelsPerQuarterMillimeter * ZoomX();
 
     case CSSPrimitiveValue::UnitType::kInches:
-      return value * kCssPixelsPerInch * Zoom();
+      return value * kCssPixelsPerInch * ZoomX();
 
     case CSSPrimitiveValue::UnitType::kPoints:
-      return value * kCssPixelsPerPoint * Zoom();
+      return value * kCssPixelsPerPoint * ZoomX();
 
     case CSSPrimitiveValue::UnitType::kPicas:
-      return value * kCssPixelsPerPica * Zoom();
+      return value * kCssPixelsPerPica * ZoomX();
 
     case CSSPrimitiveValue::UnitType::kViewportWidth:
-      return value * ViewportWidthPercent() * Zoom();
+      return value * ViewportWidthPercent() * ZoomX();
 
     case CSSPrimitiveValue::UnitType::kViewportHeight:
-      return value * ViewportHeightPercent() * Zoom();
+      return value * ViewportHeightPercent() * ZoomY();
 
     case CSSPrimitiveValue::UnitType::kViewportMin:
-      return value * ViewportMinPercent() * Zoom();
+      return value * ViewportMinPercent() * ZoomX();
 
     case CSSPrimitiveValue::UnitType::kViewportMax:
-      return value * ViewportMaxPercent() * Zoom();
+      return value * ViewportMaxPercent() * ZoomX();
+
+    // We do not apply the zoom factor when we are computing the value of the
+    // font-size property. The zooming for font sizes is much more complicated,
+    // since we have to worry about enforcing the minimum font size preference
+    // as well as enforcing the implicit "smart minimum."
+    case CSSPrimitiveValue::UnitType::kEms:
+    case CSSPrimitiveValue::UnitType::kQuirkyEms:
+      return value * EmFontSize();
+
+    case CSSPrimitiveValue::UnitType::kExs:
+      return value * ExFontSize();
+
+    case CSSPrimitiveValue::UnitType::kRems:
+      return value * RemFontSize();
+
+    case CSSPrimitiveValue::UnitType::kChs:
+      return value * ChFontSize();
+
+    default:
+      NOTREACHED();
+      return 0;
+  }
+}
+double CSSToLengthConversionData::ZoomedComputedPixelsY(
+    double value,
+    CSSPrimitiveValue::UnitType type) const {
+  // The logic in this function is duplicated in MediaValues::ComputeLength()
+  // because MediaValues::ComputeLength() needs nearly identical logic, but we
+  // haven't found a way to make ZoomedComputedPixels() more generic (to solve
+  // both cases) without hurting performance.
+  switch (type) {
+    case CSSPrimitiveValue::UnitType::kPixels:
+    case CSSPrimitiveValue::UnitType::kUserUnits:
+      return value * ZoomY();
+
+    case CSSPrimitiveValue::UnitType::kCentimeters:
+      return value * kCssPixelsPerCentimeter * ZoomY();
+
+    case CSSPrimitiveValue::UnitType::kMillimeters:
+      return value * kCssPixelsPerMillimeter * ZoomY();
+
+    case CSSPrimitiveValue::UnitType::kQuarterMillimeters:
+      return value * kCssPixelsPerQuarterMillimeter * ZoomY();
+
+    case CSSPrimitiveValue::UnitType::kInches:
+      return value * kCssPixelsPerInch * ZoomY();
+
+    case CSSPrimitiveValue::UnitType::kPoints:
+      return value * kCssPixelsPerPoint * ZoomY();
+
+    case CSSPrimitiveValue::UnitType::kPicas:
+      return value * kCssPixelsPerPica * ZoomY();
+
+    case CSSPrimitiveValue::UnitType::kViewportWidth:
+      return value * ViewportWidthPercent() * ZoomY();
+
+    case CSSPrimitiveValue::UnitType::kViewportHeight:
+      return value * ViewportHeightPercent() * ZoomY();
+
+    case CSSPrimitiveValue::UnitType::kViewportMin:
+      return value * ViewportMinPercent() * ZoomY();
+
+    case CSSPrimitiveValue::UnitType::kViewportMax:
+      return value * ViewportMaxPercent() * ZoomY();
 
     // We do not apply the zoom factor when we are computing the value of the
     // font-size property. The zooming for font sizes is much more complicated,

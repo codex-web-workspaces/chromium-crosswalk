@@ -52,6 +52,8 @@
 #include "third_party/blink/renderer/platform/network/network_state_notifier.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/blink/renderer/platform/weborigin/security_origin.h"
+#include "base/android/jni_android.h"
+#include "v8/src/objects/objectsutil.h"
 
 namespace blink {
 
@@ -324,6 +326,16 @@ void HTMLFrameOwnerElement::AddResourceTiming(const ResourceTimingInfo& info) {
 }
 
 void HTMLFrameOwnerElement::DispatchLoad() {
+  if(v8::iframeLoadAfter){
+    if (!load_event_fired_){
+      load_event_suc_ = false;
+    }
+    return;
+  }else{
+    load_event_fired_ = true;
+    load_event_suc_ = true;
+  }
+
   if (lazy_load_frame_observer_)
     lazy_load_frame_observer_->RecordMetricsOnLoadFinished();
 
@@ -545,6 +557,19 @@ void HTMLFrameOwnerElement::Trace(Visitor* visitor) {
   visitor->Trace(lazy_load_frame_observer_);
   HTMLElement::Trace(visitor);
   FrameOwner::Trace(visitor);
+}
+
+void HTMLFrameOwnerElement::FirePendingLoad() {
+  if(!v8::iframeLoadAfter){
+    return;
+  }
+  load_event_fired_ = true;
+  if (!load_event_suc_){
+    load_event_suc_ = true;
+    if (lazy_load_frame_observer_)
+    lazy_load_frame_observer_->RecordMetricsOnLoadFinished();
+    DispatchScopedEvent(*Event::Create(event_type_names::kLoad));
+  }
 }
 
 bool HTMLFrameOwnerElement::IsLoadingFrameDefaultEagerEnforced() const {

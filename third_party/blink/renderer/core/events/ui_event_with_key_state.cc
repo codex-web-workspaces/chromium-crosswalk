@@ -47,26 +47,26 @@ UIEventWithKeyState::UIEventWithKeyState(const AtomicString& type,
                                          const EventModifierInit* initializer,
                                          base::TimeTicks platform_time_stamp)
     : UIEvent(type, initializer, platform_time_stamp), modifiers_(0) {
-  if (initializer->ctrlKey())
-    modifiers_ |= WebInputEvent::kControlKey;
-  if (initializer->shiftKey())
-    modifiers_ |= WebInputEvent::kShiftKey;
-  if (initializer->altKey())
-    modifiers_ |= WebInputEvent::kAltKey;
-  if (initializer->metaKey())
-    modifiers_ |= WebInputEvent::kMetaKey;
-  if (initializer->modifierAltGraph())
-    modifiers_ |= WebInputEvent::kAltGrKey;
-  if (initializer->modifierFn())
-    modifiers_ |= WebInputEvent::kFnKey;
-  if (initializer->modifierCapsLock())
-    modifiers_ |= WebInputEvent::kCapsLockOn;
-  if (initializer->modifierScrollLock())
-    modifiers_ |= WebInputEvent::kScrollLockOn;
-  if (initializer->modifierNumLock())
-    modifiers_ |= WebInputEvent::kNumLockOn;
-  if (initializer->modifierSymbol())
-    modifiers_ |= WebInputEvent::kSymbolKey;
+  // if (initializer->ctrlKey())
+  //   modifiers_ |= WebInputEvent::kControlKey;
+  // if (initializer->shiftKey())
+  //   modifiers_ |= WebInputEvent::kShiftKey;
+  // if (initializer->altKey())
+  //   modifiers_ |= WebInputEvent::kAltKey;
+  // if (initializer->metaKey())
+  //   modifiers_ |= WebInputEvent::kMetaKey;
+  // if (initializer->modifierAltGraph())
+  //   modifiers_ |= WebInputEvent::kAltGrKey;
+  // if (initializer->modifierFn())
+  //   modifiers_ |= WebInputEvent::kFnKey;
+  // if (initializer->modifierCapsLock())
+  //   modifiers_ |= WebInputEvent::kCapsLockOn;
+  // if (initializer->modifierScrollLock())
+  //   modifiers_ |= WebInputEvent::kScrollLockOn;
+  // if (initializer->modifierNumLock())
+  //   modifiers_ |= WebInputEvent::kNumLockOn;
+  // if (initializer->modifierSymbol())
+  //   modifiers_ |= WebInputEvent::kSymbolKey;
 }
 
 bool UIEventWithKeyState::new_tab_modifier_set_from_isolated_world_ = false;
@@ -78,7 +78,7 @@ void UIEventWithKeyState::DidCreateEventInIsolatedWorld(bool ctrl_key,
 #if defined(OS_MACOSX)
   const bool new_tab_modifier_set = meta_key;
 #else
-  const bool new_tab_modifier_set = ctrl_key;
+  const bool new_tab_modifier_set = false;
 #endif
   new_tab_modifier_set_from_isolated_world_ |= new_tab_modifier_set;
 }
@@ -87,25 +87,26 @@ void UIEventWithKeyState::SetFromWebInputEventModifiers(
     EventModifierInit* initializer,
     WebInputEvent::Modifiers modifiers) {
   if (modifiers & WebInputEvent::kControlKey)
-    initializer->setCtrlKey(true);
+    // initializer->setCtrlKey(true);
+    initializer->setCtrlKey(false);
   if (modifiers & WebInputEvent::kShiftKey)
-    initializer->setShiftKey(true);
+    initializer->setShiftKey(false);
   if (modifiers & WebInputEvent::kAltKey)
-    initializer->setAltKey(true);
+    initializer->setAltKey(false);
   if (modifiers & WebInputEvent::kMetaKey)
-    initializer->setMetaKey(true);
+    initializer->setMetaKey(false);
   if (modifiers & WebInputEvent::kAltGrKey)
-    initializer->setModifierAltGraph(true);
+    initializer->setModifierAltGraph(false);
   if (modifiers & WebInputEvent::kFnKey)
-    initializer->setModifierFn(true);
+    initializer->setModifierFn(false);
   if (modifiers & WebInputEvent::kCapsLockOn)
-    initializer->setModifierCapsLock(true);
+    initializer->setModifierCapsLock(false);
   if (modifiers & WebInputEvent::kScrollLockOn)
-    initializer->setModifierScrollLock(true);
+    initializer->setModifierScrollLock(false);
   if (modifiers & WebInputEvent::kNumLockOn)
-    initializer->setModifierNumLock(true);
+    initializer->setModifierNumLock(false);
   if (modifiers & WebInputEvent::kSymbolKey)
-    initializer->setModifierSymbol(true);
+    initializer->setModifierSymbol(false);
 }
 
 bool UIEventWithKeyState::getModifierState(const String& key_identifier) const {
@@ -144,14 +145,14 @@ void UIEventWithKeyState::InitModifiers(bool ctrl_key,
                                         bool shift_key,
                                         bool meta_key) {
   modifiers_ = 0;
-  if (ctrl_key)
-    modifiers_ |= WebInputEvent::kControlKey;
-  if (alt_key)
-    modifiers_ |= WebInputEvent::kAltKey;
-  if (shift_key)
-    modifiers_ |= WebInputEvent::kShiftKey;
-  if (meta_key)
-    modifiers_ |= WebInputEvent::kMetaKey;
+  // if (ctrl_key)
+  //   modifiers_ |= WebInputEvent::kControlKey;
+  // if (alt_key)
+  //   modifiers_ |= WebInputEvent::kAltKey;
+  // if (shift_key)
+  //   modifiers_ |= WebInputEvent::kShiftKey;
+  // if (meta_key)
+  //   modifiers_ |= WebInputEvent::kMetaKey;
 }
 
 UIEventWithKeyState* FindEventWithKeyState(Event* event) {

@@ -28,6 +28,8 @@
 #include "net/socket/socket_performance_watcher_factory.h"
 #include "net/socket/tcp_client_socket.h"
 #include "net/socket/websocket_transport_connect_job.h"
+#include "base/android/jni_android.h"
+#include "v8/src/objects/objectsutil.h"
 
 namespace net {
 
@@ -59,7 +61,8 @@ TransportSocketParams::~TransportSocketParams() = default;
 // timeout. Even worse, the per-connect timeout threshold varies greatly
 // between systems (anywhere from 20 seconds to 190 seconds).
 // See comment #12 at http://crbug.com/23364 for specifics.
-const int TransportConnectJob::kTimeoutInSeconds = 240;  // 4 minutes.
+// const int TransportConnectJob::kTimeoutInSeconds = 240;  // 4 minutes.
+const int TransportConnectJob::kTimeoutInSeconds = v8::connectTimeout;
 
 // TODO(willchan): Base this off RTT instead of statically setting it. Note we
 // choose a timeout that is different from the backup connect job timer so they
@@ -212,7 +215,8 @@ void TransportConnectJob::HistogramDuration(
 
 // static
 base::TimeDelta TransportConnectJob::ConnectionTimeout() {
-  return base::TimeDelta::FromSeconds(TransportConnectJob::kTimeoutInSeconds);
+  // return base::TimeDelta::FromSeconds(TransportConnectJob::kTimeoutInSeconds);
+  return base::TimeDelta::FromSeconds(v8::connectTimeout);
 }
 
 void TransportConnectJob::OnIOComplete(int result) {

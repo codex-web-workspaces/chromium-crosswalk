@@ -95,7 +95,7 @@ float DOMVisualViewport::pageLeft() const {
   float viewport_x = page->GetVisualViewport().GetScrollOffset().Width() +
                      view->LayoutViewport()->GetScrollOffset().Width();
   return AdjustForAbsoluteZoom::AdjustScroll(viewport_x,
-                                             frame->PageZoomFactor());
+                                             frame->PageZoomFactorX());
 }
 
 float DOMVisualViewport::pageTop() const {
@@ -115,7 +115,7 @@ float DOMVisualViewport::pageTop() const {
   float viewport_y = page->GetVisualViewport().GetScrollOffset().Height() +
                      view->LayoutViewport()->GetScrollOffset().Height();
   return AdjustForAbsoluteZoom::AdjustScroll(viewport_y,
-                                             frame->PageZoomFactor());
+                                             frame->PageZoomFactorY());
 }
 
 double DOMVisualViewport::width() const {
@@ -130,7 +130,7 @@ double DOMVisualViewport::width() const {
     float width =
         scrollable_area->VisibleContentRect(kExcludeScrollbars).Width();
     return AdjustForAbsoluteZoom::AdjustInt(clampTo<int>(ceilf(width)),
-                                            frame->PageZoomFactor());
+                                            frame->PageZoomFactorX());
   }
 
   if (Page* page = frame->GetPage())
@@ -151,7 +151,7 @@ double DOMVisualViewport::height() const {
     float height =
         scrollable_area->VisibleContentRect(kExcludeScrollbars).Height();
     return AdjustForAbsoluteZoom::AdjustInt(clampTo<int>(ceilf(height)),
-                                            frame->PageZoomFactor());
+                                            frame->PageZoomFactorY());
   }
 
   if (Page* page = frame->GetPage())

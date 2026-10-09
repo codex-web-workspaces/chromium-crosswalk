@@ -50,6 +50,7 @@ class CORE_EXPORT FilterEffectBuilder final {
  public:
   FilterEffectBuilder(const FloatRect& reference_box,
                       float zoom,
+                      float zoomy,
                       const PaintFlags* fill_flags = nullptr,
                       const PaintFlags* stroke_flags = nullptr,
                       SkBlurImageFilter::TileMode blur_tile_mode =
@@ -70,6 +71,7 @@ class CORE_EXPORT FilterEffectBuilder final {
 
   FloatRect reference_box_;
   float zoom_;
+  float zoomy_;
   const PaintFlags* fill_flags_;
   const PaintFlags* stroke_flags_;
   const SkBlurImageFilter::TileMode blur_tile_mode_;

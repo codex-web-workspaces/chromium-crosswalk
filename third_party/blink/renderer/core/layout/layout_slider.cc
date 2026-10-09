@@ -52,7 +52,7 @@ void LayoutSlider::ComputeIntrinsicLogicalWidths(
     LayoutUnit& min_logical_width,
     LayoutUnit& max_logical_width) const {
   max_logical_width =
-      LayoutUnit(kDefaultTrackLength * StyleRef().EffectiveZoom());
+      LayoutUnit(kDefaultTrackLength * StyleRef().EffectiveZoomX());
   if (!StyleRef().Width().IsPercentOrCalc())
     min_logical_width = max_logical_width;
 }

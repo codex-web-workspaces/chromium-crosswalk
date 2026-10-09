@@ -114,6 +114,11 @@ double CSSNumericLiteralValue::ComputeLengthPx(
   DCHECK(IsLength());
   return conversion_data.ZoomedComputedPixels(num_, GetType());
 }
+double CSSNumericLiteralValue::ComputeLengthPxY(
+    const CSSToLengthConversionData& conversion_data) const {
+  DCHECK(IsLength());
+  return conversion_data.ZoomedComputedPixelsY(num_, GetType());
+}
 
 void CSSNumericLiteralValue::AccumulateLengthArray(CSSLengthArray& length_array,
                                                    double multiplier) const {

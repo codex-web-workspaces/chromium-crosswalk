@@ -439,7 +439,8 @@ void InternalPopupMenu::SetValueAndClosePopup(int num_value,
   if (owner_element_) {
     // TODO(dtapuska): Why is this event positionless?
     WebMouseEvent event;
-    event.SetFrameScale(1);
+    event.SetFrameScaleX(1);
+    event.SetFrameScaleY(1);
     Element* owner = &OwnerElement();
     if (LocalFrame* frame = owner->GetDocument().GetFrame()) {
       frame->GetEventHandler().HandleTargetedMouseEvent(

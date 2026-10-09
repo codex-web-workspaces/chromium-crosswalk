@@ -11,6 +11,7 @@
 #include "net/http/http_response_headers.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_error_type.mojom.h"
 #include "third_party/blink/public/platform/modules/service_worker/web_service_worker_error.h"
+#include "base/android/jni_android.h"
 
 namespace content {
 

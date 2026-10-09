@@ -60,7 +60,8 @@ TEST_F(AutoscrollControllerTest,
                       WebFloatPoint(5, 5), WebPointerProperties::Button::kLeft,
                       0, WebInputEvent::Modifiers::kLeftButtonDown,
                       base::TimeTicks::Now());
-  event.SetFrameScale(1);
+  event.SetFrameScaleX(1);
+  event.SetFrameScaleY(1);
 
   GetDocument().GetFrame()->GetEventHandler().HandleMousePressEvent(event);
 
@@ -93,7 +94,8 @@ TEST_F(AutoscrollControllerTest, ContinueAutoscrollAfterMouseLeaveEvent) {
   WebMouseEvent mouse_leave_event(WebInputEvent::kMouseLeave,
                                   WebInputEvent::kNoModifiers,
                                   base::TimeTicks::Now());
-  mouse_leave_event.SetFrameScale(1);
+  mouse_leave_event.SetFrameScaleX(1);
+  mouse_leave_event.SetFrameScaleY(1);
 
   frame->GetEventHandler().HandleMouseLeaveEvent(mouse_leave_event);
 

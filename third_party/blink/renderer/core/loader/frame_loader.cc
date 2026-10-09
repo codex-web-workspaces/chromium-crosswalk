@@ -113,7 +113,14 @@
 #include "third_party/blink/renderer/platform/wtf/assertions.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_utf8_adaptor.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
+#include "third_party/blink/renderer/core/page/focus_controller.h"
+#include "third_party/blink/renderer/core/page/spatial_navigation.h"
+#include "third_party/blink/renderer/core/page/spatial_navigation_controller.h"
+#include "base/android/jni_android.h"
+#include "v8/src/objects/objectsutil.h"
 
+extern jobject xwalk_obj;
+extern JavaVM* gJavaVM;
 namespace blink {
 
 using namespace html_names;
@@ -359,6 +366,20 @@ void FrameLoader::FinishedParsing() {
   }
 
   frame_->GetDocument()->CheckCompleted();
+  if(v8::firstFocus){
+    if(v8::logSwitch){
+      LOG(INFO)<<"opening firstFocus";
+    }
+    //获取第一个可焦点元素设置默认焦点
+    Page* page = frame_->GetPage();
+    if (!page){
+      return;
+    }
+    page->GetSpatialNavigationController().HandleDefaultFocus();
+    // v8::firstFocus = false;
+  }
+
+
 }
 
 // TODO(dgozman): we are calling this method too often, hoping that it
@@ -393,9 +414,13 @@ void FrameLoader::DidFinishNavigation() {
   // that the parent itself has finished loading).  This local-subframe-focused
   // code has a remote-subframe equivalent in
   // WebRemoteFrameImpl::DidStopLoading.
+  
+
   Frame* parent = frame_->Tree().Parent();
   if (parent)
     parent->CheckCompleted();
+
+  
 }
 
 Frame* FrameLoader::Opener() {
@@ -601,6 +626,7 @@ void FrameLoader::StartNavigation(const FrameLoadRequest& passed_request,
   DCHECK(passed_request.TriggeringEventInfo() !=
          WebTriggeringEventInfo::kUnknown);
   DCHECK(frame_->GetDocument());
+
   if (HTMLFrameOwnerElement* element = frame_->DeprecatedLocalOwner())
     element->CancelPendingLazyLoad();
 
@@ -608,13 +634,10 @@ void FrameLoader::StartNavigation(const FrameLoadRequest& passed_request,
   ResourceRequest& resource_request = request.GetResourceRequest();
   const KURL& url = resource_request.Url();
   Document* origin_document = request.OriginDocument();
-
   resource_request.SetHasUserGesture(
       LocalFrame::HasTransientUserActivation(frame_));
-
   if (!AllowRequestForThisFrame(request))
     return;
-
   // Block renderer-initiated loads of data: and filesystem: URLs in the top
   // frame.
   //
@@ -636,23 +659,19 @@ void FrameLoader::StartNavigation(const FrameLoadRequest& passed_request,
             " URL: " + url.ElidedString()));
     return;
   }
-
   // TODO(dgozman): merge page dismissal check and FrameNavigationDisabler.
   if (!frame_->IsNavigationAllowed() ||
       frame_->GetDocument()->PageDismissalEventBeingDispatched() !=
           Document::kNoDismissal) {
     return;
   }
-
   frame_load_type = DetermineFrameLoadType(
       resource_request.Url(), resource_request.HttpMethod(), origin_document,
       KURL(), frame_load_type);
-
   bool same_document_navigation =
       request.GetNavigationPolicy() == kNavigationPolicyCurrentTab &&
       ShouldPerformFragmentNavigation(
           request.Form(), resource_request.HttpMethod(), frame_load_type, url);
-
   // Perform same document navigation.
   if (same_document_navigation) {
     document_loader_->CommitSameDocumentNavigation(
@@ -760,7 +779,6 @@ void FrameLoader::StartNavigation(const FrameLoadRequest& passed_request,
     probe::FrameRequestedNavigation(frame_, frame_, url,
                                     request.ClientRedirectReason());
   }
-
   Client()->BeginNavigation(
       resource_request, request.GetFrameType(), origin_document,
       nullptr /* document_loader */, navigation_type,
@@ -898,7 +916,6 @@ void FrameLoader::CommitNavigation(
     DidFinishNavigation();
     return;
   }
-
   // TODO(dgozman): navigation type should probably be passed by the caller.
   // It seems incorrect to pass |false| for |have_event| and then use
   // determined navigation type to update resource request.
@@ -941,6 +958,7 @@ void FrameLoader::CommitNavigation(
     if (!DetachDocument())
       return;
   }
+  
 
   CommitDocumentLoader(provisional_document_loader_.Release());
 
@@ -1009,6 +1027,9 @@ bool FrameLoader::DetachDocument() {
   PluginScriptForbiddenScope forbid_plugin_destructor_scripting;
   DocumentLoader* pdl = provisional_document_loader_;
 
+  if(v8::notifyStatus){
+    notifyUnloadToJni();
+  }
   // Don't allow this frame to navigate anymore. This line is needed for
   // navigation triggered from children's unload handlers. Blocking navigations
   // triggered from this frame's unload handler is already covered in
@@ -1056,6 +1077,60 @@ bool FrameLoader::DetachDocument() {
   document_loader_ = nullptr;
 
   return true;
+}
+
+void FrameLoader::notifyUnloadToJni(){
+  if(!frame_){
+    return;
+  }
+  if(!frame_->GetDocument()){
+    return;
+  }
+  if(frame_->GetDocument()->Url().IsAboutBlankURL()){
+      return;
+    }
+    String frame_name;
+    LocalDOMWindow* window = frame_->DomWindow();
+    if (window) {
+      frame_name = window->name();
+    }
+
+    JNIEnv *env;
+    bool isAttached = false;
+    int status = gJavaVM->GetEnv((void **) &env, JNI_VERSION_1_4);
+    if(status < 0) {
+      LOG(INFO) <<"callback_handler: failed to get JNI environment, "
+      "assuming native thread";
+      status = gJavaVM->AttachCurrentThread(&env, NULL);
+      if(status < 0) {
+          LOG(INFO) <<"callback_handler: failed to attach "
+          "current thread";
+          return;
+      }
+      isAttached = true;
+    }
+    /* Construct a Java string */
+    jclass interfaceClass = env->GetObjectClass(xwalk_obj);
+    if(!interfaceClass) {
+      LOG(INFO) <<"callback_handler: failed to get class reference";
+      if(isAttached) gJavaVM->DetachCurrentThread();
+      return;
+    }
+    jmethodID gqxMethod = env->GetMethodID(interfaceClass, "notifyPageShutDown", "(Ljava/lang/String;Ljava/lang/String;)V");
+    if(!gqxMethod) {
+      LOG(INFO) <<"callback_handler: failed to get method ID";
+      if(isAttached) gJavaVM->DetachCurrentThread();
+      return;
+    }
+    jstring urlStr = env->NewStringUTF(frame_->GetDocument()->Url().GetString().Utf8().c_str());
+    jstring frameName = frame_name.IsEmpty()?env->NewStringUTF(""):env->NewStringUTF(frame_name.Utf8().c_str());
+    env->CallVoidMethod(xwalk_obj, gqxMethod,urlStr,frameName);
+    env->DeleteLocalRef(urlStr);
+    env->DeleteLocalRef(frameName);
+    env->DeleteLocalRef(interfaceClass);
+    if(isAttached) {
+      gJavaVM->DetachCurrentThread();
+    }
 }
 
 void FrameLoader::WillCommitNavigation() {

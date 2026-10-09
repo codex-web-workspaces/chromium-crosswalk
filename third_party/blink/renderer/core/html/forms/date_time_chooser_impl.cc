@@ -130,7 +130,7 @@ void DateTimeChooserImpl::WriteDocument(SharedBuffer* data) {
       data);
   AddProperty("anchorRectInScreen", parameters_->anchor_rect_in_screen, data);
   float scale_factor = chrome_client_->WindowToViewportScalar(1.0f);
-  AddProperty("zoomFactor", ZoomFactor() / scale_factor, data);
+  AddProperty("zoomFactor", ZoomFactorX() / scale_factor, data);
   AddProperty("min",
               ValueToDateTimeString(parameters_->minimum, parameters_->type),
               data);

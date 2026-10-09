@@ -193,7 +193,7 @@ unsigned ImageInputType::Height() const {
   GetElement().GetDocument().UpdateStyleAndLayout();
 
   LayoutBox* box = GetElement().GetLayoutBox();
-  return box ? AdjustForAbsoluteZoom::AdjustInt(box->ContentHeight().ToInt(),
+  return box ? AdjustForAbsoluteZoom::AdjustIntY(box->ContentHeight().ToInt(),
                                                 box)
              : 0;
 }

@@ -239,7 +239,7 @@ class CORE_EXPORT Event : public ScriptWrappable {
 
   bool defaultPrevented() const { return default_prevented_; }
   virtual void preventDefault();
-
+  void calcelPreventDefault();
   bool DefaultHandled() const { return default_handled_; }
   void SetDefaultHandled() { default_handled_ = true; }
 

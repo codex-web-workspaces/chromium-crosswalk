@@ -350,7 +350,7 @@ class ChromePrintContext : public PrintContext {
     context.BeginRecording(all_pages_rect);
 
     // Fill the whole background by white.
-    context.FillRect(all_pages_rect, Color::kWhite);
+    context.FillRect(all_pages_rect, Color::kBlack);
 
     int current_height = 0;
     for (wtf_size_t page_index = 0; page_index < num_pages; page_index++) {

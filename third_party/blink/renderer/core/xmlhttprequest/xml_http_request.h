@@ -273,7 +273,7 @@ class XMLHttpRequest final : public XMLHttpRequestEventTarget,
   void HandleDidCancel();
   // Handles didFail() call for timeout.
   void HandleDidTimeout();
-
+  void ContinueExecution();
   void HandleRequestError(DOMExceptionCode,
                           const AtomicString&,
                           int64_t,

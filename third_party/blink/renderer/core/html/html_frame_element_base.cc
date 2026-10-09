@@ -103,7 +103,9 @@ void HTMLFrameElementBase::ParseAttribute(
         SetLocation(StripLeadingAndTrailingHTMLSpaces(src_value));
     }
   } else if (name == kSrcAttr && !FastHasAttribute(kSrcdocAttr)) {
-    SetLocation(StripLeadingAndTrailingHTMLSpaces(value));
+    if(!value.IsEmpty() && value != "#"){
+      SetLocation(StripLeadingAndTrailingHTMLSpaces(value));
+    }
   } else if (name == kIdAttr) {
     // Important to call through to base for the id attribute so the hasID bit
     // gets set.

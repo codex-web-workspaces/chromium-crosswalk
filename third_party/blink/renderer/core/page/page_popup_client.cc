@@ -37,11 +37,18 @@
 
 namespace blink {
 
-float PagePopupClient::ZoomFactor() {
+float PagePopupClient::ZoomFactorX() {
   if (const ComputedStyle* style = OwnerElement().GetComputedStyle())
-    return style->EffectiveZoom();
+    return style->EffectiveZoomX();
   if (LocalFrame* frame = OwnerElement().GetDocument().GetFrame())
-    return frame->PageZoomFactor();
+    return frame->PageZoomFactorX();
+  return 1;
+}
+float PagePopupClient::ZoomFactorY() {
+  if (const ComputedStyle* style = OwnerElement().GetComputedStyle())
+    return style->EffectiveZoomY();
+  if (LocalFrame* frame = OwnerElement().GetDocument().GetFrame())
+    return frame->PageZoomFactorY();
   return 1;
 }
 

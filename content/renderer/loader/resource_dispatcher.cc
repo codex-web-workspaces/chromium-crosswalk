@@ -322,6 +322,7 @@ void ResourceDispatcher::OnRequestComplete(
 bool ResourceDispatcher::RemovePendingRequest(
     int request_id,
     scoped_refptr<base::SingleThreadTaskRunner> task_runner) {
+
   auto it = pending_requests_.find(request_id);
   if (it == pending_requests_.end())
     return false;

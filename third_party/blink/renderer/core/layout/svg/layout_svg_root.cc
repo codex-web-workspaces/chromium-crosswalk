@@ -98,7 +98,7 @@ void LayoutSVGRoot::ComputeIntrinsicSizingInfo(
   DCHECK(!ShouldApplySizeContainment());
   UnscaledIntrinsicSizingInfo(intrinsic_sizing_info);
 
-  intrinsic_sizing_info.size.Scale(StyleRef().EffectiveZoom());
+  intrinsic_sizing_info.size.Scale(StyleRef().EffectiveZoomX(),StyleRef().EffectiveZoomY());
 }
 
 bool LayoutSVGRoot::IsEmbeddedThroughSVGImage() const {
@@ -424,15 +424,16 @@ SVGTransformChange LayoutSVGRoot::BuildLocalToBorderBoxTransform() {
   SVGTransformChangeDetector change_detector(local_to_border_box_transform_);
   SVGSVGElement* svg = ToSVGSVGElement(GetNode());
   DCHECK(svg);
-  float scale = StyleRef().EffectiveZoom();
+  float scale = StyleRef().EffectiveZoomX();
+  float scaley = StyleRef().EffectiveZoomY();
   local_to_border_box_transform_ = svg->ViewBoxToViewTransform(
-      ContentWidth() / scale, ContentHeight() / scale);
+      ContentWidth() / scale, ContentHeight() / scaley);
 
   FloatPoint translate = svg->CurrentTranslate();
   LayoutSize border_and_padding(BorderLeft() + PaddingLeft(),
                                 BorderTop() + PaddingTop());
   AffineTransform view_to_border_box_transform(
-      scale, 0, 0, scale, border_and_padding.Width() + translate.X(),
+      scale, 0, 0, scaley, border_and_padding.Width() + translate.X(),
       border_and_padding.Height() + translate.Y());
   view_to_border_box_transform.Scale(svg->currentScale());
   local_to_border_box_transform_.PreMultiply(view_to_border_box_transform);

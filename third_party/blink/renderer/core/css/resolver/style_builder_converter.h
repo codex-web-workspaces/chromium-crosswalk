@@ -102,6 +102,8 @@ class StyleBuilderConverter {
                             bool for_visited_link = false);
   template <typename T>
   static T ConvertComputedLength(StyleResolverState&, const CSSValue&);
+  template <typename T>
+  static T ConvertComputedLengthY(StyleResolverState&, const CSSValue&);
   static LengthBox ConvertClip(StyleResolverState&, const CSSValue&);
   static scoped_refptr<ClipPathOperation> ConvertClipPath(StyleResolverState&,
                                                           const CSSValue&);
@@ -162,12 +164,17 @@ class StyleBuilderConverter {
   static float ConvertBorderWidth(StyleResolverState&, const CSSValue&);
   static GapLength ConvertGapLength(const StyleResolverState&, const CSSValue&);
   static Length ConvertLength(const StyleResolverState&, const CSSValue&);
+  static Length ConvertLengthY(const StyleResolverState&, const CSSValue&);
   static UnzoomedLength ConvertUnzoomedLength(const StyleResolverState&,
                                               const CSSValue&);
-  static float ConvertZoom(const StyleResolverState&, const CSSValue&);
+  static float ConvertZoomX(const StyleResolverState&, const CSSValue&);
+  static float ConvertZoomY(const StyleResolverState&, const CSSValue&);
   static Length ConvertLengthOrAuto(const StyleResolverState&, const CSSValue&);
+  static Length ConvertLengthOrAutoY(const StyleResolverState&, const CSSValue&);
   static Length ConvertLengthSizing(StyleResolverState&, const CSSValue&);
+  static Length ConvertLengthSizingY(StyleResolverState&, const CSSValue&);
   static Length ConvertLengthMaxSizing(StyleResolverState&, const CSSValue&);
+  static Length ConvertLengthMaxSizingY(StyleResolverState&, const CSSValue&);
   static TabSize ConvertLengthOrTabSpaces(StyleResolverState&, const CSSValue&);
   static Length ConvertLineHeight(StyleResolverState&, const CSSValue&);
   static float ConvertNumberOrPercentage(StyleResolverState&, const CSSValue&);
@@ -180,6 +187,7 @@ class StyleBuilderConverter {
                                            const CSSValue&);
   static float ConvertPerspective(StyleResolverState&, const CSSValue&);
   static Length ConvertQuirkyLength(StyleResolverState&, const CSSValue&);
+  static Length ConvertQuirkyLengthY(StyleResolverState&, const CSSValue&);
   static scoped_refptr<QuotesData> ConvertQuotes(StyleResolverState&,
                                                  const CSSValue&);
   static LengthSize ConvertRadius(StyleResolverState&, const CSSValue&);
@@ -258,6 +266,8 @@ class StyleBuilderConverter {
   static StyleOffsetRotation ConvertOffsetRotate(const CSSValue&);
   template <CSSValueID cssValueFor0, CSSValueID cssValueFor100>
   static Length ConvertPositionLength(StyleResolverState&, const CSSValue&);
+  template <CSSValueID cssValueFor0, CSSValueID cssValueFor100>
+  static Length ConvertPositionLengthY(StyleResolverState&, const CSSValue&);
   static Rotation ConvertRotation(const CSSValue&);
 
   static const CSSValue& ConvertRegisteredPropertyInitialValue(const Document&,
@@ -281,6 +291,12 @@ template <typename T>
 T StyleBuilderConverter::ConvertComputedLength(StyleResolverState& state,
                                                const CSSValue& value) {
   return To<CSSPrimitiveValue>(value).ComputeLength<T>(
+      CssToLengthConversionData(state));
+}
+template <typename T>
+T StyleBuilderConverter::ConvertComputedLengthY(StyleResolverState& state,
+                                               const CSSValue& value) {
+  return To<CSSPrimitiveValue>(value).ComputeLengthY<T>(
       CssToLengthConversionData(state));
 }
 
@@ -354,6 +370,34 @@ Length StyleBuilderConverter::ConvertPositionLength(StyleResolverState& state,
                                               To<CSSPrimitiveValue>(value));
 }
 
+template <CSSValueID cssValueFor0, CSSValueID cssValueFor100>
+Length StyleBuilderConverter::ConvertPositionLengthY(StyleResolverState& state,
+                                                    const CSSValue& value) {
+  if (const auto* pair = DynamicTo<CSSValuePair>(value)) {
+    Length length = StyleBuilderConverter::ConvertLengthY(state, pair->Second());
+    if (To<CSSIdentifierValue>(pair->First()).GetValueID() == cssValueFor0)
+      return length;
+    DCHECK_EQ(To<CSSIdentifierValue>(pair->First()).GetValueID(),
+              cssValueFor100);
+    return length.SubtractFromOneHundredPercent();
+  }
+
+  if (auto* identifier_value = DynamicTo<CSSIdentifierValue>(value)) {
+    switch (identifier_value->GetValueID()) {
+      case cssValueFor0:
+        return Length::Percent(0);
+      case cssValueFor100:
+        return Length::Percent(100);
+      case CSSValueID::kCenter:
+        return Length::Percent(50);
+      default:
+        NOTREACHED();
+    }
+  }
+
+  return StyleBuilderConverter::ConvertLengthY(state,
+                                              To<CSSPrimitiveValue>(value));
+}
 template <CSSValueID IdForNone>
 AtomicString StyleBuilderConverter::ConvertString(StyleResolverState&,
                                                   const CSSValue& value) {

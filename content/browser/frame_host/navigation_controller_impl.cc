@@ -86,6 +86,7 @@
 #include "third_party/blink/public/common/blob/blob_utils.h"
 #include "third_party/blink/public/common/mime_util/mime_util.h"
 #include "url/url_constants.h"
+#include "base/android/jni_android.h"
 
 namespace content {
 namespace {
@@ -568,7 +569,6 @@ void NavigationControllerImpl::Restore(
 void NavigationControllerImpl::Reload(ReloadType reload_type,
                                       bool check_for_repost) {
   DCHECK_NE(ReloadType::NONE, reload_type);
-
   if (transient_entry_index_ != -1) {
     // If an interstitial is showing, treat a reload as a navigation to the
     // transient entry's URL.
@@ -581,7 +581,6 @@ void NavigationControllerImpl::Reload(ReloadType reload_type,
             transient_entry->extra_headers());
     return;
   }
-
   NavigationEntryImpl* entry = nullptr;
   int current_index = -1;
 
@@ -599,7 +598,6 @@ void NavigationControllerImpl::Reload(ReloadType reload_type,
       entry = GetEntryAtIndex(current_index);
     }
   }
-
   // If we are no where, then we can't reload.  TODO(darin): We should add a
   // CanReload method.
   if (!entry)
@@ -608,16 +606,17 @@ void NavigationControllerImpl::Reload(ReloadType reload_type,
   // Set ReloadType for |entry|.
   entry->set_reload_type(reload_type);
 
-  if (g_check_for_repost && check_for_repost &&
-      entry->GetHasPostData()) {
-    // The user is asking to reload a page with POST data. Prompt to make sure
-    // they really want to do this. If they do, the dialog will call us back
-    // with check_for_repost = false.
-    delegate_->NotifyBeforeFormRepostWarningShow();
+  // if (g_check_for_repost && check_for_repost &&
+  //     entry->GetHasPostData()) {
+  // LOG(INFO)<<"in reload now---5";
+  //   // The user is asking to reload a page with POST data. Prompt to make sure
+  //   // they really want to do this. If they do, the dialog will call us back
+  //   // with check_for_repost = false.
+  //   delegate_->NotifyBeforeFormRepostWarningShow();
 
-    pending_reload_ = reload_type;
-    delegate_->ActivateAndShowRepostFormWarningDialog();
-  } else {
+  //   pending_reload_ = reload_type;
+  //   delegate_->ActivateAndShowRepostFormWarningDialog();
+  // } else {
     if (!IsInitialNavigation())
       DiscardNonCommittedEntriesInternal();
 
@@ -627,7 +626,8 @@ void NavigationControllerImpl::Reload(ReloadType reload_type,
 
     NavigateToExistingPendingEntry(reload_type,
                                    FrameTreeNode::kFrameTreeNodeInvalidId);
-  }
+
+  // }
 }
 
 void NavigationControllerImpl::CancelPendingReload() {

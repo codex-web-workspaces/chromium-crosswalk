@@ -96,8 +96,10 @@ int UseCounterHelper::MapCSSPropertyIdToCSSSampleIdForHistogram(
       return 17;
     case CSSPropertyID::kWebkitWritingMode:
       return 18;
-    case CSSPropertyID::kZoom:
+    case CSSPropertyID::kZoomX:
       return 19;
+    case CSSPropertyID::kZoomY:
+      return 646;
     case CSSPropertyID::kLineHeight:
       return 20;
     case CSSPropertyID::kBackground:
@@ -1260,7 +1262,8 @@ int UseCounterHelper::MapCSSPropertyIdToCSSSampleIdForHistogram(
     // value.
     // 3. Run the update_use_counter_css.py script in
     // chromium/src/tools/metrics/histograms to update the UMA histogram names.
-    case CSSPropertyID::kInternalEffectiveZoom:
+    case CSSPropertyID::kInternalEffectiveZoomX:
+    case CSSPropertyID::kInternalEffectiveZoomY:
     case CSSPropertyID::kInternalVisitedBackgroundColor:
     case CSSPropertyID::kInternalVisitedBorderBlockEndColor:
     case CSSPropertyID::kInternalVisitedBorderBlockStartColor:

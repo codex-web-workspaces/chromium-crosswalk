@@ -217,7 +217,8 @@ void WebFrameWidgetBase::DragSourceEndedAt(
       WebInputEvent::kMouseMove, point_in_root_frame, screen_point,
       WebPointerProperties::Button::kLeft, 0, WebInputEvent::kNoModifiers,
       base::TimeTicks::Now());
-  fake_mouse_move.SetFrameScale(1);
+  fake_mouse_move.SetFrameScaleX(1);
+  fake_mouse_move.SetFrameScaleY(1);
   local_root_->GetFrame()->GetEventHandler().DragSourceEndedAt(
       fake_mouse_move, static_cast<DragOperation>(operation));
 }

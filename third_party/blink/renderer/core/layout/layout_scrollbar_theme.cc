@@ -125,7 +125,7 @@ void LayoutScrollbarTheme::PaintScrollCorner(
   DrawingRecorder recorder(context, display_item_client,
                            DisplayItem::kScrollbarCorner);
   // FIXME: Implement.
-  context.FillRect(corner_rect, Color::kWhite);
+  context.FillRect(corner_rect, Color::kBlack);
 }
 
 void LayoutScrollbarTheme::PaintScrollbarBackground(

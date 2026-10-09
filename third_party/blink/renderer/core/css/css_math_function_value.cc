@@ -73,6 +73,13 @@ double CSSMathFunctionValue::ComputeLengthPx(
   DCHECK_EQ(kCalcLength, expression_->Category());
   return ClampToPermittedRange(expression_->ComputeLengthPx(conversion_data));
 }
+double CSSMathFunctionValue::ComputeLengthPxY(
+    const CSSToLengthConversionData& conversion_data) const {
+  // |CSSToLengthConversionData| only resolves relative length units, but not
+  // percentages.
+  DCHECK_EQ(kCalcLength, expression_->Category());
+  return ClampToPermittedRange(expression_->ComputeLengthPxY(conversion_data));
+}
 
 void CSSMathFunctionValue::AccumulateLengthArray(CSSLengthArray& length_array,
                                                  double multiplier) const {
@@ -83,7 +90,10 @@ Length CSSMathFunctionValue::ConvertToLength(
     const CSSToLengthConversionData& conversion_data) const {
   return Length(ToCalcValue(conversion_data));
 }
-
+Length CSSMathFunctionValue::ConvertToLengthY(
+    const CSSToLengthConversionData& conversion_data) const {
+  return Length(ToCalcValueY(conversion_data));
+}
 static String BuildCSSText(const String& expression) {
   StringBuilder result;
   result.Append("calc");

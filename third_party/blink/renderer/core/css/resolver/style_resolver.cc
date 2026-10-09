@@ -1052,9 +1052,10 @@ scoped_refptr<ComputedStyle> StyleResolver::InitialStyleForElement(
 
   initial_style->SetRtlOrdering(document.VisuallyOrdered() ? EOrder::kVisual
                                                            : EOrder::kLogical);
-  initial_style->SetZoom(frame && !document.Printing() ? frame->PageZoomFactor()
-                                                       : 1);
-  initial_style->SetEffectiveZoom(initial_style->Zoom());
+  initial_style->SetZoomX(frame && !document.Printing() ? frame->PageZoomFactorX() : 1);
+  initial_style->SetZoomY(frame && !document.Printing() ? frame->PageZoomFactorY() : 1);
+  initial_style->SetEffectiveZoomX(initial_style->ZoomX());
+  initial_style->SetEffectiveZoomY(initial_style->ZoomY());
 
   FontDescription document_font_description =
       initial_style->GetFontDescription();
@@ -1091,7 +1092,8 @@ void StyleResolver::UpdateFont(StyleResolverState& state) {
       GetDocument().GetStyleEngine().GetFontSelector(), state.StyleRef());
   state.SetConversionFontSizes(CSSToLengthConversionData::FontSizes(
       state.Style(), state.RootElementStyle()));
-  state.SetConversionZoom(state.Style()->EffectiveZoom());
+  state.SetConversionZoomX(state.Style()->EffectiveZoomX());
+  state.SetConversionZoomY(state.Style()->EffectiveZoomY());
 }
 
 void StyleResolver::AddMatchedRulesToTracker(
@@ -1832,7 +1834,7 @@ void StyleResolver::ApplyMatchedHighPriorityProperties(
 
   if (cache_success.cached_matched_properties &&
       cache_success.cached_matched_properties->computed_style
-              ->EffectiveZoom() != state.Style()->EffectiveZoom()) {
+              ->EffectiveZoomX() != state.Style()->EffectiveZoomX()) {
     state.GetFontBuilder().DidChangeEffectiveZoom();
     apply_inherited_only = false;
   }

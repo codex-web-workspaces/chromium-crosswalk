@@ -148,6 +148,7 @@ ShellURLRequestContextGetter::GetProxyService() {
 }
 
 net::URLRequestContext* ShellURLRequestContextGetter::GetURLRequestContext() {
+  LOG(INFO)<<"getProxy----GetURLRequestContext";
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   if (shut_down_)

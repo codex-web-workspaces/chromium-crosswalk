@@ -52,7 +52,8 @@ class PLATFORM_EXPORT Cursor {
   Cursor(Image*,
          bool hot_spot_specified,
          const IntPoint& hot_spot,
-         float image_scale_factor);
+         float image_scale_factor,
+         float image_scale_factory);
 
   Cursor(const Cursor&);
   ~Cursor();
@@ -68,12 +69,14 @@ class PLATFORM_EXPORT Cursor {
   const IntPoint& HotSpot() const { return hot_spot_; }
   // Image scale in image pixels per logical (UI) pixel.
   float ImageScaleFactor() const { return image_scale_factor_; }
+  float ImageScaleFactorY() const { return image_scale_factory_; }
 
  private:
   ui::CursorType type_;
   scoped_refptr<Image> image_;
   IntPoint hot_spot_;
   float image_scale_factor_;
+  float image_scale_factory_;
 };
 
 PLATFORM_EXPORT IntPoint DetermineHotSpot(Image*,

@@ -108,7 +108,7 @@ void ColorChooserPopupUIController::WriteColorPickerDocument(
   PagePopupClient::AddProperty("selectedColor",
                                client_->CurrentColor().Serialized(), data);
   AddProperty("anchorRectInScreen", anchor_rect_in_screen, data);
-  AddProperty("zoomFactor", ZoomFactor(), data);
+  AddProperty("zoomFactor", ZoomFactorX(), data);
   AddProperty("shouldShowColorSuggestionPicker", false, data);
   PagePopupClient::AddString("};\n", data);
   data->Append(Platform::Current()->GetDataResource("pickerCommon.js"));
@@ -149,7 +149,7 @@ void ColorChooserPopupUIController::WriteColorSuggestionPickerDocument(
                                  client_->CurrentColor().Serialized(), data);
   }
   AddProperty("anchorRectInScreen", anchor_rect_in_screen, data);
-  AddProperty("zoomFactor", ZoomFactor(), data);
+  AddProperty("zoomFactor", ZoomFactorX(), data);
   AddProperty("shouldShowColorSuggestionPicker", true, data);
   AddProperty("isFormControlsRefreshEnabled",
               RuntimeEnabledFeatures::FormControlsRefreshEnabled(), data);

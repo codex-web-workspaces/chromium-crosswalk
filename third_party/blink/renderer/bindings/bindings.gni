@@ -30,6 +30,7 @@ bindings_core_v8_files =
                     "core/v8/custom/v8_shadow_root_custom.cc",
                     "core/v8/custom/v8_window_custom.cc",
                     "core/v8/custom/v8_xml_http_request_custom.cc",
+#                   "core/v8/custom/v8_media_player_custom.cc",
                     "core/v8/custom_wrappable_adapter.cc",
                     "core/v8/custom_wrappable_adapter.h",
                     "core/v8/dictionary.cc",

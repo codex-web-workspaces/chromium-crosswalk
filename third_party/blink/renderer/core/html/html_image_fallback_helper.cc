@@ -74,7 +74,7 @@ class ImageFallbackContentBuilder {
                                           CSSValueID::kNone);
   }
 
-  void ShowAsReplaced(const Length& width, const Length& height, float zoom) {
+  void ShowAsReplaced(const Length& width, const Length& height, float zoom,float zoomy) {
     place_holder_->SetInlineStyleProperty(CSSPropertyID::kOverflow,
                                           CSSValueID::kHidden);
     place_holder_->SetInlineStyleProperty(CSSPropertyID::kDisplay,
@@ -82,13 +82,13 @@ class ImageFallbackContentBuilder {
     place_holder_->SetInlineStyleProperty(CSSPropertyID::kPointerEvents,
                                           CSSValueID::kNone);
     place_holder_->SetInlineStyleProperty(CSSPropertyID::kHeight,
-                                          *CSSValue::Create(height, zoom));
+                                          *CSSValue::Create(height, zoomy));
     place_holder_->SetInlineStyleProperty(CSSPropertyID::kWidth,
                                           *CSSValue::Create(width, zoom));
   }
 
   void ShowBorder() {
-    place_holder_->SetInlineStyleProperty(CSSPropertyID::kBorderWidth, 1,
+    place_holder_->SetInlineStyleProperty(CSSPropertyID::kBorderWidth, 0,
                                           CSSPrimitiveValue::UnitType::kPixels);
     place_holder_->SetInlineStyleProperty(CSSPropertyID::kBorderStyle,
                                           CSSValueID::kSolid);
@@ -187,7 +187,7 @@ scoped_refptr<ComputedStyle> HTMLImageFallbackHelper::CustomStyleForAltText(
     // to treat the element as a replaced element whose content is the text that
     // the element represents, if any."
     fallback.ShowAsReplaced(new_style->Width(), new_style->Height(),
-                            new_style->EffectiveZoom());
+                            new_style->EffectiveZoomX(),new_style->EffectiveZoomY());
 
     // 16px for the image and 2px for its top/left border/padding offset.
     int pixels_for_alt_image = 18;

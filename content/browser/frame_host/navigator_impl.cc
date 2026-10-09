@@ -711,7 +711,7 @@ void NavigatorImpl::OnBeginNavigation(
   // For main frames, NavigationHandle will be created after the call to
   // |DidStartMainFrameNavigation|, so it receives the most up to date pending
   // entry from the NavigationController.
-  navigation_request->BeginNavigation();
+  navigation_request->BeginNavigation2();
   // DO NOT USE |navigation_request| BEYOND THIS POINT. It might have been
   // destroyed in BeginNavigation().
   // See https://crbug.com/770157.

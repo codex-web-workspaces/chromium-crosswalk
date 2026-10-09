@@ -63,18 +63,20 @@ Cursor::Cursor(Image* image, bool hot_spot_specified, const IntPoint& hot_spot)
     : type_(ui::CursorType::kCustom),
       image_(image),
       hot_spot_(DetermineHotSpot(image, hot_spot_specified, hot_spot)),
-      image_scale_factor_(1) {}
+      image_scale_factor_(1),
+      image_scale_factory_(1) {}
 
 Cursor::Cursor(Image* image,
                bool hot_spot_specified,
                const IntPoint& hot_spot,
-               float scale)
+               float scale,float scaley)
     : type_(ui::CursorType::kCustom),
       image_(image),
       hot_spot_(DetermineHotSpot(image, hot_spot_specified, hot_spot)),
-      image_scale_factor_(scale) {}
+      image_scale_factor_(scale),
+      image_scale_factory_(scaley) {}
 
-Cursor::Cursor(ui::CursorType type) : type_(type), image_scale_factor_(1) {}
+Cursor::Cursor(ui::CursorType type) : type_(type), image_scale_factor_(1), image_scale_factory_(1) {}
 
 Cursor::Cursor(const Cursor& other) = default;
 
@@ -83,6 +85,7 @@ Cursor& Cursor::operator=(const Cursor& other) {
   image_ = other.image_;
   hot_spot_ = other.hot_spot_;
   image_scale_factor_ = other.image_scale_factor_;
+  image_scale_factory_ = other.image_scale_factory_;
   return *this;
 }
 

@@ -93,7 +93,7 @@ bool LayoutImageResource::HasIntrinsicSize() const {
   return !cached_image_ || cached_image_->GetImage()->HasIntrinsicSize();
 }
 
-FloatSize LayoutImageResource::ImageSize(float multiplier) const {
+FloatSize LayoutImageResource::ImageSize(float multiplier,float multipliery) const {
   if (!cached_image_)
     return FloatSize();
   FloatSize size(cached_image_->IntrinsicSize(
@@ -102,7 +102,7 @@ FloatSize LayoutImageResource::ImageSize(float multiplier) const {
     // Don't let images that have a width/height >= 1 shrink below 1 when
     // zoomed.
     FloatSize minimum_size(size.Width() > 0 ? 1 : 0, size.Height() > 0 ? 1 : 0);
-    size.Scale(multiplier);
+    size.Scale(multiplier,multipliery);
     if (size.Width() < minimum_size.Width())
       size.SetWidth(minimum_size.Width());
     if (size.Height() < minimum_size.Height())
@@ -116,8 +116,9 @@ FloatSize LayoutImageResource::ImageSize(float multiplier) const {
 
 FloatSize LayoutImageResource::ImageSizeWithDefaultSize(
     float multiplier,
+    float multipliery,
     const LayoutSize&) const {
-  return ImageSize(multiplier);
+  return ImageSize(multiplier,multipliery);
 }
 
 float LayoutImageResource::DeviceScaleFactor() const {
@@ -162,7 +163,7 @@ scoped_refptr<Image> LayoutImageResource::GetImage(
   Image* image = cached_image_->GetImage();
   if (image->IsPlaceholderImage()) {
     static_cast<PlaceholderImage*>(image)->SetIconAndTextScaleFactor(
-        layout_object_->StyleRef().EffectiveZoom());
+        layout_object_->StyleRef().EffectiveZoomX(),layout_object_->StyleRef().EffectiveZoomY());
   }
 
   if (!image->IsSVGImage())
@@ -175,7 +176,7 @@ scoped_refptr<Image> LayoutImageResource::GetImage(
   }
   return SVGImageForContainer::Create(
       ToSVGImage(image), container_size,
-      layout_object_->StyleRef().EffectiveZoom(), url);
+      layout_object_->StyleRef().EffectiveZoomX(),layout_object_->StyleRef().EffectiveZoomY(), url);
 }
 
 bool LayoutImageResource::MaybeAnimated() const {

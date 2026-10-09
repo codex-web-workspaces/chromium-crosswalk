@@ -86,7 +86,7 @@ Path SVGEllipseElement::AsPath() const {
 
   FloatPoint center(
       length_context.ResolveLengthPair(svg_style.Cx(), svg_style.Cy(), style));
-  path.AddEllipse(FloatRect(center - radii, radii.ScaledBy(2)));
+  path.AddEllipse(FloatRect(center - radii, radii.ScaledBy(2,2)));
   return path;
 }
 

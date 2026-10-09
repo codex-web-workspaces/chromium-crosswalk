@@ -50,8 +50,8 @@ class LayoutImageResourceStyleImage final : public LayoutImageResource {
   bool HasIntrinsicSize() const override {
     return style_image_->HasIntrinsicSize();
   }
-  FloatSize ImageSize(float multiplier) const override;
-  FloatSize ImageSizeWithDefaultSize(float multiplier,
+  FloatSize ImageSize(float multiplier,float multipliery) const override;
+  FloatSize ImageSizeWithDefaultSize(float multiplier,float multipliery,
                                      const LayoutSize&) const override;
   WrappedImagePtr ImagePtr() const override { return style_image_->Data(); }
 

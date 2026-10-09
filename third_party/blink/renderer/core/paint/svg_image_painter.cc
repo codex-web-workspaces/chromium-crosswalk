@@ -60,7 +60,7 @@ void SVGImagePainter::Paint(const PaintInfo& paint_info) {
 void SVGImagePainter::PaintForeground(const PaintInfo& paint_info) {
   const LayoutImageResource* image_resource = layout_svg_image_.ImageResource();
   FloatSize image_viewport_size = ComputeImageViewportSize();
-  image_viewport_size.Scale(layout_svg_image_.StyleRef().EffectiveZoom());
+  image_viewport_size.Scale(layout_svg_image_.StyleRef().EffectiveZoomX(),layout_svg_image_.StyleRef().EffectiveZoomY());
   if (image_viewport_size.IsEmpty())
     return;
 

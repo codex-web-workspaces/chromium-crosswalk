@@ -755,8 +755,11 @@ LayoutUnit LayoutView::ViewLogicalHeightForPercentages() const {
   return LayoutUnit(ViewLogicalHeight());
 }
 
-float LayoutView::ZoomFactor() const {
-  return frame_view_->GetFrame().PageZoomFactor();
+float LayoutView::ZoomFactorX() const {
+  return frame_view_->GetFrame().PageZoomFactorX();
+}
+float LayoutView::ZoomFactorY() const {
+  return frame_view_->GetFrame().PageZoomFactorY();
 }
 
 const LayoutBox& LayoutView::RootBox() const {

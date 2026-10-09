@@ -20,7 +20,8 @@ namespace blink {
 TEST(DocumentPaintDefinitionTest, NativeInvalidationProperties) {
   Vector<CSSPropertyID> native_invalidation_properties = {
       CSSPropertyID::kColor,
-      CSSPropertyID::kZoom,
+      CSSPropertyID::kZoomX,
+      CSSPropertyID::kZoomY,
       CSSPropertyID::kTop,
   };
   Vector<AtomicString> custom_invalidation_properties;

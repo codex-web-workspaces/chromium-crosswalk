@@ -140,7 +140,7 @@ static bool IsVisible(const LayoutObject& rect_layout_object,
 
   const PhysicalOffset sample_point =
       GetSamplePointForVisibility(edge_top_in_layer, edge_bottom_in_layer,
-                                  rect_layout_object.View()->ZoomFactor());
+                                  rect_layout_object.View()->ZoomFactorX());
 
   LayoutBox* const text_control_object = ToLayoutBox(layout_object);
   const PhysicalOffset position_in_input =

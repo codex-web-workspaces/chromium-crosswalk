@@ -76,9 +76,13 @@ class CORE_EXPORT CSSMathExpressionNode
   virtual double DoubleValue() const = 0;
 
   virtual double ComputeLengthPx(const CSSToLengthConversionData&) const = 0;
+  virtual double ComputeLengthPxY(const CSSToLengthConversionData&) const = 0;
   virtual void AccumulateLengthArray(CSSLengthArray&,
                                      double multiplier) const = 0;
   virtual void AccumulatePixelsAndPercent(const CSSToLengthConversionData&,
+                                          PixelsAndPercent&,
+                                          float multiplier = 1) const = 0;
+  virtual void AccumulatePixelsAndPercentY(const CSSToLengthConversionData&,
                                           PixelsAndPercent&,
                                           float multiplier = 1) const = 0;
 
@@ -145,9 +149,15 @@ class CORE_EXPORT CSSMathExpressionNumericLiteral final
       const CSSToLengthConversionData& conversion_data,
       PixelsAndPercent& value,
       float multiplier) const final;
+  void AccumulatePixelsAndPercentY(
+      const CSSToLengthConversionData& conversion_data,
+      PixelsAndPercent& value,
+      float multiplier) const final;
   double DoubleValue() const final;
   base::Optional<double> ComputeValueInCanonicalUnit() const final;
   double ComputeLengthPx(
+      const CSSToLengthConversionData& conversion_data) const final;
+  double ComputeLengthPxY(
       const CSSToLengthConversionData& conversion_data) const final;
   void AccumulateLengthArray(CSSLengthArray& length_array,
                              double multiplier) const final;
@@ -196,9 +206,15 @@ class CORE_EXPORT CSSMathExpressionBinaryOperation final
       const CSSToLengthConversionData& conversion_data,
       PixelsAndPercent& value,
       float multiplier) const final;
+  void AccumulatePixelsAndPercentY(
+      const CSSToLengthConversionData& conversion_data,
+      PixelsAndPercent& value,
+      float multiplier) const final;
   double DoubleValue() const final;
   base::Optional<double> ComputeValueInCanonicalUnit() const final;
   double ComputeLengthPx(
+      const CSSToLengthConversionData& conversion_data) const final;
+  double ComputeLengthPxY(
       const CSSToLengthConversionData& conversion_data) const final;
   void AccumulateLengthArray(CSSLengthArray& length_array,
                              double multiplier) const final;

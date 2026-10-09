@@ -231,6 +231,7 @@ void ProxyConfigServiceMac::RemoveObserver(Observer* observer) {
 
 ProxyConfigService::ConfigAvailability
 ProxyConfigServiceMac::GetLatestProxyConfig(ProxyConfigWithAnnotation* config) {
+    LOG(INFO)<<"getProxy---GetLatestProxyConfig ---mac";
   DCHECK(sequenced_task_runner_->RunsTasksInCurrentSequence());
 
   // Lazy-initialize by fetching the proxy setting from this thread.

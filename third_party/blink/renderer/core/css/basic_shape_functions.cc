@@ -82,7 +82,7 @@ static CSSValue* ValueForCenterCoordinate(
     const BasicShapeCenterCoordinate& center,
     EBoxOrient orientation) {
   if (center.GetDirection() == BasicShapeCenterCoordinate::kTopLeft)
-    return CSSValue::Create(center.length(), style.EffectiveZoom());
+    return CSSValue::Create(center.length(), style.EffectiveZoomX());
 
   CSSValueID keyword = orientation == EBoxOrient::kHorizontal
                            ? CSSValueID::kRight
@@ -90,15 +90,15 @@ static CSSValue* ValueForCenterCoordinate(
 
   return MakeGarbageCollected<CSSValuePair>(
       CSSIdentifierValue::Create(keyword),
-      CSSValue::Create(center.length(), style.EffectiveZoom()),
+      CSSValue::Create(center.length(), style.EffectiveZoomX()),
       CSSValuePair::kDropIdenticalValues);
 }
 
 static CSSValuePair* ValueForLengthSize(const LengthSize& length_size,
                                         const ComputedStyle& style) {
   return MakeGarbageCollected<CSSValuePair>(
-      CSSValue::Create(length_size.Width(), style.EffectiveZoom()),
-      CSSValue::Create(length_size.Height(), style.EffectiveZoom()),
+      CSSValue::Create(length_size.Width(), style.EffectiveZoomX()),
+      CSSValue::Create(length_size.Height(), style.EffectiveZoomY()),
       CSSValuePair::kKeepIdenticalValues);
 }
 
@@ -106,7 +106,7 @@ static CSSValue* BasicShapeRadiusToCSSValue(const ComputedStyle& style,
                                             const BasicShapeRadius& radius) {
   switch (radius.GetType()) {
     case BasicShapeRadius::kValue:
-      return CSSValue::Create(radius.Value(), style.EffectiveZoom());
+      return CSSValue::Create(radius.Value(), style.EffectiveZoomX());
     case BasicShapeRadius::kClosestSide:
       return CSSIdentifierValue::Create(CSSValueID::kClosestSide);
     case BasicShapeRadius::kFarthestSide:
@@ -171,9 +171,9 @@ CSSValue* ValueForBasicShape(const ComputedStyle& style,
       for (unsigned i = 0; i < values.size(); i += 2) {
         polygon_value->AppendPoint(
             CSSPrimitiveValue::CreateFromLength(values.at(i),
-                                                style.EffectiveZoom()),
+                                                style.EffectiveZoomX()),
             CSSPrimitiveValue::CreateFromLength(values.at(i + 1),
-                                                style.EffectiveZoom()));
+                                                style.EffectiveZoomY()));
       }
       return polygon_value;
     }
@@ -183,13 +183,13 @@ CSSValue* ValueForBasicShape(const ComputedStyle& style,
           MakeGarbageCollected<cssvalue::CSSBasicShapeInsetValue>();
 
       inset_value->SetTop(CSSPrimitiveValue::CreateFromLength(
-          inset->Top(), style.EffectiveZoom()));
+          inset->Top(), style.EffectiveZoomY()));
       inset_value->SetRight(CSSPrimitiveValue::CreateFromLength(
-          inset->Right(), style.EffectiveZoom()));
+          inset->Right(), style.EffectiveZoomX()));
       inset_value->SetBottom(CSSPrimitiveValue::CreateFromLength(
-          inset->Bottom(), style.EffectiveZoom()));
+          inset->Bottom(), style.EffectiveZoomY()));
       inset_value->SetLeft(CSSPrimitiveValue::CreateFromLength(
-          inset->Left(), style.EffectiveZoom()));
+          inset->Left(), style.EffectiveZoomX()));
 
       inset_value->SetTopLeftRadius(
           ValueForLengthSize(inset->TopLeftRadius(), style));

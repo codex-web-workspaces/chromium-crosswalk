@@ -300,7 +300,7 @@ sk_sp<PaintFilter> CanvasRenderingContext2DState::GetFilterForOffscreenCanvas(
 
   FilterEffectBuilder filter_effect_builder(
       FloatRect((FloatPoint()), FloatSize(canvas_size)),
-      1.0f,  // Deliberately ignore zoom on the canvas element.
+      1.0f, 1.0f,  // Deliberately ignore zoom on the canvas element.
       &fill_flags_for_filter, &stroke_flags_for_filter);
 
   FilterEffect* last_effect = filter_effect_builder.BuildFilterEffect(
@@ -356,7 +356,7 @@ sk_sp<PaintFilter> CanvasRenderingContext2DState::GetFilter(
 
     FilterEffectBuilder filter_effect_builder(
         FloatRect((FloatPoint()), FloatSize(canvas_size)),
-        1.0f,  // Deliberately ignore zoom on the canvas element.
+        1.0f,1.0f,   // Deliberately ignore zoom on the canvas element.
         &fill_flags_for_filter, &stroke_flags_for_filter);
 
     FilterEffect* last_effect = filter_effect_builder.BuildFilterEffect(

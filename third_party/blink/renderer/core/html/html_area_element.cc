@@ -168,10 +168,11 @@ Path HTMLAreaElement::GetPath(const LayoutObject* container_object) const {
   }
 
   // Zoom the path into coordinates of the container object.
-  float zoom_factor = container_object->StyleRef().EffectiveZoom();
-  if (zoom_factor != 1.0f) {
+  float zoom_factor = container_object->StyleRef().EffectiveZoomX();
+  float zoom_factory = container_object->StyleRef().EffectiveZoomY();
+  if (zoom_factor != 1.0f || zoom_factory != 1.0f) {
     AffineTransform zoom_transform;
-    zoom_transform.Scale(zoom_factor);
+    zoom_transform.Scale(zoom_factor,zoom_factory);
     path.Transform(zoom_transform);
   }
   return path;

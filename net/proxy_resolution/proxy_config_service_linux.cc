@@ -1309,6 +1309,7 @@ void ProxyConfigServiceLinux::Delegate::RemoveObserver(Observer* observer) {
 ProxyConfigService::ConfigAvailability
 ProxyConfigServiceLinux::Delegate::GetLatestProxyConfig(
     ProxyConfigWithAnnotation* config) {
+  LOG(INFO)<<"getProxy---GetLatestProxyConfig ---linux";
   // This is called from the main TaskRunner.
   DCHECK(!main_task_runner_.get() ||
          main_task_runner_->RunsTasksInCurrentSequence());
@@ -1422,6 +1423,7 @@ void ProxyConfigServiceLinux::RemoveObserver(Observer* observer) {
 ProxyConfigService::ConfigAvailability
 ProxyConfigServiceLinux::GetLatestProxyConfig(
     ProxyConfigWithAnnotation* config) {
+  LOG(INFO)<<"getProxy---GetLatestProxyConfig ---linux2";
   return delegate_->GetLatestProxyConfig(config);
 }
 

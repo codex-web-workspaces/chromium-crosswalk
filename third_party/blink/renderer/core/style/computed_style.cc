@@ -73,6 +73,8 @@
 #include "third_party/blink/renderer/platform/wtf/math_extras.h"
 #include "third_party/blink/renderer/platform/wtf/size_assertions.h"
 #include "third_party/blink/renderer/platform/wtf/text/case_map.h"
+#include "base/android/jni_android.h"
+#include "v8/src/objects/objectsutil.h"
 
 namespace blink {
 
@@ -1217,7 +1219,8 @@ void ComputedStyle::ApplyMotionPathTransform(
     point.SetX(float_distance * cos(deg2rad(angle)));
     point.SetY(float_distance * sin(deg2rad(angle)));
   } else {
-    float zoom = EffectiveZoom();
+    float zoom = EffectiveZoomX();
+    float zoomy = EffectiveZoomY();
     const StylePath& motion_path = To<StylePath>(*path);
     float path_length = motion_path.length();
     float float_distance =
@@ -1234,7 +1237,7 @@ void ComputedStyle::ApplyMotionPathTransform(
     motion_path.GetPath().PointAndNormalAtLength(computed_distance, point,
                                                  angle);
 
-    point.Scale(zoom, zoom);
+    point.Scale(zoom, zoomy);
   }
 
   if (rotate.type == OffsetRotationType::kFixed)
@@ -1874,7 +1877,7 @@ Length ComputedStyle::LineHeight() const {
   if (lh.IsFixed()) {
     float multiplier = TextAutosizingMultiplier();
     return Length::Fixed(TextAutosizer::ComputeAutosizedFontSize(
-        lh.Value(), multiplier, EffectiveZoom()));
+        lh.Value(), multiplier, EffectiveZoomY()));
   }
 
   return lh;
@@ -1899,14 +1902,14 @@ LayoutUnit ComputedStyle::ComputedLineHeightAsFixed() const {
 
   // Negative value means the line height is not set. Use the font's built-in
   // spacing, if avalible.
-  if (lh.IsNegative() && GetFont().PrimaryFont())
+  if (lh.IsNegative() && GetFont().PrimaryFont()){
     return GetFont().PrimaryFont()->GetFontMetrics().FixedLineSpacing();
+  }
 
   if (lh.IsPercentOrCalc()) {
     return LayoutUnit(
         MinimumValueForLength(lh, ComputedFontSizeAsFixed()).ToInt());
   }
-
   return LayoutUnit(floorf(lh.Value()));
 }
 
@@ -1941,10 +1944,10 @@ void ComputedStyle::SetTextAutosizingMultiplier(float multiplier) {
   FontDescription desc(GetFontDescription());
   desc.SetSpecifiedSize(size);
 
-  float computed_size = size * EffectiveZoom();
+  float computed_size = size * EffectiveZoomX();
 
   float autosized_font_size = TextAutosizer::ComputeAutosizedFontSize(
-      computed_size, multiplier, EffectiveZoom());
+      computed_size, multiplier, EffectiveZoomX());
   desc.SetComputedSize(std::min(kMaximumAllowedFontSize, autosized_font_size));
 
   SetFontDescription(desc);
@@ -2129,7 +2132,7 @@ void ComputedStyle::SetMarginEnd(const Length& margin) {
 }
 
 int ComputedStyle::OutlineOutsetExtent() const {
-  if (!HasOutline())
+  if (!HasOutline() || v8::touchModel)
     return 0;
   if (OutlineStyleIsAuto()) {
     return GraphicsContext::FocusRingOutsetExtent(
@@ -2140,6 +2143,10 @@ int ComputedStyle::OutlineOutsetExtent() const {
 }
 
 float ComputedStyle::GetOutlineStrokeWidthForFocusRing() const {
+    if(v8::touchModel){
+        return 0;
+    }
+
 #if defined(OS_MACOSX)
   return OutlineWidth();
 #else
@@ -2148,7 +2155,8 @@ float ComputedStyle::GetOutlineStrokeWidthForFocusRing() const {
   }
   // Draw an outline with thickness in proportion to the zoom level, but never
   // so narrow that it becomes invisible.
-  return std::max(EffectiveZoom(), 1.f);
+  // return std::max(EffectiveZoomX(), 1.f);
+  return OutlineWidth();
 #endif
 }
 

@@ -119,6 +119,9 @@ class PLATFORM_EXPORT FloatPoint {
   FloatPoint ScaledBy(float scale) const {
     return FloatPoint(x_ * scale, y_ * scale);
   }
+  FloatPoint ScaledBy(float scale,float scaley) const {
+    return FloatPoint(x_ * scale, y_ * scaley);
+  }
 
 #if defined(OS_MACOSX)
   FloatPoint(const CGPoint&);

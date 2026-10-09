@@ -131,7 +131,8 @@ static WebMouseEvent CreateMouseEvent(DragData* drag_data) {
       base::TimeTicks::Now());
   // TODO(dtapuska): Really we should chnage DragData to store the viewport
   // coordinates and scale.
-  result.SetFrameScale(1);
+  result.SetFrameScaleX(1);
+  result.SetFrameScaleY(1);
   return result;
 }
 
@@ -1065,7 +1066,7 @@ static std::unique_ptr<DragImage> DragImageForImage(
   if (image->IsSVGImage()) {
     KURL url = element->GetDocument().CompleteURL(element->ImageSourceURL());
     svg_image = SVGImageForContainer::Create(
-        ToSVGImage(image), FloatSize(image_element_size_in_pixels), 1, url);
+        ToSVGImage(image), FloatSize(image_element_size_in_pixels),1, 1, url);
     image = svg_image.get();
   }
 

@@ -89,7 +89,7 @@ void StyleResolverState::SetStyle(scoped_refptr<ComputedStyle> style) {
   style_ = std::move(style);
   css_to_length_conversion_data_ = CSSToLengthConversionData(
       style_.get(), RootElementStyle(), GetDocument().GetLayoutView(),
-      style_->EffectiveZoom());
+      style_->EffectiveZoomX(),style_->EffectiveZoomY());
 }
 
 scoped_refptr<ComputedStyle> StyleResolverState::TakeStyle() {
@@ -107,7 +107,7 @@ CSSToLengthConversionData StyleResolverState::UnzoomedLengthConversionData(
   CSSToLengthConversionData::ViewportSize viewport_size(
       GetDocument().GetLayoutView());
 
-  return CSSToLengthConversionData(Style(), font_sizes, viewport_size, 1);
+  return CSSToLengthConversionData(Style(), font_sizes, viewport_size, 1,1);
 }
 
 CSSToLengthConversionData StyleResolverState::FontSizeConversionData() const {
@@ -146,19 +146,33 @@ const FontDescription& StyleResolverState::ParentFontDescription() const {
   return parent_style_->GetFontDescription();
 }
 
-void StyleResolverState::SetZoom(float f) {
+void StyleResolverState::SetZoomX(float f) {
   float parent_effective_zoom = ParentStyle()
-                                    ? ParentStyle()->EffectiveZoom()
-                                    : ComputedStyleInitialValues::InitialZoom();
+                                    ? ParentStyle()->EffectiveZoomX()
+                                    : ComputedStyleInitialValues::InitialZoomX();
 
-  style_->SetZoom(f);
+  style_->SetZoomX(f);
 
-  if (style_->SetEffectiveZoom(parent_effective_zoom * f))
+  if (style_->SetEffectiveZoomX(parent_effective_zoom * f))
+    font_builder_.DidChangeEffectiveZoom();
+}
+void StyleResolverState::SetZoomY(float f) {
+  float parent_effective_zoom = ParentStyle()
+                                    ? ParentStyle()->EffectiveZoomY()
+                                    : ComputedStyleInitialValues::InitialZoomY();
+
+  style_->SetZoomY(f);
+
+  if (style_->SetEffectiveZoomY(parent_effective_zoom * f))
+    font_builder_.DidChangeEffectiveZoom();
+}
+void StyleResolverState::SetEffectiveZoomX(float f) {
+  if (style_->SetEffectiveZoomX(f))
     font_builder_.DidChangeEffectiveZoom();
 }
 
-void StyleResolverState::SetEffectiveZoom(float f) {
-  if (style_->SetEffectiveZoom(f))
+void StyleResolverState::SetEffectiveZoomY(float f) {
+  if (style_->SetEffectiveZoomY(f))
     font_builder_.DidChangeEffectiveZoom();
 }
 

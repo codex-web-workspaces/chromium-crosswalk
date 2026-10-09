@@ -248,7 +248,8 @@ class CORE_EXPORT StyleCascade {
 
     Priority none_;
     Priority writing_mode_;
-    Priority zoom_;
+    Priority zoomx_;
+    Priority zoomy_;
   };
 
   // Resolver is an object passed on a stack during Apply. Its most important

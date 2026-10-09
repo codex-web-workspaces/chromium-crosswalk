@@ -198,6 +198,7 @@ core_idl_files =
                     "frame/test_report_body.idl",
                     "frame/user_activation.idl",
                     "frame/visual_viewport.idl",
+#                    "frame/media_player.idl",
                     "geometry/dom_matrix.idl",
                     "geometry/dom_matrix_read_only.idl",
                     "geometry/dom_point.idl",

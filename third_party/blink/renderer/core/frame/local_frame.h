@@ -56,6 +56,7 @@
 #include "third_party/blink/renderer/platform/loader/fetch/client_hints_preferences.h"
 #include "third_party/blink/renderer/platform/scheduler/public/frame_scheduler.h"
 #include "third_party/blink/renderer/platform/supplementable.h"
+#include "third_party/blink/renderer/core/html/html_meta_element.h"
 
 namespace base {
 class SingleThreadTaskRunner;
@@ -255,10 +256,14 @@ class CORE_EXPORT LocalFrame final : public Frame,
   void SetInViewSourceMode(bool = true);
 
   void SetPageZoomFactor(float);
-  float PageZoomFactor() const { return page_zoom_factor_; }
+  void SetPageZoomFactor(float,float);
+  float PageZoomFactorX() const { return page_zoom_factorX_; }
+  float PageZoomFactorY() const { return page_zoom_factorY_; }
   void SetTextZoomFactor(float);
   float TextZoomFactor() const { return text_zoom_factor_; }
   void SetPageAndTextZoomFactors(float page_zoom_factor,
+                                 float text_zoom_factor);
+  void SetItvPageAndTextZoomFactors(float page_zoom_factorX,float page_zoom_factorY,
                                  float text_zoom_factor);
 
   void DeviceScaleFactorChanged();
@@ -530,7 +535,8 @@ class CORE_EXPORT LocalFrame final : public Frame,
   // https://crbug.com/778318.
   bool should_send_resource_timing_info_to_parent_ = true;
 
-  float page_zoom_factor_;
+  float page_zoom_factorX_;
+  float page_zoom_factorY_;
   float text_zoom_factor_;
 
   bool in_view_source_mode_;

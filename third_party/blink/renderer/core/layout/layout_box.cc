@@ -308,7 +308,7 @@ void LayoutBox::StyleDidChange(StyleDifference diff,
   // area, which is weird but OK, because the scrollable area will update its
   // min/max in updateAfterLayout().
   if (HasOverflowClip() && old_style &&
-      old_style->EffectiveZoom() != new_style.EffectiveZoom()) {
+      old_style->EffectiveZoomX() != new_style.EffectiveZoomX()) {
     PaintLayerScrollableArea* scrollable_area = GetScrollableArea();
     DCHECK(scrollable_area);
     // We use getScrollOffset() rather than scrollPosition(), because scroll
@@ -316,8 +316,7 @@ void LayoutBox::StyleDidChange(StyleDifference diff,
     // the dimension we want to preserve.
     ScrollOffset old_offset = scrollable_area->GetScrollOffset();
     if (old_offset.Width() || old_offset.Height()) {
-      ScrollOffset new_offset = old_offset.ScaledBy(new_style.EffectiveZoom() /
-                                                    old_style->EffectiveZoom());
+      ScrollOffset new_offset = old_offset.ScaledBy(new_style.EffectiveZoomX() /old_style->EffectiveZoomX(),new_style.EffectiveZoomY() /old_style->EffectiveZoomY());
       scrollable_area->SetScrollOffsetUnconditionally(new_offset);
     }
   }

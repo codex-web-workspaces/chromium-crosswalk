@@ -275,11 +275,72 @@ double CSSPrimitiveValue::ComputeLength(
   return ComputeLengthDouble(conversion_data);
 }
 
+
+template <>
+int CSSPrimitiveValue::ComputeLengthY(
+    const CSSToLengthConversionData& conversion_data) const {
+  return RoundForImpreciseConversion<int>(ComputeLengthDoubleY(conversion_data));
+}
+
+template <>
+unsigned CSSPrimitiveValue::ComputeLengthY(
+    const CSSToLengthConversionData& conversion_data) const {
+  return RoundForImpreciseConversion<unsigned>(
+      ComputeLengthDoubleY(conversion_data));
+}
+
+template <>
+Length CSSPrimitiveValue::ComputeLengthY(
+    const CSSToLengthConversionData& conversion_data) const {
+  return Length::Fixed(
+      ClampToCSSLengthRange(ComputeLengthDoubleY(conversion_data)));
+}
+
+template <>
+int16_t CSSPrimitiveValue::ComputeLengthY(
+    const CSSToLengthConversionData& conversion_data) const {
+  return RoundForImpreciseConversion<int16_t>(
+      ComputeLengthDoubleY(conversion_data));
+}
+
+template <>
+uint16_t CSSPrimitiveValue::ComputeLengthY(
+    const CSSToLengthConversionData& conversion_data) const {
+  return RoundForImpreciseConversion<uint16_t>(
+      ComputeLengthDoubleY(conversion_data));
+}
+
+template <>
+uint8_t CSSPrimitiveValue::ComputeLengthY(
+    const CSSToLengthConversionData& conversion_data) const {
+  return RoundForImpreciseConversion<uint8_t>(
+      ComputeLengthDoubleY(conversion_data));
+}
+
+template <>
+float CSSPrimitiveValue::ComputeLengthY(
+    const CSSToLengthConversionData& conversion_data) const {
+  return clampTo<float>(ComputeLengthDoubleY(conversion_data));
+}
+
+template <>
+double CSSPrimitiveValue::ComputeLengthY(
+    const CSSToLengthConversionData& conversion_data) const {
+  return ComputeLengthDoubleY(conversion_data);
+}
+
 double CSSPrimitiveValue::ComputeLengthDouble(
     const CSSToLengthConversionData& conversion_data) const {
   if (IsCalculated())
     return To<CSSMathFunctionValue>(this)->ComputeLengthPx(conversion_data);
   return To<CSSNumericLiteralValue>(this)->ComputeLengthPx(conversion_data);
+}
+
+double CSSPrimitiveValue::ComputeLengthDoubleY(
+    const CSSToLengthConversionData& conversion_data) const {
+  if (IsCalculated())
+    return To<CSSMathFunctionValue>(this)->ComputeLengthPxY(conversion_data);
+  return To<CSSNumericLiteralValue>(this)->ComputeLengthPxY(conversion_data);
 }
 
 void CSSPrimitiveValue::AccumulateLengthArray(CSSLengthArray& length_array,
@@ -359,6 +420,16 @@ Length CSSPrimitiveValue::ConvertToLength(
     return Length::Percent(GetDoubleValue());
   DCHECK(IsCalculated());
   return To<CSSMathFunctionValue>(this)->ConvertToLength(conversion_data);
+}
+
+Length CSSPrimitiveValue::ConvertToLengthY(
+    const CSSToLengthConversionData& conversion_data) const {
+  if (IsLength())
+    return ComputeLengthY<Length>(conversion_data);
+  if (IsPercentage())
+    return Length::Percent(GetDoubleValue());
+  DCHECK(IsCalculated());
+  return To<CSSMathFunctionValue>(this)->ConvertToLengthY(conversion_data);
 }
 
 double CSSPrimitiveValue::GetDoubleValue() const {

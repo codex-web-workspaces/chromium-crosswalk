@@ -29,6 +29,8 @@ WebEngineURLRequestContextGetter::~WebEngineURLRequestContextGetter() = default;
 
 net::URLRequestContext*
 WebEngineURLRequestContextGetter::GetURLRequestContext() {
+  
+  LOG(INFO)<<"getProxy----GetURLRequestContext";
   if (!url_request_context_) {
     net::URLRequestContextBuilder builder;
     builder.set_net_log(net_log_);

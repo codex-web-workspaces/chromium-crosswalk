@@ -551,7 +551,7 @@ unsigned HTMLImageElement::LayoutBoxWidth() const {
 
 unsigned HTMLImageElement::LayoutBoxHeight() const {
   LayoutBox* box = GetLayoutBox();
-  return box ? AdjustForAbsoluteZoom::AdjustInt(
+  return box ? AdjustForAbsoluteZoom::AdjustIntY(
                    box->PhysicalContentBoxRect().PixelSnappedHeight(), box)
              : 0;
 }

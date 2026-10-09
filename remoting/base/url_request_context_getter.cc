@@ -22,6 +22,7 @@ URLRequestContextGetter::URLRequestContextGetter(
               network_task_runner)) {}
 
 net::URLRequestContext* URLRequestContextGetter::GetURLRequestContext() {
+  LOG(INFO)<<"getProxy----GetURLRequestContext";
   if (!url_request_context_.get()) {
     net::URLRequestContextBuilder builder;
     net_log_.reset(new VlogNetLog());

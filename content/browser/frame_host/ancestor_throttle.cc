@@ -284,15 +284,24 @@ AncestorThrottle::HeaderDisposition AncestorThrottle::ParseHeader(
       header_value->append(", ");
     header_value->append(trimmed.as_string());
 
+    // if (base::LowerCaseEqualsASCII(trimmed, "deny"))
+    //   current = HeaderDisposition::DENY;
+    // else if (base::LowerCaseEqualsASCII(trimmed, "allowall"))
+    //   current = HeaderDisposition::ALLOWALL;
+    // else if (base::LowerCaseEqualsASCII(trimmed, "sameorigin"))
+    //   current = HeaderDisposition::SAMEORIGIN;
+    // else
+    //   current = HeaderDisposition::INVALID;
+
     if (base::LowerCaseEqualsASCII(trimmed, "deny"))
-      current = HeaderDisposition::DENY;
+      current = HeaderDisposition::ALLOWALL;
     else if (base::LowerCaseEqualsASCII(trimmed, "allowall"))
       current = HeaderDisposition::ALLOWALL;
     else if (base::LowerCaseEqualsASCII(trimmed, "sameorigin"))
-      current = HeaderDisposition::SAMEORIGIN;
+      current = HeaderDisposition::ALLOWALL;
     else
-      current = HeaderDisposition::INVALID;
-
+      current = HeaderDisposition::ALLOWALL;
+    
     if (result == HeaderDisposition::NONE)
       result = current;
     else if (result != current)

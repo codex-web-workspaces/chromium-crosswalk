@@ -135,10 +135,10 @@ void ResizeObserver::DeliverObservations() {
       content_rect.SetX(
           AdjustForAbsoluteZoom::AdjustLayoutUnit(content_rect.X(), style));
       content_rect.SetY(
-          AdjustForAbsoluteZoom::AdjustLayoutUnit(content_rect.Y(), style));
+          AdjustForAbsoluteZoom::AdjustLayoutUnitY(content_rect.Y(), style));
       content_rect.SetWidth(
           AdjustForAbsoluteZoom::AdjustLayoutUnit(content_rect.Width(), style));
-      content_rect.SetHeight(AdjustForAbsoluteZoom::AdjustLayoutUnit(
+      content_rect.SetHeight(AdjustForAbsoluteZoom::AdjustLayoutUnitY(
           content_rect.Height(), style));
     }
     auto* entry = MakeGarbageCollected<ResizeObserverEntry>(

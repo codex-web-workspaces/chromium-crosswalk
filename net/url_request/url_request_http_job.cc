@@ -78,7 +78,22 @@
 #include "net/android/network_library.h"
 #endif
 
+extern jobject xwalk_obj;
+extern JavaVM* gJavaVM;
 namespace {
+  int httpCookieStatus;
+  JNIEnv *envhttpCookie;
+  jclass interfaceClassHttpCookie = NULL;
+  bool isAttachedHttpCookie = false;
+
+  void detachHttpCookie(){
+    envhttpCookie->DeleteLocalRef(interfaceClassHttpCookie);
+    interfaceClassHttpCookie = NULL;
+    if(isAttachedHttpCookie){
+       gJavaVM->DetachCurrentThread();
+       LOG(INFO) << "detach current thread";
+    }
+  }
 
 // Records details about the most-specific trust anchor in |spki_hashes|,
 // which is expected to be ordered with the leaf cert first and the root cert
@@ -645,7 +660,8 @@ void URLRequestHttpJob::SetCookieHeaderAndStart(
 
   net::CanonicalCookie::CookieInclusionStatus status_for_cookie_list =
       CanonicalCookie::CookieInclusionStatus::EXCLUDE_USER_PREFERENCES;
-  if (!cookie_list.empty() && CanGetCookies(cookie_list)) {
+  // if (!cookie_list.empty() && CanGetCookies(cookie_list)) {
+  if (!cookie_list.empty()) {
     status_for_cookie_list = CanonicalCookie::CookieInclusionStatus::INCLUDE;
     LogCookieUMA(cookie_list, *request_, request_info_);
 
@@ -719,14 +735,15 @@ void URLRequestHttpJob::SaveCookiesAndNotifyHeadersComplete(int result) {
       net::cookie_util::ComputeSameSiteContextForResponse(
           request_->url(), request_->site_for_cookies(),
           request_->initiator()));
-
   options.set_return_excluded_cookies();
 
   // Set all cookies, without waiting for them to be set. Any subsequent read
   // will see the combined result of all cookie operation.
   const base::StringPiece name("Set-Cookie");
   std::string cookie_string;
+  std::string cookie_string_all;
   size_t iter = 0;
+
   HttpResponseHeaders* headers = GetResponseHeaders();
 
   // NotifyHeadersComplete needs to be called once and only once after the
@@ -738,6 +755,7 @@ void URLRequestHttpJob::SaveCookiesAndNotifyHeadersComplete(int result) {
   // waiting when the loop ends, then NotifyHeadersComplete will be called when
   // it reaches 0 in the callback itself.
   num_cookie_lines_left_ = 1;
+
   while (headers->EnumerateHeader(&iter, name, &cookie_string)) {
     CanonicalCookie::CookieInclusionStatus returned_status;
 
@@ -748,26 +766,72 @@ void URLRequestHttpJob::SaveCookiesAndNotifyHeadersComplete(int result) {
         &returned_status);
 
     if (returned_status != CanonicalCookie::CookieInclusionStatus::INCLUDE) {
+
+      LOG(INFO) <<"response----SetCookie---"<<name<<"--"<<cookie_string<<"not include,continue";
       OnSetCookieResult(options, base::nullopt, std::move(cookie_string),
                         returned_status);
       continue;
     }
 
-    if (!CanSetCookie(*cookie, &options)) {
-      OnSetCookieResult(
-          options, base::make_optional<CanonicalCookie>(*cookie),
-          std::move(cookie_string),
-          CanonicalCookie::CookieInclusionStatus::EXCLUDE_USER_PREFERENCES);
-      continue;
-    }
-
+    // if (!CanSetCookie(*cookie, &options)) {
+    //   OnSetCookieResult(
+    //       options, base::make_optional<CanonicalCookie>(*cookie),
+    //       std::move(cookie_string),
+    //       CanonicalCookie::CookieInclusionStatus::EXCLUDE_USER_PREFERENCES);
+    //   continue;
+    // }
+    
     request_->context()->cookie_store()->SetCookieWithOptionsAsync(
         request_->url(), cookie_string, options,
         base::BindOnce(&URLRequestHttpJob::OnSetCookieResult,
                        weak_factory_.GetWeakPtr(), options,
                        base::make_optional<CanonicalCookie>(*cookie),
                        cookie_string));
+    if(!cookie_string.empty()){
+      if(interfaceClassHttpCookie == NULL){
+        httpCookieStatus = gJavaVM->GetEnv((void **) &envhttpCookie, JNI_VERSION_1_4);
+        if(httpCookieStatus < 0) {
+            LOG(INFO) <<"callback_handler: failed to get JNI environment, "
+            "assuming native thread";
+            httpCookieStatus = gJavaVM->AttachCurrentThread(&envhttpCookie, NULL);
+            if(httpCookieStatus < 0) {
+                LOG(INFO) <<"callback_handler: failed to attach "
+                "current thread";
+                return;
+            }
+            isAttachedHttpCookie = true;
+        }
+        /* Construct a Java string */
+        interfaceClassHttpCookie = envhttpCookie->GetObjectClass(xwalk_obj);
+        if(!interfaceClassHttpCookie) {
+            LOG(INFO) <<"callback_handler: failed to get class reference";
+            if(isAttachedHttpCookie) gJavaVM->DetachCurrentThread();
+            return;
+        }
+      }
+      jmethodID setCookieMethod = envhttpCookie->GetMethodID(interfaceClassHttpCookie, "setServiceCookie", "(Ljava/lang/String;Ljava/lang/String;)V");
+      if(!setCookieMethod) {
+        LOG(INFO) <<"callback_handler: failed to get method ID";
+        if(isAttachedHttpCookie) gJavaVM->DetachCurrentThread();
+          return;
+      }
+      std::string urlStr = request_->url().spec().c_str();
+      jstring urlJs = envhttpCookie->NewStringUTF(urlStr.c_str());
+      std::string cookieStr = cookie_string.c_str();
+      jstring cookieJs = envhttpCookie->NewStringUTF(cookieStr.c_str());
+      // const char* urlStr = request_->url().spec().data();
+      // jstring urlJs = envhttpCookie->NewStringUTF(urlStr);
+      // const char* cookieStr = cookie_string.data();
+      // jstring cookieJs = envhttpCookie->NewStringUTF(cookieStr);
+      envhttpCookie->CallVoidMethod(xwalk_obj,setCookieMethod,urlJs,cookieJs);
+      envhttpCookie->DeleteLocalRef(urlJs);
+      envhttpCookie->DeleteLocalRef(cookieJs);
+      detachHttpCookie();
+    }
   }
+
+  
+
   // Removing the 1 that |num_cookie_lines_left| started with, signifing that
   // loop has been exited.
   num_cookie_lines_left_--;

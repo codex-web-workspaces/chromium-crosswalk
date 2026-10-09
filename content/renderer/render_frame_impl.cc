@@ -224,6 +224,7 @@
 #include "url/url_constants.h"
 #include "url/url_util.h"
 #include "v8/include/v8.h"
+#include "base/android/jni_android.h"
 
 #if BUILDFLAG(ENABLE_PLUGINS)
 #include "content/renderer/pepper/pepper_browser_connection.h"
@@ -3022,6 +3023,7 @@ void RenderFrameImpl::LoadNavigationErrorPage(
     const WebURLError& error,
     const base::Optional<std::string>& error_page_content,
     bool replace_current_item) {
+
   std::string error_html;
   if (error_page_content) {
     error_html = error_page_content.value();
@@ -6896,6 +6898,23 @@ void RenderFrameImpl::OpenURL(std::unique_ptr<blink::WebNavigationInfo> info) {
   // all main frame navigations, except in the case where page A is navigating
   // page B (e.g. using anchor targets). This edge case can go away when
   // UserActivationV2 ships, which would make the conditional below redundant.
+
+  if(policy == blink::kWebNavigationPolicyNewWindow){
+    LOG(INFO)<<"open in new kWebNavigationPolicyNewWindow------";
+  }
+  if(policy == blink::kWebNavigationPolicyNewForegroundTab){
+    LOG(INFO)<<"open in new kWebNavigationPolicyNewForegroundTab------";
+  }
+  if(policy == blink::kWebNavigationPolicyNewPopup){
+    LOG(INFO)<<"open in new kWebNavigationPolicyNewPopup------";
+  }
+  if(policy == blink::kWebNavigationPolicyNewBackgroundTab){
+    LOG(INFO)<<"open in new kWebNavigationPolicyNewBackgroundTab------";
+  }
+  if(policy == blink::kWebNavigationPolicyCurrentTab){
+    LOG(INFO)<<"open in new kWebNavigationPolicyCurrentTab------";
+  }
+
   if (is_main_frame_ || policy == blink::kWebNavigationPolicyNewBackgroundTab ||
       policy == blink::kWebNavigationPolicyNewForegroundTab ||
       policy == blink::kWebNavigationPolicyNewWindow ||

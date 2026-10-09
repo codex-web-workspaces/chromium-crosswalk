@@ -10,7 +10,6 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "media/base/android/media_codec_bridge_impl.h"
 #include "media/base/data_source.h"
-#include "media/ffmpeg/ffmpeg_common.h"
 #include "media/filters/blocking_url_protocol.h"
 #include "media/filters/ffmpeg_bitstream_converter.h"
 #include "media/filters/ffmpeg_demuxer.h"
@@ -29,119 +28,121 @@
 namespace media {
 
 VideoFrameExtractor::VideoFrameExtractor(DataSource* data_source)
-    : data_source_(data_source), video_stream_index_(-1), weak_factory_(this) {}
+    : weak_factory_(this) {  // 必须这样初始化WeakPtrFactory
+  // 构造函数体
+}
 
 VideoFrameExtractor::~VideoFrameExtractor() = default;
 
 void VideoFrameExtractor::Start(VideoFrameCallback video_frame_callback) {
-  video_frame_callback_ = std::move(video_frame_callback);
-  protocol_ = std::make_unique<BlockingUrlProtocol>(
-      data_source_, base::BindRepeating(&VideoFrameExtractor::OnError,
-                                        weak_factory_.GetWeakPtr()));
-  glue_ = std::make_unique<FFmpegGlue>(protocol_.get());
+  // video_frame_callback_ = std::move(video_frame_callback);
+  // protocol_ = std::make_unique<BlockingUrlProtocol>(
+  //     data_source_, base::BindRepeating(&VideoFrameExtractor::OnError,
+  //                                       weak_factory_.GetWeakPtr()));
+  // glue_ = std::make_unique<FFmpegGlue>(protocol_.get());
 
-  // This will gradually read media data through |data_source_|.
-  if (!glue_->OpenContext()) {
-    OnError();
-    return;
-  }
+  // // This will gradually read media data through |data_source_|.
+  // if (!glue_->OpenContext()) {
+  //   OnError();
+  //   return;
+  // }
 
-  // Extract the video stream.
-  AVFormatContext* format_context = glue_->format_context();
-  for (unsigned int i = 0; i < format_context->nb_streams; ++i) {
-    AVStream* stream = format_context->streams[i];
-    if (!stream)
-      continue;
-    const AVCodecParameters* codec_parameters = stream->codecpar;
-    const AVMediaType codec_type = codec_parameters->codec_type;
+  // // Extract the video stream.
+  // AVFormatContext* format_context = glue_->format_context();
+  // for (unsigned int i = 0; i < format_context->nb_streams; ++i) {
+  //   AVStream* stream = format_context->streams[i];
+  //   if (!stream)
+  //     continue;
+  //   const AVCodecParameters* codec_parameters = stream->codecpar;
+  //   const AVMediaType codec_type = codec_parameters->codec_type;
 
-    // Pick the first video stream.
-    if (codec_type == AVMEDIA_TYPE_VIDEO) {
-      video_stream_ = stream;
-      video_stream_index_ = i;
-      DCHECK_EQ(video_stream_index_, stream->index);
-      break;
-    }
-  }
+  //   // Pick the first video stream.
+  //   if (codec_type == AVMEDIA_TYPE_VIDEO) {
+  //     video_stream_ = stream;
+  //     video_stream_index_ = i;
+  //     DCHECK_EQ(video_stream_index_, stream->index);
+  //     break;
+  //   }
+  // }
 
-  if (!video_stream_) {
-    OnError();
-    return;
-  }
+  // if (!video_stream_) {
+  //   OnError();
+  //   return;
+  // }
 
-  // Get the config for decoding the video frame later.
-  if (!AVStreamToVideoDecoderConfig(video_stream_, &video_config_)) {
-    OnError();
-    return;
-  }
+  // // Get the config for decoding the video frame later.
+  // if (!AVStreamToVideoDecoderConfig(video_stream_, &video_config_)) {
+  //   OnError();
+  //   return;
+  // }
 
-  auto packet = ReadVideoFrame();
-  if (!packet) {
-    OnError();
-    return;
-  }
+  // auto packet = ReadVideoFrame();
+  // if (!packet) {
+  //   OnError();
+  //   return;
+  // }
 
-  ConvertPacket(packet.get());
-  NotifyComplete(
-      std::vector<uint8_t>(packet->data, packet->data + packet->size),
-      video_config_);
+  // ConvertPacket(packet.get());
+  // NotifyComplete(
+  //     std::vector<uint8_t>(packet->data, packet->data + packet->size),
+  //     video_config_);
 }
 
 void VideoFrameExtractor::ConvertPacket(AVPacket* packet) {
-#if BUILDFLAG(USE_PROPRIETARY_CODECS)
-  DCHECK(video_stream_ && video_stream_->codecpar);
-  // TODO(xingliu): Create the bitstream converter in an utility function. This
-  // logic is shared with FFmpegDemuxer.
-  switch (video_stream_->codecpar->codec_id) {
-    case AV_CODEC_ID_H264:
-      video_config_.SetExtraData(std::vector<uint8_t>());
-      bitstream_converter_.reset(
-          new FFmpegH264ToAnnexBBitstreamConverter(video_stream_->codecpar));
-      break;
-#if BUILDFLAG(ENABLE_HEVC_DEMUXING)
-    case AV_CODEC_ID_HEVC:
-      bitstream_converter_.reset(
-          new FFmpegH265ToAnnexBBitstreamConverter(video_stream_->codecpar));
-      break;
-#endif
-    case AV_CODEC_ID_AAC:
-      bitstream_converter_.reset(
-          new FFmpegAACBitstreamConverter(video_stream_->codecpar));
-      break;
-    default:
-      break;
-  }
+// #if BUILDFLAG(USE_PROPRIETARY_CODECS)
+//   DCHECK(video_stream_ && video_stream_->codecpar);
+//   // TODO(xingliu): Create the bitstream converter in an utility function. This
+//   // logic is shared with FFmpegDemuxer.
+//   switch (video_stream_->codecpar->codec_id) {
+//     case AV_CODEC_ID_H264:
+//       video_config_.SetExtraData(std::vector<uint8_t>());
+//       bitstream_converter_.reset(
+//           new FFmpegH264ToAnnexBBitstreamConverter(video_stream_->codecpar));
+//       break;
+// #if BUILDFLAG(ENABLE_HEVC_DEMUXING)
+//     case AV_CODEC_ID_HEVC:
+//       bitstream_converter_.reset(
+//           new FFmpegH265ToAnnexBBitstreamConverter(video_stream_->codecpar));
+//       break;
+// #endif
+//     case AV_CODEC_ID_AAC:
+//       bitstream_converter_.reset(
+//           new FFmpegAACBitstreamConverter(video_stream_->codecpar));
+//       break;
+//     default:
+//       break;
+//   }
 
-  if (bitstream_converter_)
-    bitstream_converter_->ConvertPacket(packet);
-#endif  // BUILDFLAG(USE_PROPRIETARY_CODECS)
+//   if (bitstream_converter_)
+//     bitstream_converter_->ConvertPacket(packet);
+// #endif  // BUILDFLAG(USE_PROPRIETARY_CODECS)
 }
 
 ScopedAVPacket VideoFrameExtractor::ReadVideoFrame() {
-  AVFormatContext* format_context = glue_->format_context();
-  ScopedAVPacket packet(new AVPacket());
-  while (av_read_frame(format_context, packet.get()) >= 0) {
-    // Skip frames from streams other than video.
-    if (packet->stream_index != video_stream_index_)
-      continue;
+  // AVFormatContext* format_context = glue_->format_context();
+  // ScopedAVPacket packet(new AVPacket());
+  // while (av_read_frame(format_context, packet.get()) >= 0) {
+  //   // Skip frames from streams other than video.
+  //   if (packet->stream_index != video_stream_index_)
+  //     continue;
 
-    DCHECK(packet->flags & AV_PKT_FLAG_KEY);
-    return packet;
-  }
+  //   DCHECK(packet->flags & AV_PKT_FLAG_KEY);
+  //   return packet;
+  // }
   return nullptr;
 }
 
 void VideoFrameExtractor::NotifyComplete(std::vector<uint8_t> encoded_frame,
                                          const VideoDecoderConfig& config) {
   // Return the encoded video key frame.
-  DCHECK(video_frame_callback_);
-  std::move(video_frame_callback_).Run(true, std::move(encoded_frame), config);
+  // DCHECK(video_frame_callback_);
+  // std::move(video_frame_callback_).Run(true, std::move(encoded_frame), config);
 }
 
 void VideoFrameExtractor::OnError() {
-  DCHECK(video_frame_callback_);
-  std::move(video_frame_callback_)
-      .Run(false, std::vector<uint8_t>(), VideoDecoderConfig());
+  // DCHECK(video_frame_callback_);
+  // std::move(video_frame_callback_)
+  //     .Run(false, std::vector<uint8_t>(), VideoDecoderConfig());
 }
 
 }  // namespace media

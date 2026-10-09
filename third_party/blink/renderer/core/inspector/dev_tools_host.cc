@@ -145,10 +145,21 @@ void DevToolsHost::DisconnectClient() {
   frontend_frame_ = nullptr;
 }
 
-float DevToolsHost::zoomFactor() {
+float DevToolsHost::zoomFactorX() {
   if (!frontend_frame_)
     return 1;
-  float zoom_factor = frontend_frame_->PageZoomFactor();
+  float zoom_factor = frontend_frame_->PageZoomFactorX();
+  // Cancel the device scale factor applied to the zoom factor in
+  // use-zoom-for-dsf mode.
+  const ChromeClient* client =
+      frontend_frame_->View()->GetChromeClient();
+  float window_to_viewport_ratio = client->WindowToViewportScalar(1.0f);
+  return zoom_factor / window_to_viewport_ratio;
+}
+float DevToolsHost::zoomFactorY() {
+  if (!frontend_frame_)
+    return 1;
+  float zoom_factor = frontend_frame_->PageZoomFactorY();
   // Cancel the device scale factor applied to the zoom factor in
   // use-zoom-for-dsf mode.
   const ChromeClient* client =
@@ -199,12 +210,13 @@ void DevToolsHost::ShowContextMenu(LocalFrame* target_frame,
   auto* menu_provider =
       MakeGarbageCollected<FrontendMenuProvider>(this, std::move(items));
   menu_provider_ = menu_provider;
-  float zoom = target_frame->PageZoomFactor();
+  float zoom = target_frame->PageZoomFactorX();
+  float zoomy = target_frame->PageZoomFactorY();
   {
     ContextMenuAllowedScope scope;
     target_frame->GetPage()->GetContextMenuController().ClearContextMenu();
     target_frame->GetPage()->GetContextMenuController().ShowContextMenuAtPoint(
-        target_frame, x * zoom, y * zoom, menu_provider);
+        target_frame, x * zoom, y * zoomy, menu_provider);
   }
 }
 

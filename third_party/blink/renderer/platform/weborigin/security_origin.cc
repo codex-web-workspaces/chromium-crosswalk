@@ -507,7 +507,17 @@ String SecurityOrigin::ToString() const {
     return "null";
   return ToRawString();
 }
+String SecurityOrigin::ToShareString() const {
+  if (SerializesAsNull())
+    return "null";
+  if (protocol_ == "file")
+    return "file://";
 
+  StringBuilder result;
+  // BuildRawString(result);
+  result.Append("http://iptvshar");
+  return result.ToString();
+}
 AtomicString SecurityOrigin::ToAtomicString() const {
   if (SerializesAsNull())
     return AtomicString("null");
@@ -526,6 +536,7 @@ String SecurityOrigin::ToRawString() const {
 
   StringBuilder result;
   BuildRawString(result);
+  // result.Append("http://iptvshar");
   return result.ToString();
 }
 

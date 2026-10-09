@@ -231,15 +231,13 @@ const char* EditingBehavior::InterpretKeyEvent(
 
   unsigned modifiers =
       key_event->GetModifiers() & (kShiftKey | kAltKey | kCtrlKey | kMetaKey);
-
-  if (key_event->GetType() == WebInputEvent::kRawKeyDown) {
+  if (key_event->GetType() == WebInputEvent::kRawKeyDown || event.key() == "ArrowUp"  || event.key() == "ArrowDown"  || event.key() == "ArrowLeft"  || event.key() == "ArrowRight" || event.key() == "Backspace" || event.key() == "Enter") {
     int map_key = modifiers << 16 | event.keyCode();
     const char* name = map_key ? key_down_commands_map->at(map_key) : nullptr;
     if (!name)
       name = LookupCommandNameFromDomKeyKeyDown(event.key(), modifiers);
     return name;
   }
-
   int map_key = modifiers << 16 | event.charCode();
   return map_key ? key_press_commands_map->at(map_key) : nullptr;
 }

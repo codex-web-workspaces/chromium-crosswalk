@@ -24,15 +24,16 @@ WebMouseEvent::WebMouseEvent(WebInputEvent::Type type,
   DCHECK_LE(type, kMouseTypeLast);
   SetPositionInWidget(gesture_event.PositionInWidget());
   SetPositionInScreen(gesture_event.PositionInScreen());
-  SetFrameScale(gesture_event.FrameScale());
+  SetFrameScaleX(gesture_event.FrameScaleX());
+  SetFrameScaleY(gesture_event.FrameScaleY());
   SetFrameTranslate(gesture_event.FrameTranslate());
   SetMenuSourceType(gesture_event.GetType());
 }
 
 WebFloatPoint WebMouseEvent::PositionInRootFrame() const {
   return WebFloatPoint(
-      (position_in_widget_.x / frame_scale_) + frame_translate_.x,
-      (position_in_widget_.y / frame_scale_) + frame_translate_.y);
+      (position_in_widget_.x / frame_scalex_) + frame_translate_.x,
+      (position_in_widget_.y / frame_scaley_) + frame_translate_.y);
 }
 
 WebMouseEvent WebMouseEvent::FlattenTransform() const {
@@ -45,7 +46,8 @@ void WebMouseEvent::FlattenTransformSelf() {
   position_in_widget_ = PositionInRootFrame();
   frame_translate_.x = 0;
   frame_translate_.y = 0;
-  frame_scale_ = 1;
+  frame_scalex_ = 1;
+  frame_scaley_ = 1;
 }
 
 void WebMouseEvent::SetMenuSourceType(WebInputEvent::Type type) {

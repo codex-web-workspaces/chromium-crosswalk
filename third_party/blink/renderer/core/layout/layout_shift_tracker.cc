@@ -63,10 +63,10 @@ float LayoutShiftTracker::RegionGranularityScale(
 static bool EqualWithinMovementThreshold(const FloatPoint& a,
                                          const FloatPoint& b,
                                          const LayoutObject& object) {
-  float threshold_physical_px =
-      kMovementThreshold * object.StyleRef().EffectiveZoom();
+  float threshold_physical_px = kMovementThreshold * object.StyleRef().EffectiveZoomX();
+  float threshold_physical_py = kMovementThreshold * object.StyleRef().EffectiveZoomY();
   return fabs(a.X() - b.X()) < threshold_physical_px &&
-         fabs(a.Y() - b.Y()) < threshold_physical_px;
+         fabs(a.Y() - b.Y()) < threshold_physical_py;
 }
 
 static bool SmallerThanRegionGranularity(const FloatRect& rect,

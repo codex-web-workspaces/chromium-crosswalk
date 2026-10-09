@@ -76,11 +76,11 @@ SavePackageId GetNextSavePackageId() {
 
 // Default name which will be used when we can not get proper name from
 // resource URL.
-const char kDefaultSaveName[] = "saved_resource";
+// const char kDefaultSaveName[] = "saved_resource";
 
 // Maximum number of file ordinal number. I think it's big enough for resolving
 // name-conflict files which has same base file name.
-const int32_t kMaxFileOrdinalNumber = 9999;
+// const int32_t kMaxFileOrdinalNumber = 9999;
 
 // Maximum length for file path. Since Windows have MAX_PATH limitation for
 // file path, we need to make sure length of file path of every saved file
@@ -94,28 +94,28 @@ const uint32_t kMaxFilePathLength = PATH_MAX - 1;
 // Maximum length for file ordinal number part. Since we only support the
 // maximum 9999 for ordinal number, which means maximum file ordinal number part
 // should be "(9998)", so the value is 6.
-const uint32_t kMaxFileOrdinalNumberPartLength = 6;
+// const uint32_t kMaxFileOrdinalNumberPartLength = 6;
 
 // Strip current ordinal number, if any. Should only be used on pure
 // file names, i.e. those stripped of their extensions.
 // TODO(estade): improve this to not choke on alternate encodings.
-base::FilePath::StringType StripOrdinalNumber(
-    const base::FilePath::StringType& base_name) {
-  base::FilePath::StringType::size_type r_paren_index =
-      base_name.rfind(FILE_PATH_LITERAL(')'));
-  base::FilePath::StringType::size_type l_paren_index =
-      base_name.rfind(FILE_PATH_LITERAL('('));
-  if (l_paren_index >= r_paren_index)
-    return base_name;
+// base::FilePath::StringType StripOrdinalNumber(
+//     const base::FilePath::StringType& base_name) {
+//   base::FilePath::StringType::size_type r_paren_index =
+//       base_name.rfind(FILE_PATH_LITERAL(')'));
+//   base::FilePath::StringType::size_type l_paren_index =
+//       base_name.rfind(FILE_PATH_LITERAL('('));
+//   if (l_paren_index >= r_paren_index)
+//     return base_name;
 
-  for (base::FilePath::StringType::size_type i = l_paren_index + 1;
-       i != r_paren_index; ++i) {
-    if (!base::IsAsciiDigit(base_name[i]))
-      return base_name;
-  }
+//   for (base::FilePath::StringType::size_type i = l_paren_index + 1;
+//        i != r_paren_index; ++i) {
+//     if (!base::IsAsciiDigit(base_name[i]))
+//       return base_name;
+//   }
 
-  return base_name.substr(0, l_paren_index);
-}
+//   return base_name.substr(0, l_paren_index);
+// }
 
 // Check whether we can save page as complete-HTML for the contents which
 // have specified a MIME type. Now only contents which have the MIME type
@@ -408,99 +408,99 @@ bool SavePackage::GenerateFileName(const std::string& disposition,
                                    base::FilePath::StringType* generated_name) {
   // TODO(jungshik): Figure out the referrer charset when having one
   // makes sense and pass it to GenerateFileName.
-  base::FilePath file_path = net::GenerateFileName(url,
-                                                   disposition,
-                                                   std::string(),
-                                                   std::string(),
-                                                   std::string(),
-                                                   kDefaultSaveName);
+  // base::FilePath file_path = net::GenerateFileName(url,
+  //                                                  disposition,
+  //                                                  std::string(),
+  //                                                  std::string(),
+  //                                                  std::string(),
+  //                                                  kDefaultSaveName);
 
-  DCHECK(!file_path.empty());
-  if (need_html_ext)
-    file_path = file_path.ReplaceExtension(kDefaultHtmlExtension);
+  // DCHECK(!file_path.empty());
+  // if (need_html_ext)
+  //   file_path = file_path.ReplaceExtension(kDefaultHtmlExtension);
 
-  DownloadManagerDelegate* delegate = download_manager_->GetDelegate();
-  if (delegate)
-    delegate->SanitizeSavePackageResourceName(&file_path);
+  // DownloadManagerDelegate* delegate = download_manager_->GetDelegate();
+  // if (delegate)
+  //   delegate->SanitizeSavePackageResourceName(&file_path);
 
-  DCHECK_EQ(file_path.value(), file_path.BaseName().value())
-      << "SanitizeSavePackageResourceName should only return a basename.";
+  // DCHECK_EQ(file_path.value(), file_path.BaseName().value())
+  //     << "SanitizeSavePackageResourceName should only return a basename.";
 
-  base::FilePath::StringType base_name =
-      file_path.RemoveExtension().BaseName().value();
-  base::FilePath::StringType file_name_ext = file_path.Extension();
+  // base::FilePath::StringType base_name =
+  //     file_path.RemoveExtension().BaseName().value();
+  // base::FilePath::StringType file_name_ext = file_path.Extension();
 
-  // Need to make sure the suggested file name is not too long.
-  uint32_t max_path = GetMaxPathLengthForDirectory(saved_main_directory_path_);
+  // // Need to make sure the suggested file name is not too long.
+  // uint32_t max_path = GetMaxPathLengthForDirectory(saved_main_directory_path_);
 
-  // Get safe pure file name.
-  if (!TruncateBaseNameToFitPathConstraints(
-          saved_main_directory_path_, file_name_ext, max_path, &base_name))
-    return false;
+  // // Get safe pure file name.
+  // if (!TruncateBaseNameToFitPathConstraints(
+  //         saved_main_directory_path_, file_name_ext, max_path, &base_name))
+  //   return false;
 
-  base::FilePath::StringType file_name = base_name + file_name_ext;
+  // base::FilePath::StringType file_name = base_name + file_name_ext;
 
-  // Check whether we already have same name in a case insensitive manner.
-  auto iter = file_name_set_.find(file_name);
-  if (iter == file_name_set_.end()) {
-    DCHECK(!file_name.empty());
-    file_name_set_.insert(file_name);
-    generated_name->assign(file_name);
-    return true;
-  }
+  // // Check whether we already have same name in a case insensitive manner.
+  // auto iter = file_name_set_.find(file_name);
+  // if (iter == file_name_set_.end()) {
+  //   DCHECK(!file_name.empty());
+  //   file_name_set_.insert(file_name);
+  //   generated_name->assign(file_name);
+  //   return true;
+  // }
 
-  // Found same name, increase the ordinal number for the file name.
-  base_name = base::FilePath(*iter).RemoveExtension().BaseName().value();
-  base::FilePath::StringType base_file_name = StripOrdinalNumber(base_name);
+  // // Found same name, increase the ordinal number for the file name.
+  // base_name = base::FilePath(*iter).RemoveExtension().BaseName().value();
+  // base::FilePath::StringType base_file_name = StripOrdinalNumber(base_name);
 
-  // We need to make sure the length of base file name plus maximum ordinal
-  // number path will be less than or equal to kMaxFilePathLength.
-  if (!TruncateBaseNameToFitPathConstraints(
-          saved_main_directory_path_, file_name_ext,
-          max_path - kMaxFileOrdinalNumberPartLength, &base_file_name)) {
-    return false;
-  }
+  // // We need to make sure the length of base file name plus maximum ordinal
+  // // number path will be less than or equal to kMaxFilePathLength.
+  // if (!TruncateBaseNameToFitPathConstraints(
+  //         saved_main_directory_path_, file_name_ext,
+  //         max_path - kMaxFileOrdinalNumberPartLength, &base_file_name)) {
+  //   return false;
+  // }
 
-  // Prepare the new ordinal number.
-  uint32_t ordinal_number;
-  auto it = file_name_count_map_.find(base_file_name);
-  if (it == file_name_count_map_.end()) {
-    // First base-name-conflict resolving, use 1 as initial ordinal number.
-    file_name_count_map_[base_file_name] = 1;
-    ordinal_number = 1;
-  } else {
-    // We have met same base-name conflict, use latest ordinal number.
-    ordinal_number = it->second;
-  }
+  // // Prepare the new ordinal number.
+  // uint32_t ordinal_number;
+  // auto it = file_name_count_map_.find(base_file_name);
+  // if (it == file_name_count_map_.end()) {
+  //   // First base-name-conflict resolving, use 1 as initial ordinal number.
+  //   file_name_count_map_[base_file_name] = 1;
+  //   ordinal_number = 1;
+  // } else {
+  //   // We have met same base-name conflict, use latest ordinal number.
+  //   ordinal_number = it->second;
+  // }
 
-  if (ordinal_number > kMaxFileOrdinalNumber - 1) {
-    // Use a random file from temporary file.
-    base::FilePath temp_file;
-    base::CreateTemporaryFile(&temp_file);
-    file_name = temp_file.RemoveExtension().BaseName().value();
-    // Get safe pure file name.
-    if (!TruncateBaseNameToFitPathConstraints(saved_main_directory_path_,
-                                              base::FilePath::StringType(),
-                                              max_path, &file_name)) {
-      return false;
-    }
-  } else {
-    for (int i = ordinal_number; i < kMaxFileOrdinalNumber; ++i) {
-      base::FilePath::StringType new_name =
-          base_file_name + base::StringPrintf(FILE_PATH_LITERAL("(%d)"), i) +
-          file_name_ext;
-      if (!base::Contains(file_name_set_, new_name)) {
-        // Resolved name conflict.
-        file_name = new_name;
-        file_name_count_map_[base_file_name] = ++i;
-        break;
-      }
-    }
-  }
+  // if (ordinal_number > kMaxFileOrdinalNumber - 1) {
+  //   // Use a random file from temporary file.
+  //   base::FilePath temp_file;
+  //   base::CreateTemporaryFile(&temp_file);
+  //   file_name = temp_file.RemoveExtension().BaseName().value();
+  //   // Get safe pure file name.
+  //   if (!TruncateBaseNameToFitPathConstraints(saved_main_directory_path_,
+  //                                             base::FilePath::StringType(),
+  //                                             max_path, &file_name)) {
+  //     return false;
+  //   }
+  // } else {
+  //   for (int i = ordinal_number; i < kMaxFileOrdinalNumber; ++i) {
+  //     base::FilePath::StringType new_name =
+  //         base_file_name + base::StringPrintf(FILE_PATH_LITERAL("(%d)"), i) +
+  //         file_name_ext;
+  //     if (!base::Contains(file_name_set_, new_name)) {
+  //       // Resolved name conflict.
+  //       file_name = new_name;
+  //       file_name_count_map_[base_file_name] = ++i;
+  //       break;
+  //     }
+  //   }
+  // }
 
-  DCHECK(!file_name.empty());
-  file_name_set_.insert(file_name);
-  generated_name->assign(file_name);
+  // DCHECK(!file_name.empty());
+  // file_name_set_.insert(file_name);
+  // generated_name->assign(file_name);
 
   return true;
 }

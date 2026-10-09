@@ -646,6 +646,7 @@ class CORE_EXPORT Document : public ContainerNode,
   bool DispatchBeforeUnloadEvent(ChromeClient* chrome_client,
                                  bool is_reload,
                                  bool& did_allow_navigation);
+  
 
   // Dispatches "pagehide", "visibilitychange" and "unload" events, if not
   // dispatched already. Fills unload timing in the next document's load timing
@@ -1586,6 +1587,7 @@ class CORE_EXPORT Document : public ContainerNode,
   bool HasPendingJavaScriptUrlsForTest() {
     return !pending_javascript_urls_.IsEmpty();
   }
+
 
  protected:
   void ClearXMLVersion() { xml_version_ = String(); }

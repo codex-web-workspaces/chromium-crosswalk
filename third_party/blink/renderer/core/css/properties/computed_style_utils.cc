@@ -50,7 +50,7 @@ CSSValue* ComputedStyleUtils::ZoomAdjustedPixelValueForLength(
     const ComputedStyle& style) {
   if (length.IsFixed())
     return ZoomAdjustedPixelValue(length.Value(), style);
-  return CSSValue::Create(length, style.EffectiveZoom());
+  return CSSValue::Create(length, style.EffectiveZoomX());
 }
 
 CSSValue* ComputedStyleUtils::ValueForPosition(const LengthPoint& position,
@@ -375,7 +375,7 @@ CSSValue* ValueForBorderImageLength(
     return CSSNumericLiteralValue::Create(border_image_length.Number(),
                                           CSSPrimitiveValue::UnitType::kNumber);
   }
-  return CSSValue::Create(border_image_length.length(), style.EffectiveZoom());
+  return CSSValue::Create(border_image_length.length(), style.EffectiveZoomX());
 }
 
 CSSQuadValue* ComputedStyleUtils::ValueForNinePieceImageQuad(
@@ -1313,7 +1313,7 @@ FloatSize ComputedStyleUtils::UsedBoxSize(const LayoutObject& layout_object) {
     FloatSize size(layout_object.ObjectBoundingBox().Size());
     // The object bounding box does not have zoom applied. Multiply with zoom
     // here since we'll divide by it when we produce the CSS value.
-    size.Scale(layout_object.StyleRef().EffectiveZoom());
+    size.Scale(layout_object.StyleRef().EffectiveZoomX(),layout_object.StyleRef().EffectiveZoomY());
     return size;
   }
   if (!layout_object.IsBox())
@@ -1600,7 +1600,7 @@ CSSFunctionValue* ValueForMatrixTransform(
   // doesn't guarantee alignment of function parameters.
   TransformationMatrix transform = transform_param;
   CSSFunctionValue* transform_value = nullptr;
-  transform.Zoom(1 / style.EffectiveZoom());
+  transform.Zoom(1 / style.EffectiveZoomX());
   if (transform.IsAffine()) {
     transform_value =
         MakeGarbageCollected<CSSFunctionValue>(CSSValueID::kMatrix);

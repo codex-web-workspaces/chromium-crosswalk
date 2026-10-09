@@ -82,9 +82,9 @@ void LayoutReplaced::StyleDidChange(StyleDifference diff,
   }
 
   bool had_style = !!old_style;
-  float old_zoom = had_style ? old_style->EffectiveZoom()
-                             : ComputedStyleInitialValues::InitialZoom();
-  if (Style() && StyleRef().EffectiveZoom() != old_zoom)
+  float old_zoom = had_style ? old_style->EffectiveZoomX()
+                             : ComputedStyleInitialValues::InitialZoomX();
+  if (Style() && StyleRef().EffectiveZoomX() != old_zoom)
     IntrinsicSizeChanged();
 }
 
@@ -110,9 +110,9 @@ void LayoutReplaced::UpdateLayout() {
 
 void LayoutReplaced::IntrinsicSizeChanged() {
   int scaled_width =
-      static_cast<int>(kDefaultWidth * StyleRef().EffectiveZoom());
+      static_cast<int>(kDefaultWidth * StyleRef().EffectiveZoomX());
   int scaled_height =
-      static_cast<int>(kDefaultHeight * StyleRef().EffectiveZoom());
+      static_cast<int>(kDefaultHeight * StyleRef().EffectiveZoomY());
   intrinsic_size_ = LayoutSize(scaled_width, scaled_height);
   SetNeedsLayoutAndPrefWidthsRecalcAndFullPaintInvalidation(
       layout_invalidation_reason::kSizeChanged);

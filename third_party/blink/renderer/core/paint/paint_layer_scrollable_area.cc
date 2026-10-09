@@ -1948,18 +1948,19 @@ void PaintLayerScrollableArea::Resize(const IntPoint& pos,
 
   Document& document = element->GetDocument();
 
-  float zoom_factor = GetLayoutBox()->StyleRef().EffectiveZoom();
+  float zoom_factor = GetLayoutBox()->StyleRef().EffectiveZoomX();
+  float zoom_factory = GetLayoutBox()->StyleRef().EffectiveZoomY();
 
   IntSize new_offset =
       OffsetFromResizeCorner(document.View()->ConvertFromRootFrame(pos));
   new_offset.SetWidth(new_offset.Width() / zoom_factor);
-  new_offset.SetHeight(new_offset.Height() / zoom_factor);
+  new_offset.SetHeight(new_offset.Height() / zoom_factory);
 
   LayoutSize current_size = GetLayoutBox()->Size();
-  current_size.Scale(1 / zoom_factor);
+  current_size.Scale(1 / zoom_factor,1 / zoom_factory);
 
   LayoutSize adjusted_old_offset = LayoutSize(
-      old_offset.Width() / zoom_factor, old_offset.Height() / zoom_factor);
+      old_offset.Width() / zoom_factor, old_offset.Height() / zoom_factory);
   if (GetLayoutBox()->ShouldPlaceBlockDirectionScrollbarOnLogicalLeft()) {
     new_offset.SetWidth(-new_offset.Width());
     adjusted_old_offset.SetWidth(-adjusted_old_offset.Width());
@@ -2003,18 +2004,18 @@ void PaintLayerScrollableArea::Resize(const IntPoint& pos,
       // Make implicit margins from the theme explicit (see
       // <http://bugs.webkit.org/show_bug.cgi?id=9547>).
       element->SetInlineStyleProperty(CSSPropertyID::kMarginTop,
-                                      GetLayoutBox()->MarginTop() / zoom_factor,
+                                      GetLayoutBox()->MarginTop() / zoom_factory,
                                       CSSPrimitiveValue::UnitType::kPixels);
       element->SetInlineStyleProperty(
           CSSPropertyID::kMarginBottom,
-          GetLayoutBox()->MarginBottom() / zoom_factor,
+          GetLayoutBox()->MarginBottom() / zoom_factory,
           CSSPrimitiveValue::UnitType::kPixels);
     }
     LayoutUnit base_height =
         GetLayoutBox()->Size().Height() -
         (is_box_sizing_border ? LayoutUnit()
                               : GetLayoutBox()->BorderAndPaddingHeight());
-    base_height = LayoutUnit(base_height / zoom_factor);
+    base_height = LayoutUnit(base_height / zoom_factory);
     element->SetInlineStyleProperty(
         CSSPropertyID::kHeight, RoundToInt(base_height + difference.Height()),
         CSSPrimitiveValue::UnitType::kPixels);

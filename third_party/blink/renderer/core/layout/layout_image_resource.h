@@ -64,9 +64,9 @@ class CORE_EXPORT LayoutImageResource
 
   virtual bool HasIntrinsicSize() const;
 
-  virtual FloatSize ImageSize(float multiplier) const;
+  virtual FloatSize ImageSize(float multiplier,float multipliery) const;
   // Default size is effective when this is LayoutImageResourceStyleImage.
-  virtual FloatSize ImageSizeWithDefaultSize(float multiplier,
+  virtual FloatSize ImageSizeWithDefaultSize(float multiplier,float multipliery,
                                              const LayoutSize&) const;
   virtual WrappedImagePtr ImagePtr() const { return cached_image_.Get(); }
 

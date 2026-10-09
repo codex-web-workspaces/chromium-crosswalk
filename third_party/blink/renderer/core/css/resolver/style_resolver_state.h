@@ -106,8 +106,11 @@ class CORE_EXPORT StyleResolverState {
       const CSSToLengthConversionData::FontSizes& font_sizes) {
     css_to_length_conversion_data_.SetFontSizes(font_sizes);
   }
-  void SetConversionZoom(float zoom) {
-    css_to_length_conversion_data_.SetZoom(zoom);
+  void SetConversionZoomX(float zoom) {
+    css_to_length_conversion_data_.SetZoomX(zoom);
+  }
+  void SetConversionZoomY(float zoom) {
+    css_to_length_conversion_data_.SetZoomY(zoom);
   }
 
   CSSAnimationUpdate& AnimationUpdate() { return animation_update_; }
@@ -165,8 +168,10 @@ class CORE_EXPORT StyleResolverState {
   // tracking these mutations and separate it from StyleResolverState.
   const FontDescription& ParentFontDescription() const;
 
-  void SetZoom(float);
-  void SetEffectiveZoom(float);
+  void SetZoomX(float);
+  void SetZoomY(float);
+  void SetEffectiveZoomX(float);
+  void SetEffectiveZoomY(float);
   void SetWritingMode(WritingMode);
   void SetTextOrientation(ETextOrientation);
 

@@ -68,6 +68,7 @@ class CORE_EXPORT HTMLIFrameElement final
   void SetCollapsed(bool) override;
 
   void ParseAttribute(const AttributeModificationParams&) override;
+  void setupOnloadHandler(const String&);
   bool IsPresentationAttribute(const QualifiedName&) const override;
   void CollectStyleForPresentationAttribute(
       const QualifiedName&,

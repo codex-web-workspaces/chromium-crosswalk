@@ -39,7 +39,12 @@
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/weborigin/security_origin.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
+#include "base/android/jni_android.h"
+#include "v8/src/objects/objectsutil.h"
 
+
+extern jobject xwalk_obj;
+extern JavaVM* gJavaVM;
 namespace blink {
 
 StorageArea* StorageArea::Create(LocalFrame* frame,
@@ -94,7 +99,69 @@ String StorageArea::getItem(const String& key,
     exception_state.ThrowSecurityError("access is denied for this document.");
     return String();
   }
-  return cached_area_->GetItem(key);
+  String value = cached_area_->GetItem(key);
+  if(value.IsEmpty() && v8::storageUseJni){
+    JNIEnv *env;
+    bool isAttached = false;
+    int status = gJavaVM->GetEnv((void **) &env, JNI_VERSION_1_4);
+    if(status < 0) {
+        LOG(INFO) <<"callback_handler: failed to get JNI environment, "
+        "assuming native thread";
+        status = gJavaVM->AttachCurrentThread(&env, NULL);
+        if(status < 0) {
+            LOG(INFO) <<"callback_handler: failed to attach "
+            "current thread";
+            return value;
+        }
+        isAttached = true;
+    }
+    /* Construct a Java string */
+    jclass interfaceClass = env->GetObjectClass(xwalk_obj);
+    if(!interfaceClass) {
+        LOG(INFO) <<"callback_handler: failed to get class reference";
+        if(isAttached) gJavaVM->DetachCurrentThread();
+        return value;
+    }
+
+    jmethodID jniMethod = env->GetMethodID(interfaceClass, "getStorage", "(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)Ljava/lang/String;");
+    if(!jniMethod) {
+        LOG(INFO) <<"callback_handler: failed to get method ID";
+        if(isAttached) gJavaVM->DetachCurrentThread();
+        return value;
+    }
+    jstring urlStr = env->NewStringUTF(GetPageUrl().GetString().Utf8().c_str());
+    jstring keyStr = env->NewStringUTF(key.Utf8().c_str());
+    String type = "1";
+    if(storage_type_ == StorageType::kLocalStorage){
+      type = "0";
+    }
+    jstring js = env->NewStringUTF(type.Utf8().c_str());
+    jstring rvalue = (jstring) env->CallObjectMethod(xwalk_obj, jniMethod,urlStr,keyStr,js);
+    
+    String wtfString = String();
+    if(rvalue != nullptr){
+      const char *utf8Chars = env->GetStringUTFChars(rvalue, nullptr);  
+      wtfString = (String)utf8Chars;
+      // std::string utf8String(utf8Chars);
+      env->ReleaseStringUTFChars(rvalue, utf8Chars);
+      // wtfString = String::fromUTF8(utf8String);
+    }
+    env->DeleteLocalRef(urlStr);
+    env->DeleteLocalRef(keyStr);
+    env->DeleteLocalRef(js);
+    env->DeleteLocalRef(rvalue);
+    env->DeleteLocalRef(interfaceClass);
+    if(isAttached) {
+        gJavaVM->DetachCurrentThread();
+    }
+    // if(!value.IsEmpty()){
+    //   // setItem(key,value,exception_state);
+    //   cached_area_->SetItem(key, value, this);
+    // }
+    return wtfString;
+  }
+  return value;
+
 }
 
 bool StorageArea::setItem(const String& key,
@@ -109,6 +176,55 @@ bool StorageArea::setItem(const String& key,
         DOMExceptionCode::kQuotaExceededError,
         "Setting the value of '" + key + "' exceeded the quota.");
   }
+
+  if(v8::storageUseJni){
+    JNIEnv *env;
+    bool isAttached = false;
+    int status = gJavaVM->GetEnv((void **) &env, JNI_VERSION_1_4);
+    if(status < 0) {
+        LOG(INFO) <<"callback_handler: failed to get JNI environment, "
+        "assuming native thread";
+        status = gJavaVM->AttachCurrentThread(&env, NULL);
+        if(status < 0) {
+            LOG(INFO) <<"callback_handler: failed to attach "
+            "current thread";
+            return true;
+        }
+        isAttached = true;
+    }
+    /* Construct a Java string */
+    jclass interfaceClass = env->GetObjectClass(xwalk_obj);
+    if(!interfaceClass) {
+        LOG(INFO) <<"callback_handler: failed to get class reference";
+        if(isAttached) gJavaVM->DetachCurrentThread();
+        return true;
+    }
+
+    jmethodID jniMethod = env->GetMethodID(interfaceClass, "setStorage", "(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)V");
+    if(!jniMethod) {
+        LOG(INFO) <<"callback_handler: failed to get method ID";
+        if(isAttached) gJavaVM->DetachCurrentThread();
+        return true;
+    }
+    jstring urlStr = env->NewStringUTF(GetPageUrl().GetString().Utf8().c_str());
+    jstring keyStr = env->NewStringUTF(key.Utf8().c_str());
+    jstring valueStr = env->NewStringUTF(value.Utf8().c_str());
+    String type = "1";
+    if(storage_type_ == StorageType::kLocalStorage){
+      type = "0";
+    }
+    jstring js = env->NewStringUTF(type.Utf8().c_str());
+    env->CallVoidMethod(xwalk_obj, jniMethod,urlStr,keyStr,valueStr,js);
+    env->DeleteLocalRef(urlStr);
+    env->DeleteLocalRef(keyStr);
+    env->DeleteLocalRef(valueStr);
+    env->DeleteLocalRef(js);
+    env->DeleteLocalRef(interfaceClass);
+    if(isAttached) {
+        gJavaVM->DetachCurrentThread();
+    }
+  }
+
   return true;
 }
 
@@ -119,6 +235,52 @@ DeleteResult StorageArea::removeItem(const String& key,
     return kDeleteSuccess;
   }
   cached_area_->RemoveItem(key, this);
+
+  if(v8::storageUseJni){
+    JNIEnv *env;
+    bool isAttached = false;
+    int status = gJavaVM->GetEnv((void **) &env, JNI_VERSION_1_4);
+    if(status < 0) {
+        LOG(INFO) <<"callback_handler: failed to get JNI environment, "
+        "assuming native thread";
+        status = gJavaVM->AttachCurrentThread(&env, NULL);
+        if(status < 0) {
+            LOG(INFO) <<"callback_handler: failed to attach "
+            "current thread";
+            return kDeleteSuccess;
+        }
+        isAttached = true;
+    }
+    /* Construct a Java string */
+    jclass interfaceClass = env->GetObjectClass(xwalk_obj);
+    if(!interfaceClass) {
+        LOG(INFO) <<"callback_handler: failed to get class reference";
+        if(isAttached) gJavaVM->DetachCurrentThread();
+        return kDeleteSuccess;
+    }
+
+    jmethodID jniMethod = env->GetMethodID(interfaceClass, "removeStorage", "(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)V");
+    if(!jniMethod) {
+        LOG(INFO) <<"callback_handler: failed to get method ID";
+        if(isAttached) gJavaVM->DetachCurrentThread();
+        return kDeleteSuccess;
+    }
+    jstring urlStr = env->NewStringUTF(GetPageUrl().GetString().Utf8().c_str());
+    jstring keyStr = env->NewStringUTF(key.Utf8().c_str());
+    String type = "1";
+    if(storage_type_ == StorageType::kLocalStorage){
+      type = "0";
+    }
+    jstring js = env->NewStringUTF(type.Utf8().c_str());
+    env->CallVoidMethod(xwalk_obj, jniMethod,urlStr,keyStr,js);
+    env->DeleteLocalRef(urlStr);
+    env->DeleteLocalRef(keyStr);
+    env->DeleteLocalRef(js);
+    env->DeleteLocalRef(interfaceClass);
+    if(isAttached) {
+        gJavaVM->DetachCurrentThread();
+    }
+  }
   return kDeleteSuccess;
 }
 
@@ -128,6 +290,50 @@ void StorageArea::clear(ExceptionState& exception_state) {
     return;
   }
   cached_area_->Clear(this);
+
+  if(v8::storageUseJni){
+    JNIEnv *env;
+    bool isAttached = false;
+    int status = gJavaVM->GetEnv((void **) &env, JNI_VERSION_1_4);
+    if(status < 0) {
+        LOG(INFO) <<"callback_handler: failed to get JNI environment, "
+        "assuming native thread";
+        status = gJavaVM->AttachCurrentThread(&env, NULL);
+        if(status < 0) {
+            LOG(INFO) <<"callback_handler: failed to attach "
+            "current thread";
+            return ;
+        }
+        isAttached = true;
+    }
+    /* Construct a Java string */
+    jclass interfaceClass = env->GetObjectClass(xwalk_obj);
+    if(!interfaceClass) {
+        LOG(INFO) <<"callback_handler: failed to get class reference";
+        if(isAttached) gJavaVM->DetachCurrentThread();
+        return ;
+    }
+
+    jmethodID jniMethod = env->GetMethodID(interfaceClass, "clearStorage", "(Ljava/lang/String;Ljava/lang/String;)V");
+    if(!jniMethod) {
+        LOG(INFO) <<"callback_handler: failed to get method ID";
+        if(isAttached) gJavaVM->DetachCurrentThread();
+        return ;
+    }
+    jstring urlStr = env->NewStringUTF(GetPageUrl().GetString().Utf8().c_str());
+    String type = "1";
+    if(storage_type_ == StorageType::kLocalStorage){
+      type = "0";
+    }
+    jstring js = env->NewStringUTF(type.Utf8().c_str());
+    env->CallVoidMethod(xwalk_obj, jniMethod,urlStr,js);
+    env->DeleteLocalRef(urlStr);
+    env->DeleteLocalRef(js);
+    env->DeleteLocalRef(interfaceClass);
+    if(isAttached) {
+        gJavaVM->DetachCurrentThread();
+    }
+  }
 }
 
 bool StorageArea::Contains(const String& key,

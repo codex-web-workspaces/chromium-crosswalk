@@ -53,6 +53,7 @@
 #include "third_party/blink/renderer/platform/wtf/text/number_parsing_options.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_to_number.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_view.h"
+#include "base/android/jni_android.h"
 
 namespace blink {
 
@@ -226,7 +227,6 @@ Frame* CreateNewWindow(LocalFrame& opener_frame,
   DCHECK(request.GetResourceRequest().RequestorOrigin() ||
          opener_frame.GetDocument()->Url().IsEmpty());
   DCHECK_EQ(kNavigationPolicyCurrentTab, request.GetNavigationPolicy());
-
   // Exempting window.open() from this check here is necessary to support a
   // special policy that will be removed in Chrome 82.
   // See https://crbug.com/937569
@@ -253,12 +253,10 @@ Frame* CreateNewWindow(LocalFrame& opener_frame,
       return nullptr;
     }
   }
-
   const WebWindowFeatures& features = request.GetWindowFeatures();
   request.SetNavigationPolicy(NavigationPolicyForCreateWindow(features));
   probe::WindowOpen(opener_frame.GetDocument(), url, frame_name, features,
                     LocalFrame::HasTransientUserActivation(&opener_frame));
-
   // Sandboxed frames cannot open new auxiliary browsing contexts.
   if (opener_frame.GetDocument()->IsSandboxed(WebSandboxFlags::kPopups)) {
     // FIXME: This message should be moved off the console once a solution to
@@ -271,7 +269,6 @@ Frame* CreateNewWindow(LocalFrame& opener_frame,
             "frame whose 'allow-popups' permission is not set."));
     return nullptr;
   }
-
   bool propagate_sandbox = opener_frame.GetDocument()->IsSandboxed(
       WebSandboxFlags::kPropagatesToAuxiliaryBrowsingContexts);
   const SandboxFlags sandbox_flags =
@@ -283,23 +280,19 @@ Frame* CreateNewWindow(LocalFrame& opener_frame,
       (not_sandboxed || propagate_sandbox)
           ? opener_frame.GetDocument()->GetFeaturePolicy()->GetFeatureState()
           : FeaturePolicy::FeatureState();
-
   SessionStorageNamespaceId new_namespace_id =
       AllocateSessionStorageNamespaceId();
-
   Page* old_page = opener_frame.GetPage();
   // TODO(dmurph): Don't copy session storage when features.noopener is true:
   // https://html.spec.whatwg.org/C/#copy-session-storage
   // https://crbug.com/771959
   CoreInitializer::GetInstance().CloneSessionStorage(old_page,
                                                      new_namespace_id);
-
   Page* page = old_page->GetChromeClient().CreateWindow(
       &opener_frame, request, frame_name, features, sandbox_flags,
       opener_feature_state, new_namespace_id);
   if (!page)
     return nullptr;
-
   auto* new_local_frame = DynamicTo<LocalFrame>(page->MainFrame());
   if (request.GetShouldSendReferrer() == kMaybeSendReferrer) {
     // TODO(japhet): Does network::mojom::ReferrerPolicy need to be proagated
@@ -309,7 +302,6 @@ Frame* CreateNewWindow(LocalFrame& opener_frame,
           opener_frame.GetDocument()->GetReferrerPolicy());
     }
   }
-
   if (page == old_page) {
     Frame* frame = &opener_frame.Tree().Top();
     if (!opener_frame.CanNavigate(*frame))
@@ -318,12 +310,9 @@ Frame* CreateNewWindow(LocalFrame& opener_frame,
       frame->Client()->SetOpener(&opener_frame);
     return frame;
   }
-
   DCHECK(page->MainFrame());
   LocalFrame& frame = *To<LocalFrame>(page->MainFrame());
-
   page->SetWindowFeatures(features);
-
   frame.View()->SetCanHaveScrollbars(features.scrollbars_visible);
 
   IntRect window_rect = page->GetChromeClient().RootWindowRect(frame);
@@ -335,10 +324,8 @@ Frame* CreateNewWindow(LocalFrame& opener_frame,
     window_rect.SetWidth(features.width);
   if (features.height_set)
     window_rect.SetHeight(features.height);
-
   page->GetChromeClient().SetWindowRectWithAdjustment(window_rect, frame);
   page->GetChromeClient().Show(request.GetNavigationPolicy());
-
   MaybeLogWindowOpen(opener_frame);
   return &frame;
 }

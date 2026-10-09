@@ -283,6 +283,10 @@ Page* ChromeClientImpl::CreateWindowDelegate(
           session_storage_namespace_id));
   if (!new_view)
     return nullptr;
+  new_view->SetBaseBackgroundColor(SK_ColorTRANSPARENT);  // 设置背景色为黑色
+  new_view->SetMainFrameOverlayColor(SK_ColorTRANSPARENT);
+  // new_view->SetTransparentBackground(true);    // 设置背景透明
+  
   return new_view->GetPage();
 }
 

@@ -170,12 +170,12 @@ void DocumentMarkerPainter::PaintStyleableMarkerUnderline(
   // underlines are 1px (before zoom) thick.  If there's not enough space the
   // underline will touch or overlap characters. Line thickness should change
   // with zoom.
-  int line_thickness = 1 * style.EffectiveZoom();
+  int line_thickness = 1 * style.EffectiveZoomY();
   const SimpleFontData* font_data = style.GetFont().PrimaryFont();
   DCHECK(font_data);
   int baseline = font_data ? font_data->GetFontMetrics().Ascent() : 0;
   if (marker.HasThicknessThick()) {
-    int thick_line_thickness = 2 * style.EffectiveZoom();
+    int thick_line_thickness = 2 * style.EffectiveZoomY();
     if (logical_height.ToInt() - baseline >= thick_line_thickness)
       line_thickness = thick_line_thickness;
   }
@@ -208,7 +208,7 @@ void DocumentMarkerPainter::PaintDocumentMarker(
   // actually the most useful, and matches what AppKit does.  So, we generally
   // place the underline at the bottom of the text, but in larger fonts that's
   // not so good so we pin to two pixels under the baseline.
-  float zoom = style.EffectiveZoom();
+  float zoom = style.EffectiveZoomY();
   int line_thickness = kMarkerHeight * zoom;
 
   const SimpleFontData* font_data = style.GetFont().PrimaryFont();

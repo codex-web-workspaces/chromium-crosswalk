@@ -109,7 +109,12 @@
 #include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_utf8_adaptor.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
+#include "base/android/jni_android.h"
+#include "v8/src/objects/objectsutil.h"
+#include "third_party/blink/renderer/bindings/core/v8/script_controller.h"
 
+extern jobject xwalk_obj;
+extern JavaVM* gJavaVM;
 namespace blink {
 
 DocumentLoader::DocumentLoader(
@@ -560,6 +565,43 @@ void DocumentLoader::BodyLoadingFinished(
   response_.SetEncodedBodyLength(total_encoded_body_length);
   response_.SetDecodedBodyLength(total_decoded_body_length);
 
+  if(response_.HttpStatusCode() >= 400){
+    JNIEnv *env;
+    bool isAttached = false;
+    int status = gJavaVM->GetEnv((void **) &env, JNI_VERSION_1_4);
+    if(status < 0) {
+        LOG(INFO) <<"callback_handler: failed to get JNI environment, "
+        "assuming native thread";
+        status = gJavaVM->AttachCurrentThread(&env, NULL);
+        if(status < 0) {
+            LOG(INFO) <<"callback_handler: failed to attach "
+            "current thread";
+            return;
+        }
+        isAttached = true;
+    }
+    /* Construct a Java string */
+    jclass interfaceClass = env->GetObjectClass(xwalk_obj);
+    if(!interfaceClass) {
+        LOG(INFO) <<"callback_handler: failed to get class reference";
+        if(isAttached) gJavaVM->DetachCurrentThread();
+        return;
+    }
+
+    jmethodID gqxMethod = env->GetMethodID(interfaceClass, "notifyWebViewError", "(I)V");
+    if(!gqxMethod) {
+        LOG(INFO) <<"callback_handler: failed to get method ID";
+        if(isAttached) gJavaVM->DetachCurrentThread();
+        return;
+    }
+
+    env->CallVoidMethod(xwalk_obj, gqxMethod,response_.HttpStatusCode());
+    env->DeleteLocalRef(interfaceClass);
+    if(isAttached) {
+        gJavaVM->DetachCurrentThread();
+    }
+  }
+
   if (!error) {
     GetFrameLoader().Progress().CompleteProgress(main_resource_identifier_);
     probe::DidFinishLoading(
@@ -616,7 +658,9 @@ void DocumentLoader::LoadFailed(const ResourceError& error) {
   GetLocalFrameClient().DispatchDidFailLoad(error, history_commit_type);
   GetFrameLoader().DidFinishNavigation();
   DCHECK_EQ(kSentDidFinishLoad, state_);
+
   params_ = nullptr;
+  
 }
 
 void DocumentLoader::FinishedLoading(base::TimeTicks finish_time) {
@@ -1401,6 +1445,27 @@ void DocumentLoader::DidCommitNavigation(
         {SchedulingPolicy::RecordMetricsForBackForwardCache()});
   }
 
+  if (!v8::GetInjectedJsCode().empty() && frame_) {
+      // 获取 ScriptController
+      ScriptController& script_controller = frame_->GetScriptController();
+      // 构造 ScriptSourceCode
+      ScriptSourceCode script_source(
+          v8::GetInjectedJsCode().c_str(),  // JS 代码
+          ScriptSourceLocationType::kInternal,  // 代码来源类型
+          nullptr,  // 缓存处理器
+          KURL(),  // 基础 URL
+          TextPosition::MinimumPosition()  // 代码位置
+      );
+      // 在主世界中执行 JS 代码
+      script_controller.ExecuteScriptInMainWorld(
+          script_source, KURL(), SanitizeScriptErrors::kSanitize);
+  }
+
+
+  if(v8::notifyStatus){
+    notifyToJni();
+  }
+
   // When a new navigation commits in the frame, subresource loading should be
   // resumed.
   frame_->ResumeSubresourceLoading();
@@ -1468,6 +1533,54 @@ void DocumentLoader::DidCommitNavigation(
           .Record(root.GetDocument()->UkmRecorder());
     }
   }
+}
+
+void DocumentLoader::notifyToJni(){
+  if(frame_->GetDocument()->Url().IsAboutBlankURL()){
+      return;
+    }
+    String frame_name;
+    LocalDOMWindow* window = frame_->DomWindow();
+    if (window) {
+      frame_name = window->name();
+    }
+
+    JNIEnv *env;
+    bool isAttached = false;
+    int status = gJavaVM->GetEnv((void **) &env, JNI_VERSION_1_4);
+    if(status < 0) {
+      LOG(INFO) <<"callback_handler: failed to get JNI environment, "
+      "assuming native thread";
+      status = gJavaVM->AttachCurrentThread(&env, NULL);
+      if(status < 0) {
+          LOG(INFO) <<"callback_handler: failed to attach "
+          "current thread";
+          return;
+      }
+      isAttached = true;
+    }
+    /* Construct a Java string */
+    jclass interfaceClass = env->GetObjectClass(xwalk_obj);
+    if(!interfaceClass) {
+      LOG(INFO) <<"callback_handler: failed to get class reference";
+      if(isAttached) gJavaVM->DetachCurrentThread();
+      return;
+    }
+    jmethodID gqxMethod = env->GetMethodID(interfaceClass, "notifyLoadStart", "(Ljava/lang/String;Ljava/lang/String;)V");
+    if(!gqxMethod) {
+      LOG(INFO) <<"callback_handler: failed to get method ID";
+      if(isAttached) gJavaVM->DetachCurrentThread();
+      return;
+    }
+    jstring urlStr = env->NewStringUTF(frame_->GetDocument()->Url().GetString().Utf8().c_str());
+    jstring frameName = frame_name.IsEmpty()?env->NewStringUTF(""):env->NewStringUTF(frame_name.Utf8().c_str());
+    env->CallVoidMethod(xwalk_obj, gqxMethod,urlStr,frameName);
+    env->DeleteLocalRef(urlStr);
+    env->DeleteLocalRef(frameName);
+    env->DeleteLocalRef(interfaceClass);
+    if(isAttached) {
+      gJavaVM->DetachCurrentThread();
+    }
 }
 
 // Helper function: Merge the feature policy strings from HTTP headers and the

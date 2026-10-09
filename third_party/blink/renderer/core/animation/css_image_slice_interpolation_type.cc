@@ -185,7 +185,7 @@ InterpolationValue CSSImageSliceInterpolationType::MaybeConvertInherit(
   conversion_checkers.push_back(std::make_unique<InheritedSliceTypesChecker>(
       CssProperty(), SliceTypes(inherited_image_slice)));
   return ConvertImageSlice(inherited_image_slice,
-                           state.ParentStyle()->EffectiveZoom());
+                           state.ParentStyle()->EffectiveZoomX());
 }
 
 InterpolationValue CSSImageSliceInterpolationType::MaybeConvertValue(
@@ -220,7 +220,7 @@ CSSImageSliceInterpolationType::MaybeConvertStandardPropertyUnderlyingValue(
     const ComputedStyle& style) const {
   return ConvertImageSlice(
       ImageSlicePropertyFunctions::GetImageSlice(CssProperty(), style),
-      style.EffectiveZoom());
+      style.EffectiveZoomX());
 }
 
 PairwiseInterpolationValue CSSImageSliceInterpolationType::MaybeMergeSingles(
@@ -271,7 +271,7 @@ void CSSImageSliceInterpolationType::ApplyStandardPropertyValue(
   const auto& convert_side = [&types, &list, &style](wtf_size_t index) {
     float value =
         clampTo<float>(ToInterpolableNumber(list.Get(index))->Value(), 0);
-    return types.is_number[index] ? Length::Fixed(value * style.EffectiveZoom())
+    return types.is_number[index] ? Length::Fixed(value * style.EffectiveZoomX())
                                   : Length::Percent(value);
   };
   LengthBox box(convert_side(kSideTop), convert_side(kSideRight),

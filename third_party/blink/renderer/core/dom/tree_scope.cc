@@ -214,11 +214,11 @@ static bool PointInFrameContentIfVisible(Document& document,
   auto* scrollable_area = frame_view->LayoutViewport();
   IntRect visible_frame_rect(IntPoint(),
                              scrollable_area->VisibleContentRect().Size());
-  visible_frame_rect.Scale(1 / frame->PageZoomFactor());
+  visible_frame_rect.Scale(1 / frame->PageZoomFactorX(),1 / frame->PageZoomFactorY());
   if (!visible_frame_rect.Contains(RoundedIntPoint(point_in_frame)))
     return false;
 
-  point_in_frame.Scale(frame->PageZoomFactor(), frame->PageZoomFactor());
+  point_in_frame.Scale(frame->PageZoomFactorX(), frame->PageZoomFactorY());
   return true;
 }
 

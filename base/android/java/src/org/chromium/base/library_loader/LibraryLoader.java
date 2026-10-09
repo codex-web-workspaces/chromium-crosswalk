@@ -117,6 +117,10 @@ public class LibraryLoader {
     // will be reported via UMA. Set once when the libraries are done loading.
     private long mLibraryLoadTimeMs;
 
+    private static boolean mdefaultSo = true;
+
+    private static String msoPath = "";
+
     /**
      * Call this method to determine if this chromium project must
      * use this linker. If not, System.loadLibrary() should be used to load
@@ -185,6 +189,25 @@ public class LibraryLoader {
      * @param processType the process the shared library is loaded in.
      */
     public void ensureInitialized(@LibraryProcessType int processType) throws ProcessInitException {
+        synchronized (mLock) {
+            if (mInitialized) {
+                // Already initialized, nothing to do.
+                return;
+            }
+            loadAlreadyLocked(ContextUtils.getApplicationContext().getApplicationInfo(),
+                    false /* inZygote */);
+            initializeAlreadyLocked(processType);
+        }
+    }
+
+/**
+     *  This method blocks until the library is fully loaded and initialized.
+     *
+     * @param processType the process the shared library is loaded in.
+     */
+    public void ensureInitialized(@LibraryProcessType int processType,boolean defaultSo,String soPath) throws ProcessInitException {
+        mdefaultSo = defaultSo;
+        msoPath = soPath;
         synchronized (mLock) {
             if (mInitialized) {
                 // Already initialized, nothing to do.
@@ -371,9 +394,9 @@ public class LibraryLoader {
                         // Determine where the library should be loaded from.
                         String libFilePath = System.mapLibraryName(library);
                         if (apkFilePath != null) {
-                            Log.i(TAG, " Loading " + library + " from within " + apkFilePath);
+                            Log.e(TAG, " Loading " + library + " from within " + apkFilePath);
                         } else {
-                            Log.i(TAG, "Loading " + library);
+                            Log.e(TAG, "Loading " + library);
                         }
 
                         try {
@@ -407,7 +430,17 @@ public class LibraryLoader {
                             if (!isInZipFile()) {
                                 // The extract and retry logic isn't needed because this path is
                                 // used only for local development.
-                                System.loadLibrary(library);
+
+                                if(mdefaultSo){
+                                    System.loadLibrary(library);
+                                }else{
+                                    if(msoPath.endsWith("/")){
+                                        System.load(msoPath + "lib" +library + ".so");
+                                    }else{
+                                        System.load(msoPath + "/" + "lib" + library + ".so");
+                                    }
+                                }
+                                
                             } else {
                                 // Load directly from the APK.
                                 boolean is64Bit = ApiHelperForM.isProcess64Bit();
@@ -418,7 +451,8 @@ public class LibraryLoader {
                                 // https://android.googlesource.com/platform/bionic/+/master/android-changes-for-ndk-developers.md#opening-shared-libraries-directly-from-an-apk
                                 String libraryName = zipFilePath + "!/"
                                         + makeLibraryPathInZipFile(library, true, is64Bit);
-                                Log.i(TAG, "libraryName: " + libraryName);
+                                Log.e(TAG, "libraryName: " + libraryName);
+
                                 System.load(libraryName);
                             }
                         } catch (UnsatisfiedLinkError e) {

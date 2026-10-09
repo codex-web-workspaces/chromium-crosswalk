@@ -164,7 +164,7 @@ const CSSValue* ComputedTransform(const ComputedStyle& style) {
   CSSValueList* components = CSSValueList::CreateSpaceSeparated();
   for (const auto& operation : style.Transform().Operations()) {
     components->Append(
-        *ComputedTransformComponent(*operation, style.EffectiveZoom()));
+        *ComputedTransformComponent(*operation, style.EffectiveZoomX()));
   }
   return components;
 }

@@ -164,8 +164,9 @@ void ValidationMessageOverlayDelegate::CreatePage(const FrameOverlay& overlay) {
 
   scoped_refptr<SharedBuffer> data = SharedBuffer::Create();
   WriteDocument(data.get());
-  float zoom_factor = anchor_->GetDocument().GetFrame()->PageZoomFactor();
-  frame->SetPageZoomFactor(zoom_factor);
+  float zoom_factor = anchor_->GetDocument().GetFrame()->PageZoomFactorX();
+  float zoom_factory = anchor_->GetDocument().GetFrame()->PageZoomFactorY();
+  frame->SetPageZoomFactor(zoom_factor,zoom_factory);
   // Propagate deprecated DSF for platforms without use-zoom-for-dsf.
   page_->SetDeviceScaleFactorDeprecated(
       main_page_->DeviceScaleFactorDeprecated());
@@ -246,7 +247,8 @@ void ValidationMessageOverlayDelegate::AdjustBubblePosition(
     const IntRect& view_rect) {
   if (IsHiding())
     return;
-  float zoom_factor = To<LocalFrame>(page_->MainFrame())->PageZoomFactor();
+  float zoom_factor = To<LocalFrame>(page_->MainFrame())->PageZoomFactorX();
+  float zoom_factory = To<LocalFrame>(page_->MainFrame())->PageZoomFactorY();
   IntRect anchor_rect = anchor_->VisibleBoundsInVisualViewport();
   bool show_bottom_arrow = false;
   double bubble_y = anchor_rect.MaxY();
@@ -264,7 +266,7 @@ void ValidationMessageOverlayDelegate::AdjustBubblePosition(
   Element& container = GetElementById("container");
   container.SetInlineStyleProperty(CSSPropertyID::kLeft, bubble_x / zoom_factor,
                                    CSSPrimitiveValue::UnitType::kPixels);
-  container.SetInlineStyleProperty(CSSPropertyID::kTop, bubble_y / zoom_factor,
+  container.SetInlineStyleProperty(CSSPropertyID::kTop, bubble_y / zoom_factory,
                                    CSSPrimitiveValue::UnitType::kPixels);
 
   // Should match to --arrow-size in validation_bubble.css.

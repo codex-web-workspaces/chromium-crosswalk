@@ -17,6 +17,7 @@ import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.ui.base.WindowAndroid;
+import org.chromium.base.Log;
 
 /***
  * This view is used by a ContentView to render its content.
@@ -50,7 +51,9 @@ public class ContentViewRenderView extends FrameLayout {
         mSurfaceView = createSurfaceView(getContext());
         mSurfaceView.setZOrderMediaOverlay(true);
 
-        setSurfaceViewBackgroundColor(Color.WHITE);
+        setSurfaceViewBackgroundColor(Color.TRANSPARENT);
+        setBackgroundColor(Color.TRANSPARENT);
+        setAlpha(0);
         addView(mSurfaceView,
                 new FrameLayout.LayoutParams(FrameLayout.LayoutParams.MATCH_PARENT,
                         FrameLayout.LayoutParams.MATCH_PARENT));
@@ -72,6 +75,7 @@ public class ContentViewRenderView extends FrameLayout {
         mSurfaceCallback = new SurfaceHolder.Callback() {
             @Override
             public void surfaceChanged(SurfaceHolder holder, int format, int width, int height) {
+                Log.i("mSurfaceCallback", "surfaceChanged，width:"+width+";height:"+height);
                 assert mNativeContentViewRenderView != 0;
                 nativeSurfaceChanged(
                         mNativeContentViewRenderView, format, width, height, holder.getSurface());
@@ -85,7 +89,7 @@ public class ContentViewRenderView extends FrameLayout {
             public void surfaceCreated(SurfaceHolder holder) {
                 assert mNativeContentViewRenderView != 0;
                 nativeSurfaceCreated(mNativeContentViewRenderView);
-
+                Log.i("mSurfaceCallback", "surfaceCreated");
                 // On pre-M Android, layers start in the hidden state until a relayout happens.
                 // There is a bug that manifests itself when entering overlay mode on pre-M devices,
                 // where a relayout never happens. This bug is out of Chromium's control, but can be
@@ -98,6 +102,7 @@ public class ContentViewRenderView extends FrameLayout {
 
             @Override
             public void surfaceDestroyed(SurfaceHolder holder) {
+                Log.i("mSurfaceCallback", "surfaceDestroyed!!!!!!");
                 assert mNativeContentViewRenderView != 0;
                 nativeSurfaceDestroyed(mNativeContentViewRenderView);
             }
@@ -108,6 +113,7 @@ public class ContentViewRenderView extends FrameLayout {
 
     @Override
     protected void onSizeChanged(int w, int h, int oldw, int oldh) {
+                Log.i("mSurfaceCallback", "onSizeChanged,w:"+w+";h"+h+";oldw:"+oldw+";oldh:"+oldh);
         mWidth = w;
         mHeight = h;
         if (mWebContents != null) mWebContents.setSize(w, h);
@@ -118,6 +124,7 @@ public class ContentViewRenderView extends FrameLayout {
      */
     @Override
     protected void onWindowVisibilityChanged(int visibility) {
+                Log.i("mSurfaceCallback", "onWindowVisibilityChanged----"+visibility);
         super.onWindowVisibilityChanged(visibility);
 
         if (mWindowAndroid == null) return;

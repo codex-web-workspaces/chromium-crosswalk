@@ -72,7 +72,7 @@ Path SVGCircleElement::AsPath() const {
     FloatPoint center(length_context.ResolveLengthPair(svg_style.Cx(),
                                                        svg_style.Cy(), style));
     FloatSize radii(r, r);
-    path.AddEllipse(FloatRect(center - radii, radii.ScaledBy(2)));
+    path.AddEllipse(FloatRect(center - radii, radii.ScaledBy(2,2)));
   }
   return path;
 }

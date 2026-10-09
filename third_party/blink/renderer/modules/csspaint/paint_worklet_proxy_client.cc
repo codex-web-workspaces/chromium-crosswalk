@@ -195,7 +195,7 @@ sk_sp<PaintRecord> PaintWorkletProxyClient::Paint(
   // TODO(crbug.com/980594): find a proper way to detect whether zoom_for_dsf is
   // enabled.
   sk_sp<PaintRecord> result = definition->Paint(
-      FloatSize(input->GetSize()), input->EffectiveZoom(), style_map,
+      FloatSize(input->GetSize()), input->EffectiveZoomX(), style_map,
       &paint_arguments, 1.0 /* device_scale_factor */);
 
   // CSSPaintDefinition::Paint returns nullptr if it fails, but for

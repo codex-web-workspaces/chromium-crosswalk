@@ -50,8 +50,8 @@ void LayoutHTMLCanvas::PaintReplaced(const PaintInfo& paint_info,
 
 void LayoutHTMLCanvas::CanvasSizeChanged() {
   IntSize canvas_size = ToHTMLCanvasElement(GetNode())->Size();
-  LayoutSize zoomed_size(canvas_size.Width() * StyleRef().EffectiveZoom(),
-                         canvas_size.Height() * StyleRef().EffectiveZoom());
+  LayoutSize zoomed_size(canvas_size.Width() * StyleRef().EffectiveZoomX(),
+                         canvas_size.Height() * StyleRef().EffectiveZoomY());
 
   if (zoomed_size == IntrinsicSize())
     return;

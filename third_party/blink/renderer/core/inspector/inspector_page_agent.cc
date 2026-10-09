@@ -1176,11 +1176,11 @@ Response InspectorPageAgent::getLayoutMetrics(
   ScrollOffset page_offset = frame_view->GetScrollableArea()->GetScrollOffset();
   // page_zoom is either CSS-to-DP or CSS-to-DIP depending on
   // enable-use-zoom-for-dsf flag.
-  float page_zoom = main_frame->PageZoomFactor();
+  float page_zoom = main_frame->PageZoomFactorX();
+  float page_zoomy = main_frame->PageZoomFactorY();
   // page_zoom_factor is CSS to DIP (device independent pixels).
-  float page_zoom_factor =
-      page_zoom /
-      main_frame->GetPage()->GetChromeClient().WindowToViewportScalar(1);
+  float page_zoom_factor = page_zoom / main_frame->GetPage()->GetChromeClient().WindowToViewportScalar(1);
+  // float page_zoom_factory = page_zoomy / main_frame->GetPage()->GetChromeClient().WindowToViewportScalar(1);
   FloatRect visible_rect = visual_viewport.VisibleRect();
   float scale = visual_viewport.Scale();
 
@@ -1196,11 +1196,11 @@ Response InspectorPageAgent::getLayoutMetrics(
                              .setOffsetX(AdjustForAbsoluteZoom::AdjustScroll(
                                  visible_rect.X(), page_zoom))
                              .setOffsetY(AdjustForAbsoluteZoom::AdjustScroll(
-                                 visible_rect.Y(), page_zoom))
+                                 visible_rect.Y(), page_zoomy))
                              .setPageX(AdjustForAbsoluteZoom::AdjustScroll(
                                  page_offset.Width(), page_zoom))
                              .setPageY(AdjustForAbsoluteZoom::AdjustScroll(
-                                 page_offset.Height(), page_zoom))
+                                 page_offset.Height(), page_zoomy))
                              .setClientWidth(visible_rect.Width())
                              .setClientHeight(visible_rect.Height())
                              .setScale(scale)

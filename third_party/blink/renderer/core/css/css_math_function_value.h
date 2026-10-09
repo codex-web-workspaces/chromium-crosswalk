@@ -29,6 +29,12 @@ class CORE_EXPORT CSSMathFunctionValue : public CSSPrimitiveValue {
     expression_->AccumulatePixelsAndPercent(conversion_data, value);
     return CalculationValue::Create(value, PermittedValueRange());
   }
+  scoped_refptr<CalculationValue> ToCalcValueY(
+      const CSSToLengthConversionData& conversion_data) const {
+    PixelsAndPercent value(0, 0);
+    expression_->AccumulatePixelsAndPercentY(conversion_data, value);
+    return CalculationValue::Create(value, PermittedValueRange());
+  }
 
   bool MayHaveRelativeUnit() const;
 
@@ -62,10 +68,14 @@ class CORE_EXPORT CSSMathFunctionValue : public CSSPrimitiveValue {
   double ComputeDegrees() const;
   double ComputeLengthPx(
       const CSSToLengthConversionData& conversion_data) const;
+  double ComputeLengthPxY(
+      const CSSToLengthConversionData& conversion_data) const;
 
   void AccumulateLengthArray(CSSLengthArray& length_array,
                              double multiplier) const;
   Length ConvertToLength(
+      const CSSToLengthConversionData& conversion_data) const;
+  Length ConvertToLengthY(
       const CSSToLengthConversionData& conversion_data) const;
 
   String CustomCSSText() const;

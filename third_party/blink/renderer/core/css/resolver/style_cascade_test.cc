@@ -1845,7 +1845,8 @@ TEST_F(StyleCascadeTest, ForeignObjectZoomVsEffectiveZoom) {
 
   // If both zoom and -internal-zoom exists in the cascade,
   // -internal-effective-zoom should win.
-  EXPECT_EQ(1.0f, cascade.TakeStyle()->EffectiveZoom());
+  EXPECT_EQ(1.0f, cascade.TakeStyle()->EffectiveZoomX());
+  EXPECT_EQ(1.0f, cascade.TakeStyle()->EffectiveZoomY());
 }
 
 TEST_F(StyleCascadeTest, ZoomCascadeOrder) {

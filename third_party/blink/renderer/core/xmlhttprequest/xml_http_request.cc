@@ -93,6 +93,7 @@
 #include "third_party/blink/renderer/platform/wtf/assertions.h"
 #include "third_party/blink/renderer/platform/wtf/std_lib_extras.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
+#include "base/android/jni_android.h"
 
 namespace blink {
 
@@ -1161,8 +1162,26 @@ void XMLHttpRequest::CreateRequest(scoped_refptr<EncodedFormData> http_body,
   loader_->SetTimeout(timeout_);
   loader_->Start(request);
 
-  if (!async_)
+  if (!async_){
+    // 如果请求失败，立即解除阻塞状态
+    if (error_) {
+      state_ = kDone;
+      exception_code_ = DOMExceptionCode::kNetworkError;
+
+      // 清空 response 和 responseText
+      response_text_.Clear();
+      response_ = ResourceResponse();
+
+      // 继续执行后续代码
+      if (GetExecutionContext()) {
+        GetExecutionContext()->GetTaskRunner(TaskType::kNetworking)
+            ->PostTask(FROM_HERE, WTF::Bind(&XMLHttpRequest::ContinueExecution,
+                                          WrapWeakPersistent(this)));
+      }
+      return;
+    }
     ThrowForLoadFailureIfNeeded(exception_state, String());
+  }
 }
 
 void XMLHttpRequest::abort() {
@@ -1347,6 +1366,14 @@ void XMLHttpRequest::HandleDidCancel() {
       WTF::Bind(&XMLHttpRequest::HandleRequestError, WrapPersistent(this),
                 DOMExceptionCode::kAbortError, event_type_names::kAbort,
                 received_length, expected_length));
+}
+
+void XMLHttpRequest::ContinueExecution() {
+  // 这里可以添加一些日志或调试信息
+  NETWORK_DVLOG(1) << this << " Continuing execution after request error...";
+  if (GetExecutionContext()) {
+    DispatchEvent(*Event::Create(event_type_names::kLoadend));
+  }
 }
 
 void XMLHttpRequest::HandleRequestError(DOMExceptionCode exception_code,
@@ -1618,7 +1645,7 @@ int XMLHttpRequest::status() const {
   if (state_ == kUnsent || state_ == kOpened || error_)
     return 0;
 
-  if (response_.HttpStatusCode())
+  if (response_.HttpStatusCode() && state_ == kDone)
     return response_.HttpStatusCode();
 
   return 0;

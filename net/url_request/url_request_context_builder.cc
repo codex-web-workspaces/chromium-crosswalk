@@ -527,16 +527,18 @@ std::unique_ptr<URLRequestContext> URLRequestContextBuilder::Build() {
         std::make_unique<URLRequestThrottlerManager>());
   }
 
-  if (!proxy_resolution_service_) {
+  if (!proxy_resolution_service_ || proxyChanged) {
 #if !defined(OS_LINUX) && !defined(OS_ANDROID)
     // TODO(willchan): Switch to using this code when
     // ProxyResolutionService::CreateSystemProxyConfigService()'s signature
     // doesn't suck.
     if (!proxy_config_service_) {
+    
       proxy_config_service_ =
           ProxyResolutionService::CreateSystemProxyConfigService(
               base::ThreadTaskRunnerHandle::Get().get());
     }
+    
 #endif  // !defined(OS_LINUX) && !defined(OS_ANDROID)
     proxy_resolution_service_ = CreateProxyResolutionService(
         std::move(proxy_config_service_), context.get(),

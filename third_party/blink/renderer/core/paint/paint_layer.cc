@@ -2448,9 +2448,10 @@ void PaintLayer::UpdateFilterReferenceBox() {
       FloatRect(PhysicalBoundingBoxIncludingStackingChildren(
           PhysicalOffset(),
           PaintLayer::kIncludeTransformsAndCompositedChildLayers));
-  float zoom = GetLayoutObject().StyleRef().EffectiveZoom();
-  if (zoom != 1)
-    reference_box.Scale(1 / zoom);
+  float zoom = GetLayoutObject().StyleRef().EffectiveZoomX();
+  float zoomy = GetLayoutObject().StyleRef().EffectiveZoomY();
+  if (zoom != 1 || zoomy != 1)
+    reference_box.Scale(1 / zoom,1 / zoomy);
   if (!ResourceInfo() || ResourceInfo()->FilterReferenceBox() != reference_box)
     GetLayoutObject().SetNeedsPaintPropertyUpdate();
   EnsureResourceInfo().SetFilterReferenceBox(reference_box);
@@ -2475,9 +2476,10 @@ FloatRect PaintLayer::FilterReferenceBox() const {
 
 FloatRect PaintLayer::BackdropFilterReferenceBox() const {
   FloatRect reference_box(GetLayoutObject().BorderBoundingBox());
-  float zoom = GetLayoutObject().StyleRef().EffectiveZoom();
-  if (zoom != 1)
-    reference_box.Scale(1 / zoom);
+  float zoom = GetLayoutObject().StyleRef().EffectiveZoomX();
+  float zoomy = GetLayoutObject().StyleRef().EffectiveZoomY();
+  if (zoom != 1 || zoomy != 1)
+    reference_box.Scale(1 / zoom,1 / zoomy);
   return reference_box;
 }
 
@@ -2485,7 +2487,7 @@ gfx::RRectF PaintLayer::BackdropFilterBounds(
     const FloatRect& reference_box) const {
   auto& style = GetLayoutObject().StyleRef();
   FloatRect scaled_reference_box(reference_box);
-  scaled_reference_box.Scale(style.EffectiveZoom());
+  scaled_reference_box.Scale(style.EffectiveZoomX(),style.EffectiveZoomY());
   gfx::RRectF backdrop_filter_bounds =
       gfx::RRectF(style.GetRoundedBorderFor(LayoutRect(scaled_reference_box)));
   return backdrop_filter_bounds;
@@ -2530,9 +2532,10 @@ bool PaintLayer::HitTestClippedOutByClipPath(
     point.MoveBy(-reference_box.Location());
   // Unzoom the point and the reference box, since the <clipPath> geometry is
   // not zoomed.
-  float inverse_zoom = 1 / GetLayoutObject().StyleRef().EffectiveZoom();
-  point.Scale(inverse_zoom, inverse_zoom);
-  reference_box.Scale(inverse_zoom);
+  float inverse_zoom = 1 / GetLayoutObject().StyleRef().EffectiveZoomX();
+  float inverse_zoomy = 1 / GetLayoutObject().StyleRef().EffectiveZoomY();
+  point.Scale(inverse_zoom, inverse_zoomy);
+  reference_box.Scale(inverse_zoom,inverse_zoomy);
   HitTestLocation location(point);
   return !clipper->HitTestClipContent(reference_box, location);
 }
@@ -3273,9 +3276,10 @@ void PaintLayer::UpdateCompositorFilterOperationsForFilter(
   if (!operations.IsEmpty() && !filter_on_effect_node_dirty_ &&
       reference_box == operations.ReferenceBox())
     return;
-  float zoom = GetLayoutObject().StyleRef().EffectiveZoom();
+  float zoom = GetLayoutObject().StyleRef().EffectiveZoomX();
+  float zoomy = GetLayoutObject().StyleRef().EffectiveZoomY();
   operations =
-      FilterEffectBuilder(reference_box, zoom).BuildFilterOperations(filter);
+      FilterEffectBuilder(reference_box, zoom,zoomy).BuildFilterOperations(filter);
 }
 
 void PaintLayer::UpdateCompositorFilterOperationsForBackdropFilter(
@@ -3303,7 +3307,8 @@ PaintLayer::CreateCompositorFilterOperationsForBackdropFilter() const {
   if (style.BackdropFilter().IsEmpty()) {
     return return_value;
   }
-  float zoom = style.EffectiveZoom();
+  float zoom = style.EffectiveZoomX();
+  float zoomy = style.EffectiveZoomY();
   FloatRect reference_box = BackdropFilterReferenceBox();
   // Tack on regular filter values here - they need to be applied to the
   // backdrop image as well, in addition to being applied to the painted content
@@ -3318,7 +3323,7 @@ PaintLayer::CreateCompositorFilterOperationsForBackdropFilter() const {
   filter_operations.Operations().AppendVector(style.Filter().Operations());
   // Use kClamp tile mode to avoid pixel moving filters bringing in black
   // transparent pixels from the viewport edge.
-  return_value = FilterEffectBuilder(reference_box, zoom, nullptr, nullptr,
+  return_value = FilterEffectBuilder(reference_box, zoom,zoomy, nullptr, nullptr,
                                      SkBlurImageFilter::kClamp_TileMode)
                      .BuildFilterOperations(filter_operations);
   // Note that return_value may be empty here, if the |filter_operations| list

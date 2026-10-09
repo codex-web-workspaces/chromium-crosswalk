@@ -352,6 +352,7 @@ void AwURLRequestContextGetter::set_check_cleartext_permitted(bool permitted) {
 }
 
 net::URLRequestContext* AwURLRequestContextGetter::GetURLRequestContext() {
+  LOG(INFO)<<"getProxy----GetURLRequestContext";
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   if (!url_request_context_)
     InitializeURLRequestContext();

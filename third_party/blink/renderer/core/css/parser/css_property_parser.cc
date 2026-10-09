@@ -289,7 +289,8 @@ static CSSValue* ConsumeSingleViewportDescriptor(
                                     kValueRangeNonNegative);
     case CSSPropertyID::kMinZoom:
     case CSSPropertyID::kMaxZoom:
-    case CSSPropertyID::kZoom: {
+    case CSSPropertyID::kZoomX:
+    case CSSPropertyID::kZoomY: {
       if (id == CSSValueID::kAuto)
         return ConsumeIdent(range);
       CSSValue* parsed_value = ConsumeNumber(range, kValueRangeNonNegative);
@@ -367,7 +368,8 @@ bool CSSPropertyParser::ParseViewportDescriptor(CSSPropertyID prop_id,
     case CSSPropertyID::kMaxHeight:
     case CSSPropertyID::kMinZoom:
     case CSSPropertyID::kMaxZoom:
-    case CSSPropertyID::kZoom:
+    case CSSPropertyID::kZoomX:
+    case CSSPropertyID::kZoomY:
     case CSSPropertyID::kUserZoom:
     case CSSPropertyID::kOrientation: {
       CSSValue* parsed_value =

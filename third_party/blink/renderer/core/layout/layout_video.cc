@@ -51,7 +51,7 @@ void LayoutVideo::IntrinsicSizeChanged() {
 
 void LayoutVideo::UpdateIntrinsicSize() {
   LayoutSize size = CalculateIntrinsicSize();
-  size.Scale(StyleRef().EffectiveZoom());
+  size.Scale(StyleRef().EffectiveZoomX(),StyleRef().EffectiveZoomY());
 
   // Never set the element size to zero when in a media document.
   if (size.IsEmpty() && GetNode()->ownerDocument() &&

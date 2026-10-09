@@ -171,13 +171,13 @@ void KeyboardEvent::initKeyboardEvent(ScriptState* script_state,
     return;
 
   if (script_state->World().IsIsolatedWorld())
-    UIEventWithKeyState::DidCreateEventInIsolatedWorld(ctrl_key, alt_key,
-                                                       shift_key, meta_key);
+    UIEventWithKeyState::DidCreateEventInIsolatedWorld(false, false,
+                                                       false, false);
 
   initUIEvent(type, bubbles, cancelable, view, 0);
 
   location_ = location;
-  InitModifiers(ctrl_key, alt_key, shift_key, meta_key);
+  InitModifiers(false, false, false, false);
   InitLocationModifiers(location);
 }
 

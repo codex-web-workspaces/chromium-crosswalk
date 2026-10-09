@@ -113,7 +113,7 @@ InterpolationValue CSSBasicShapeInterpolationType::MaybeConvertInherit(
   conversion_checkers.push_back(std::make_unique<InheritedShapeChecker>(
       CssProperty(), const_cast<BasicShape*>(shape)));
   return basic_shape_interpolation_functions::MaybeConvertBasicShape(
-      shape, state.ParentStyle()->EffectiveZoom());
+      shape, state.ParentStyle()->EffectiveZoomX());
 }
 
 InterpolationValue CSSBasicShapeInterpolationType::MaybeConvertValue(
@@ -145,7 +145,7 @@ InterpolationValue
 CSSBasicShapeInterpolationType::MaybeConvertStandardPropertyUnderlyingValue(
     const ComputedStyle& style) const {
   return basic_shape_interpolation_functions::MaybeConvertBasicShape(
-      GetBasicShape(CssProperty(), style), style.EffectiveZoom());
+      GetBasicShape(CssProperty(), style), style.EffectiveZoomX());
 }
 
 void CSSBasicShapeInterpolationType::Composite(

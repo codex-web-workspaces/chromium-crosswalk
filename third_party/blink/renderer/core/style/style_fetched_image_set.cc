@@ -39,6 +39,20 @@ StyleFetchedImageSet::StyleFetchedImageSet(ImageResourceContent* image,
                                            const KURL& url)
     : best_fit_image_(image),
       image_scale_factor_(image_scale_factor),
+      image_scale_factory_(1.0f),
+      image_set_value_(value),
+      url_(url) {
+  is_image_resource_set_ = true;
+  best_fit_image_->AddObserver(this);
+}
+StyleFetchedImageSet::StyleFetchedImageSet(ImageResourceContent* image,
+                                           float image_scale_factor,
+                                           float image_scale_factory,
+                                           CSSImageSetValue* value,
+                                           const KURL& url)
+    : best_fit_image_(image),
+      image_scale_factor_(image_scale_factor),
+      image_scale_factory_(image_scale_factory),
       image_set_value_(value),
       url_(url) {
   is_image_resource_set_ = true;
@@ -93,10 +107,11 @@ bool StyleFetchedImageSet::ErrorOccurred() const {
 FloatSize StyleFetchedImageSet::ImageSize(
     const Document&,
     float multiplier,
+    float multipliery,
     const LayoutSize& default_object_size) const {
   Image* image = best_fit_image_->GetImage();
   if (image->IsSVGImage()) {
-    return ImageSizeForSVGImage(ToSVGImage(image), multiplier,
+    return ImageSizeForSVGImage(ToSVGImage(image), multiplier,multipliery,
                                 default_object_size);
   }
   // Image orientation should only be respected for content images,
@@ -105,8 +120,8 @@ FloatSize StyleFetchedImageSet::ImageSize(
   //
   // https://drafts.csswg.org/css-images-3/#the-image-orientation
   FloatSize natural_size(image->Size());
-  FloatSize scaled_image_size(ApplyZoom(natural_size, multiplier));
-  scaled_image_size.Scale(1 / image_scale_factor_);
+  FloatSize scaled_image_size(ApplyZoom(natural_size, multiplier,multipliery));
+  scaled_image_size.Scale(1 / image_scale_factor_,1 / image_scale_factory_);
   return scaled_image_size;
 }
 
@@ -130,13 +145,13 @@ scoped_refptr<Image> StyleFetchedImageSet::GetImage(
   Image* image = best_fit_image_->GetImage();
   if (image->IsPlaceholderImage()) {
     static_cast<PlaceholderImage*>(image)->SetIconAndTextScaleFactor(
-        style.EffectiveZoom());
+        style.EffectiveZoomX(),style.EffectiveZoomY());
   }
 
   if (!image->IsSVGImage())
     return image;
   return SVGImageForContainer::Create(ToSVGImage(image), target_size,
-                                      style.EffectiveZoom(), url_);
+                                      style.EffectiveZoomX(),style.EffectiveZoomY(), url_);
 }
 
 bool StyleFetchedImageSet::KnownToBeOpaque(const Document&,

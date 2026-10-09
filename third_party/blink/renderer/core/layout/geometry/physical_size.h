@@ -76,9 +76,19 @@ struct CORE_EXPORT PhysicalSize {
     width *= s;
     height *= s;
   }
+
+  void Scale(float s, float sy) {
+    width *= s;
+    height *= sy;
+  }
+
   void Scale(LayoutUnit s) {
     width *= s;
     height *= s;
+  }
+  void Scale(LayoutUnit s,LayoutUnit sy) {
+    width *= s;
+    height *= sy;
   }
 
   void ClampNegativeToZero() {

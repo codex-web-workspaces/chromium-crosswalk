@@ -15,6 +15,7 @@ ProxyConfigServiceFixed::~ProxyConfigServiceFixed() = default;
 ProxyConfigService::ConfigAvailability
 ProxyConfigServiceFixed::GetLatestProxyConfig(
     ProxyConfigWithAnnotation* config) {
+    LOG(INFO)<<"getProxy---GetLatestProxyConfig ---fixed";
   *config = pc_;
   return CONFIG_VALID;
 }

@@ -42,7 +42,8 @@ WebPointerEvent::WebPointerEvent(const WebTouchEvent& touch_event,
       width(touch_point.radius_x * 2.f),
       height(touch_point.radius_y * 2.f) {
   // WebInutEvent attributes
-  SetFrameScale(touch_event.FrameScale());
+  SetFrameScaleX(touch_event.FrameScaleX());
+  SetFrameScaleY(touch_event.FrameScaleY());
   SetFrameTranslate(touch_event.FrameTranslate());
   // WebTouchEvent attributes
   dispatch_type = touch_event.dispatch_type;
@@ -70,7 +71,8 @@ WebPointerEvent::WebPointerEvent(WebInputEvent::Type type,
       height(std::numeric_limits<float>::quiet_NaN()) {
   DCHECK_GE(type, WebInputEvent::kPointerTypeFirst);
   DCHECK_LE(type, WebInputEvent::kPointerTypeLast);
-  SetFrameScale(mouse_event.FrameScale());
+  SetFrameScaleX(mouse_event.FrameScaleX());
+  SetFrameScaleY(mouse_event.FrameScaleY());
   SetFrameTranslate(mouse_event.FrameTranslate());
 }
 
@@ -87,13 +89,13 @@ WebPointerEvent WebPointerEvent::CreatePointerCausesUaActionEvent(
 WebPointerEvent WebPointerEvent::WebPointerEventInRootFrame() const {
   WebPointerEvent transformed_event = *this;
   if (HasWidth())
-    transformed_event.width /= frame_scale_;
+    transformed_event.width /= frame_scalex_;
   if (HasHeight())
-    transformed_event.height /= frame_scale_;
+    transformed_event.height /= frame_scaley_;
   transformed_event.position_in_widget_ =
-      WebFloatPoint((transformed_event.PositionInWidget().x / frame_scale_) +
+      WebFloatPoint((transformed_event.PositionInWidget().x / frame_scalex_) +
                         frame_translate_.x,
-                    (transformed_event.PositionInWidget().y / frame_scale_) +
+                    (transformed_event.PositionInWidget().y / frame_scaley_) +
                         frame_translate_.y);
   return transformed_event;
 }

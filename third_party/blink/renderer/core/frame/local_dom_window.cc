@@ -844,7 +844,7 @@ int LocalDOMWindow::innerHeight() const {
     return 0;
 
   return AdjustForAbsoluteZoom::AdjustInt(GetViewportSize().Height(),
-                                          GetFrame()->PageZoomFactor());
+                                          GetFrame()->PageZoomFactorY());
 }
 
 int LocalDOMWindow::innerWidth() const {
@@ -852,7 +852,7 @@ int LocalDOMWindow::innerWidth() const {
     return 0;
 
   return AdjustForAbsoluteZoom::AdjustInt(GetViewportSize().Width(),
-                                          GetFrame()->PageZoomFactor());
+                                          GetFrame()->PageZoomFactorX());
 }
 
 int LocalDOMWindow::screenX() const {
@@ -905,7 +905,7 @@ double LocalDOMWindow::scrollX() const {
   // crbug.com/505516.
   double viewport_x = view->LayoutViewport()->GetScrollOffset().Width();
   return AdjustForAbsoluteZoom::AdjustScroll(viewport_x,
-                                             GetFrame()->PageZoomFactor());
+                                             GetFrame()->PageZoomFactorX());
 }
 
 double LocalDOMWindow::scrollY() const {
@@ -922,7 +922,7 @@ double LocalDOMWindow::scrollY() const {
   // crbug.com/505516.
   double viewport_y = view->LayoutViewport()->GetScrollOffset().Height();
   return AdjustForAbsoluteZoom::AdjustScroll(viewport_y,
-                                             GetFrame()->PageZoomFactor());
+                                             GetFrame()->PageZoomFactorY());
 }
 
 DOMVisualViewport* LocalDOMWindow::visualViewport() {
@@ -1025,8 +1025,8 @@ void LocalDOMWindow::scrollBy(const ScrollToOptions* scroll_to_options) const {
 
   PaintLayerScrollableArea* viewport = view->LayoutViewport();
   FloatPoint current_position = viewport->ScrollPosition();
-  FloatPoint scaled_delta(x * GetFrame()->PageZoomFactor(),
-                          y * GetFrame()->PageZoomFactor());
+  FloatPoint scaled_delta(x * GetFrame()->PageZoomFactorX(),
+                          y * GetFrame()->PageZoomFactorY());
   FloatPoint new_scaled_position = current_position + scaled_delta;
 
   std::unique_ptr<cc::SnapSelectionStrategy> strategy =
@@ -1083,13 +1083,13 @@ void LocalDOMWindow::scrollTo(const ScrollToOptions* scroll_to_options) const {
   if (scroll_to_options->hasLeft()) {
     scaled_x = ScrollableArea::NormalizeNonFiniteScroll(
                    base::saturated_cast<float>(scroll_to_options->left())) *
-               GetFrame()->PageZoomFactor();
+               GetFrame()->PageZoomFactorX();
   }
 
   if (scroll_to_options->hasTop()) {
     scaled_y = ScrollableArea::NormalizeNonFiniteScroll(
                    base::saturated_cast<float>(scroll_to_options->top())) *
-               GetFrame()->PageZoomFactor();
+               GetFrame()->PageZoomFactorY();
   }
 
   FloatPoint new_scaled_position =
@@ -1507,16 +1507,13 @@ DOMWindow* LocalDOMWindow::open(v8::Isolate* isolate,
   frame_request.GetResourceRequest().SetHasUserGesture(
       LocalFrame::HasTransientUserActivation(GetFrame()));
   GetFrame()->MaybeLogAdClickNavigation();
-
   FrameTree::FindResult result =
       GetFrame()->Tree().FindOrCreateFrameForNavigation(
           frame_request, target.IsEmpty() ? "_blank" : target);
   if (!result.frame)
     return nullptr;
-
   if (!completed_url.IsEmpty() || result.new_window)
     result.frame->Navigate(frame_request, WebFrameLoadType::kStandard);
-
   // TODO(japhet): window-open-noopener.html?_top and several tests in
   // html/browsers/windows/browsing-context-names/ appear to require that
   // the special case target names (_top, _parent, _self) ignore opener
@@ -1530,8 +1527,9 @@ DOMWindow* LocalDOMWindow::open(v8::Isolate* isolate,
 
   if (window_features.noopener)
     return nullptr;
-  if (!result.new_window)
+  if (!result.new_window){
     result.frame->Client()->SetOpener(GetFrame());
+  }
   return result.frame->DomWindow();
 }
 

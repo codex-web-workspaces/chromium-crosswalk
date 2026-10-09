@@ -22,7 +22,7 @@ FontDescription FontStyleResolver::ComputeFont(
   font.Update(font_selector);
   CSSToLengthConversionData::FontSizes fontSizes(10, 10, &font);
   CSSToLengthConversionData::ViewportSize viewportSize(0, 0);
-  CSSToLengthConversionData conversionData(nullptr, fontSizes, viewportSize, 1);
+  CSSToLengthConversionData conversionData(nullptr, fontSizes, viewportSize, 1,1);
 
   // CSSPropertyID::kFontSize
   if (property_set.HasProperty(CSSPropertyID::kFontSize)) {

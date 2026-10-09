@@ -131,6 +131,12 @@ void IntRect::Scale(float s) {
   size_.SetWidth((int)(Width() * s));
   size_.SetHeight((int)(Height() * s));
 }
+void IntRect::Scale(float s,float sy) {
+  location_.SetX((int)(X() * s));
+  location_.SetY((int)(Y() * sy));
+  size_.SetWidth((int)(Width() * s));
+  size_.SetHeight((int)(Height() * sy));
+}
 
 static inline int DistanceToInterval(int pos, int start, int end) {
   if (pos < start)

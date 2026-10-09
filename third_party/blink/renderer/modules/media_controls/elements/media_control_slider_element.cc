@@ -134,7 +134,7 @@ void MediaControlSliderElement::SetBeforeSegmentPosition(
   DCHECK(segment_highlight_before_);
   before_segment_position_ = position;
   SetSegmentDivPosition(segment_highlight_before_, before_segment_position_,
-                        TrackWidth(), ZoomFactor());
+                        TrackWidth(), ZoomFactorX());
 }
 
 void MediaControlSliderElement::SetAfterSegmentPosition(
@@ -142,7 +142,7 @@ void MediaControlSliderElement::SetAfterSegmentPosition(
   DCHECK(segment_highlight_after_);
   after_segment_position_ = position;
   SetSegmentDivPosition(segment_highlight_after_, after_segment_position_,
-                        TrackWidth(), ZoomFactor());
+                        TrackWidth(), ZoomFactorX());
 }
 
 int MediaControlSliderElement::TrackWidth() {
@@ -150,17 +150,22 @@ int MediaControlSliderElement::TrackWidth() {
   return box ? box->OffsetWidth().Round() : 0;
 }
 
-float MediaControlSliderElement::ZoomFactor() const {
+float MediaControlSliderElement::ZoomFactorX() const {
   if (!GetDocument().GetLayoutView())
     return 1;
-  return GetDocument().GetLayoutView()->ZoomFactor();
+  return GetDocument().GetLayoutView()->ZoomFactorX();
+}
+float MediaControlSliderElement::ZoomFactorY() const {
+  if (!GetDocument().GetLayoutView())
+    return 1;
+  return GetDocument().GetLayoutView()->ZoomFactorY();
 }
 
 void MediaControlSliderElement::NotifyElementSizeChanged() {
   SetSegmentDivPosition(segment_highlight_before_, before_segment_position_,
-                        TrackWidth(), ZoomFactor());
+                        TrackWidth(), ZoomFactorX());
   SetSegmentDivPosition(segment_highlight_after_, after_segment_position_,
-                        TrackWidth(), ZoomFactor());
+                        TrackWidth(), ZoomFactorX());
 }
 
 void MediaControlSliderElement::Trace(blink::Visitor* visitor) {

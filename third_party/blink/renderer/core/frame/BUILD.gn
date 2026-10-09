@@ -194,5 +194,7 @@ blink_core_sources("frame") {
     "window_event_handlers.h",
     "window_or_worker_global_scope.cc",
     "window_or_worker_global_scope.h",
+#    "media_player.cc",
+#    "media_player.h",
   ]
 }

@@ -59,9 +59,9 @@ void OverscrollController::HandleOverscroll(
   AdjustOverscroll(&unused_delta);
 
   FloatSize delta_in_viewport =
-      unused_delta.ScaledBy(visual_viewport_->Scale());
+      unused_delta.ScaledBy(visual_viewport_->Scale(),visual_viewport_->Scale());
   FloatSize velocity_in_viewport =
-      velocity_in_root_frame.ScaledBy(visual_viewport_->Scale());
+      velocity_in_root_frame.ScaledBy(visual_viewport_->Scale(),visual_viewport_->Scale());
   FloatPoint position_in_viewport =
       visual_viewport_->RootFrameToViewport(position_in_root_frame);
 

@@ -243,11 +243,11 @@ scoped_refptr<Image> CSSCrossfadeValue::GetImage(
 
   if (from_image->IsSVGImage()) {
     from_image_ref = SVGImageForContainer::Create(
-        ToSVGImage(from_image), size, 1, UrlForCSSValue(*from_value_));
+        ToSVGImage(from_image), size, 1,1, UrlForCSSValue(*from_value_));
   }
 
   if (to_image->IsSVGImage()) {
-    to_image_ref = SVGImageForContainer::Create(ToSVGImage(to_image), size, 1,
+    to_image_ref = SVGImageForContainer::Create(ToSVGImage(to_image), size, 1,1,
                                                 UrlForCSSValue(*to_value_));
   }
 

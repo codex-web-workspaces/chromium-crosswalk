@@ -10,12 +10,12 @@
 
 namespace blink {
 
-FloatSize StyleImage::ApplyZoom(const FloatSize& size, float multiplier) const {
-  if (multiplier == 1.0f || !HasIntrinsicSize())
+FloatSize StyleImage::ApplyZoom(const FloatSize& size, float multiplier, float multipliery) const {
+  if ((multiplier == 1.0f && multipliery == 1.0f) || !HasIntrinsicSize())
     return size;
 
   float width = size.Width() * multiplier;
-  float height = size.Height() * multiplier;
+  float height = size.Height() * multipliery;
 
   // Don't let images that have a width/height >= 1 shrink below 1 when zoomed.
   if (size.Width() > 0)
@@ -30,11 +30,12 @@ FloatSize StyleImage::ApplyZoom(const FloatSize& size, float multiplier) const {
 FloatSize StyleImage::ImageSizeForSVGImage(
     SVGImage* svg_image,
     float multiplier,
+    float multipliery,
     const LayoutSize& default_object_size) const {
   FloatSize unzoomed_default_object_size(default_object_size);
-  unzoomed_default_object_size.Scale(1 / multiplier);
+  unzoomed_default_object_size.Scale(1 / multiplier,1 / multipliery);
   return ApplyZoom(svg_image->ConcreteObjectSize(unzoomed_default_object_size),
-                   multiplier);
+                   multiplier,multipliery);
 }
 
 }  // namespace blink

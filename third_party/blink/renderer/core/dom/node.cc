@@ -123,6 +123,7 @@
 #include "third_party/blink/renderer/platform/wtf/hash_set.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
+#include "v8/src/objects/objectsutil.h"
 
 namespace blink {
 
@@ -2677,7 +2678,29 @@ void Node::NotifyMutationObserversNodeWillDetach() {
 void Node::HandleLocalEvents(Event& event) {
   if (!HasEventTargetData())
     return;
-
+  
+  if(HasEventListeners(event_type_names::kKeydown) && HasEventListeners(event_type_names::kKeypress) && event.type() == event_type_names::kKeydown){
+    event.preventDefault();
+    return;
+  }else if(HasEventListeners(event_type_names::kKeydown) && !HasEventListeners(event_type_names::kKeypress) && event.type() == event_type_names::kKeypress){
+    event.preventDefault();
+    return;
+  }else if(HasEventListeners(event_type_names::kKeypress) && !HasEventListeners(event_type_names::kKeydown) && event.type() == event_type_names::kKeydown){
+    event.preventDefault();
+    return;
+  }else if(!HasEventListeners(event_type_names::kKeydown) && !HasEventListeners(event_type_names::kKeypress) && event.type() == event_type_names::kKeydown){
+    event.preventDefault();
+    return;  
+  }
+  if(v8::logSwitch){
+    LOG(INFO) << "Event type=" << event.type().Utf8()
+          << " addr=" << &event
+          << " phase=" << event.eventPhase()
+          << " bubbles=" << event.bubbles()
+          << " cancelable=" << event.cancelable()
+          << " DefaultEventHandler = "<<event.DefaultHandled();
+  }
+  event.calcelPreventDefault();
   if (IsDisabledFormControl(this) && event.IsMouseEvent() &&
       !RuntimeEnabledFeatures::SendMouseEventsDisabledFormControlsEnabled()) {
     if (HasEventListeners(event.type())) {

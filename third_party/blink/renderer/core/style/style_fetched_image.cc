@@ -105,10 +105,11 @@ bool StyleFetchedImage::ErrorOccurred() const {
 FloatSize StyleFetchedImage::ImageSize(
     const Document&,
     float multiplier,
+    float multipliery,
     const LayoutSize& default_object_size) const {
   Image* image = image_->GetImage();
   if (image->IsSVGImage()) {
-    return ImageSizeForSVGImage(ToSVGImage(image), multiplier,
+    return ImageSizeForSVGImage(ToSVGImage(image), multiplier,multipliery,
                                 default_object_size);
   }
   // Image orientation should only be respected for content images,
@@ -117,7 +118,7 @@ FloatSize StyleFetchedImage::ImageSize(
   //
   // https://drafts.csswg.org/css-images-3/#the-image-orientation
   FloatSize size(image->Size());
-  return ApplyZoom(size, multiplier);
+  return ApplyZoom(size, multiplier,multipliery);
 }
 
 bool StyleFetchedImage::HasIntrinsicSize() const {
@@ -160,13 +161,13 @@ scoped_refptr<Image> StyleFetchedImage::GetImage(
   Image* image = image_->GetImage();
   if (image->IsPlaceholderImage()) {
     static_cast<PlaceholderImage*>(image)->SetIconAndTextScaleFactor(
-        style.EffectiveZoom());
+        style.EffectiveZoomX(),style.EffectiveZoomY());
   }
 
   if (!image->IsSVGImage())
     return image;
   return SVGImageForContainer::Create(ToSVGImage(image), target_size,
-                                      style.EffectiveZoom(), url_);
+                                      style.EffectiveZoomX(), style.EffectiveZoomY(), url_);
 }
 
 bool StyleFetchedImage::KnownToBeOpaque(const Document&,
